@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -41,27 +39,29 @@ func getIndexFiles() ([]*File, error) { // cache this function
 	// sort
 	// truncate
 	return result, nil
-}
+} // todo clean up paths
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	indexFiles, _ := getIndexFiles()
-	for _, file := range indexFiles {
-		fmt.Fprintf(w, "%s\n", file.Name)
+func getUserFiles(user string) ([]*File, error) {
+	result := []*File{}
+	files, err := ioutil.ReadDir(path.Join(userFilesPath, user))
+	if err != nil {
+		return nil, err
 	}
-}
-
-func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	authUser := "alex"
-	files, _ := ioutil.ReadDir(path.Join(userFilesPath, authUser))
 	for _, file := range files {
-		fmt.Fprintf(w, "%s\n", file.Name())
+		result = append(result, &File{
+			Name:        file.Name(),
+			Creator:     user,
+			UpdatedTime: "123123",
+		})
 	}
+	return result, nil
 }
 
 func main() {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/my_site", mySiteHandler)
+	// http functions
 	// go serve gemini
-	// go serve http
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// go serve http -- not
+	// runHTTPServer()
+	runGeminiServer()
+	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
 }

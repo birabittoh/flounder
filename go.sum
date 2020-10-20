@@ -1,3 +1,5 @@
+git.sr.ht/~adnano/gmi v0.1.0-alpha.1 h1:5sha5ucev32U95drEEaPw9rm6hGWJtL8y5HViQ3VDJQ=
+git.sr.ht/~adnano/gmi v0.1.0-alpha.1/go.mod h1:t/m2KtH+7lXIF7jjVN+bNvwPbE0nxHOpvlA/WZ/KeLQ=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/mattn/go-sqlite3 v1.14.4 h1:4rQjbDxdu9fSgI/r3KN72G3c2goxknAqHHgPWWs8UlI=
