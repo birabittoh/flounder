@@ -18,6 +18,10 @@ type File struct {
 	UpdatedTime string
 }
 
+func getUsers() ([]string, error) {
+	return []string{"me", "other guy"}, nil
+}
+
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(userFilesPath, func(path string, info os.FileInfo, err error) error {
@@ -58,10 +62,11 @@ func getUserFiles(user string) ([]*File, error) {
 }
 
 func main() {
+	config := Config{}
 	// http functions
 	// go serve gemini
 	// go serve http -- not
 	// runHTTPServer()
-	runGeminiServer()
+	runGeminiServer(&config)
 	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
 }
