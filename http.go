@@ -14,14 +14,28 @@ type IndexHandler struct {
 	SiteTitle string
 }
 
+const InternalServerError = "500: Internal Server Error"
+
+func renderError(w http.ResponseWriter, errorMsg string) { // TODO think about pointers
+	w.WriteHeader(http.StatusInternalServerError)
+	log.Println(errorMsg)
+	data := struct{ ErrorMsg string }{errorMsg}
+	err := t.ExecuteTemplate(w, "error.html", data)
+	if err != nil { // shouldn't happen probably
+		fmt.Fprintf(w, errorMsg)
+	}
+}
+
 func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	indexFiles, err := getIndexFiles()
 	if err != nil {
-		log.Fatal(err)
+		renderError(w, InternalServerError)
+		return
 	}
 	allUsers, err := getUsers()
 	if err != nil {
-		log.Fatal(err)
+		renderError(w, InternalServerError)
+		return
 	}
 	data := struct {
 		Domain    string
@@ -31,7 +45,8 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}{h.Domain, h.SiteTitle, indexFiles, allUsers}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
-		log.Fatal(err)
+		renderError(w, InternalServerError)
+		return
 	}
 
 }
