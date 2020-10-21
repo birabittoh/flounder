@@ -15,13 +15,13 @@ type IndexHandler struct {
 }
 
 // TODO somewhat better error handling
-const InternalServerError = "500: Internal Server Error"
+const InternalServerErrorMsg = "500: Internal Server Error"
 
-func renderError(w http.ResponseWriter, errorMsg string) { // TODO think about pointers
+func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TODO think about pointers
 	data := struct{ ErrorMsg string }{errorMsg}
 	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // shouldn't happen probably
-		fmt.Fprintf(w, errorMsg)
+		http.Error(w, errorMsg, statusCode)
 	}
 }
 
@@ -29,14 +29,13 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		renderError(w, InternalServerError)
+		renderError(w, InternalServerErrorMsg, 500)
 		return
 	}
 	allUsers, err := getUsers()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		renderError(w, InternalServerError)
+		log.Println(err)
+		renderError(w, InternalServerErrorMsg, 500)
 		return
 	}
 	data := struct {
@@ -47,8 +46,8 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}{h.Domain, h.SiteTitle, indexFiles, allUsers}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		renderError(w, InternalServerError)
+		log.Println(err)
+		renderError(w, InternalServerErrorMsg, 500)
 		return
 	}
 
