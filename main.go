@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 )
 
+var c Config // global var to hold static configuration
+
 const ( // todo make configurable
 	userFilesPath = "./files"
 )
@@ -64,11 +66,12 @@ func getUserFiles(user string) ([]*File, error) {
 
 func main() {
 	configPath := flag.String("c", "flounder.toml", "path to config file")
-	config, err := getConfig(*configPath)
+	var err error
+	c, err = getConfig(*configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	runHTTPServer(&config)
+	runHTTPServer()
 	// runGeminiServer(&config)
 	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
 }

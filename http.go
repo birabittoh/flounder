@@ -9,11 +9,6 @@ import (
 
 var t *template.Template
 
-type IndexHandler struct {
-	Domain    string
-	SiteTitle string
-}
-
 // TODO somewhat better error handling
 const InternalServerErrorMsg = "500: Internal Server Error"
 
@@ -25,7 +20,7 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TO
 	}
 }
 
-func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
@@ -43,7 +38,7 @@ func (h *IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		PageTitle string
 		Files     []*File
 		Users     []string
-	}{h.Domain, h.SiteTitle, indexFiles, allUsers}
+	}{c.RootDomain, c.SiteTitle, indexFiles, allUsers}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
@@ -71,13 +66,13 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func runHTTPServer(config *Config) {
+func runHTTPServer() {
 	var err error
 	t, err = template.ParseGlob("./templates/*.html") // TODO make template dir configruable
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/", &IndexHandler{config.RootDomain, config.SiteTitle})
+	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/my_site", mySiteHandler)
 	http.HandleFunc("/edit/", editFileHandler)
 	// http.HandleFunc("/delete/", deleteFileHandler)
