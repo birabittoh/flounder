@@ -1,1 +1,4 @@
-key=value
+site_title="flounder"
+root_domain="localhost:8080"
+debug=true
+

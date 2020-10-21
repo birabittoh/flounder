@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -62,11 +63,12 @@ func getUserFiles(user string) ([]*File, error) {
 }
 
 func main() {
-	config := Config{}
-	// http functions
-	// go serve gemini
-	// go serve http -- not
-	// runHTTPServer()
-	runGeminiServer(&config)
+	configPath := flag.String("c", "flounder.toml", "path to config file")
+	config, err := getConfig(*configPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	runHTTPServer(&config)
+	// runGeminiServer(&config)
 	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
 }

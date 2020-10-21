@@ -5,9 +5,10 @@ import (
 )
 
 type Config struct {
-	DbURI      string
 	FilesPath  string
 	RootDomain string
+	SiteTitle  string
+	Debug      bool
 	SecretKey  string
 }
 
