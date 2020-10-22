@@ -71,7 +71,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// runHTTPServer()
-	runGeminiServer()
+	runHTTPServer()
+	// runGeminiServer()
 	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
 }

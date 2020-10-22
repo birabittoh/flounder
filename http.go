@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path"
+	"strings"
 )
 
 var t *template.Template
@@ -66,16 +68,25 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Server a user's file
+func userFile(w http.ResponseWriter, r *http.Request) {
+	userName := strings.Split(r.Host, ".")[0]
+	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
+	http.ServeFile(w, r, fileName)
+}
+
 func runHTTPServer() {
+	log.Println("Running http server")
 	var err error
 	t, err = template.ParseGlob("./templates/*.html") // TODO make template dir configruable
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/my_site", mySiteHandler)
-	http.HandleFunc("/edit/", editFileHandler)
+	http.HandleFunc(c.RootDomain+"/", indexHandler)
+	http.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
+	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
 	// http.HandleFunc("/delete/", deleteFileHandler)
 	// login+register functions
+	http.HandleFunc("/", userFile)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

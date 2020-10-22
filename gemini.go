@@ -40,11 +40,14 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		// return 404 equivalent
+		// TODO return 404 equivalent
 		log.Fatal(err)
 	}
-	// TODO handle error
-	w.Write(data)
+	_, err = w.Write(data)
+	if err != nil {
+		// return internal server error
+		log.Fatal(err)
+	}
 }
 
 func runGeminiServer() {
