@@ -39,6 +39,7 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	userName := strings.Split(r.URL.Host, ".")[0]
 	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
 	data, err := ioutil.ReadFile(fileName)
+	// TODO write mimetype
 	if err != nil {
 		// TODO return 404 equivalent
 		log.Fatal(err)

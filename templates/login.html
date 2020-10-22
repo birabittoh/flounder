@@ -1,0 +1,28 @@
+{{template "header" .}}
+<h1>{{.PageTitle}}</h1>
+<h1>Log in</h1>
+<form action="/login" method="post">
+  <p>
+    <label for="username">Username</label>
+    <input id="username" name="username" size="32" type="text" value="" />
+  </p>
+  <p>
+    <label for="password">Password</label>
+    <input id="password" name="password" size="32" type="password" value="" />
+  </p>
+  {{ if .Error }}
+    <div class="error">
+      <p>{{.}}</p>
+    </div>
+    {{ end}}
+  <p>
+    <input
+      class="button"
+      id="submit"
+      name="submit"
+      type="submit"
+      value="Log in"
+    />
+  </p>
+</form>
+{{template "footer" .}}

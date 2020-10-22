@@ -10,6 +10,7 @@ type Config struct {
 	SiteTitle      string
 	Debug          bool
 	SecretKey      string
+	PasswdFile     string
 }
 
 func getConfig(filename string) (Config, error) {

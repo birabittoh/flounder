@@ -68,10 +68,49 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		// show page
+		data := struct {
+			Error     error
+			PageTitle string
+		}{nil, c.SiteTitle}
+		err := t.ExecuteTemplate(w, "login.html", data)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
+	} else if r.Method == "POST" {
+		r.ParseForm()
+		name := r.Form.Get("username")
+		password := r.Form.Get("password")
+		err := checkAuth(name, password)
+		if err == nil {
+			log.Println("logged in")
+			// redirect home
+		} else {
+			log.Println(err)
+		}
+		// create session
+		// redirect home
+		// verify login
+		// check for errors
+	}
+}
+
+func register(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+	} else if r.Method == "POST" {
+	}
+}
+
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
 	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
+	// if gemini -- parse, convert, serve
+	// else
 	http.ServeFile(w, r, fileName)
 }
 
@@ -85,8 +124,11 @@ func runHTTPServer() {
 	http.HandleFunc(c.RootDomain+"/", indexHandler)
 	http.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
 	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
+	http.HandleFunc(c.RootDomain+"/login", loginHandler)
 	// http.HandleFunc("/delete/", deleteFileHandler)
 	// login+register functions
+
+	// handle user files based on subdomain
 	http.HandleFunc("/", userFile)
 	log.Fatal(http.ListenAndServe(":8080", logRequest(http.DefaultServeMux)))
 }
@@ -94,5 +136,6 @@ func runHTTPServer() {
 func logRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
 	})
 }
