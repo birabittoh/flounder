@@ -88,5 +88,11 @@ func runHTTPServer() {
 	// http.HandleFunc("/delete/", deleteFileHandler)
 	// login+register functions
 	http.HandleFunc("/", userFile)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", logRequest(http.DefaultServeMux)))
+}
+
+func logRequest(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+	})
 }
