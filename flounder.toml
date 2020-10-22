@@ -1,3 +1,4 @@
 SiteTitle="🐟flounder"
-RootDomain="localhost:8080"
+RootDomain="localhost"
+FilesDirectory="./files"
 

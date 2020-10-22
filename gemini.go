@@ -5,11 +5,13 @@ import (
 	"crypto/tls"
 	"crypto/x509" // todo move into cert file
 	"encoding/pem"
+	"strings"
 	// "fmt"
 	"git.sr.ht/~adnano/gmi"
+	"io/ioutil"
 	"log"
 	"os"
-	// "path"
+	"path"
 	"text/template"
 	"time"
 )
@@ -34,9 +36,19 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 }
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
+	userName := strings.Split(r.URL.Host, ".")[0]
+	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		// return 404 equivalent
+		log.Fatal(err)
+	}
+	// TODO handle error
+	w.Write(data)
 }
 
-func runGeminiServer(config *Config) {
+func runGeminiServer() {
+	log.Println("Starting gemini server")
 	var server gmi.Server
 
 	if err := server.CertificateStore.Load("./tmpcerts"); err != nil {
@@ -70,7 +82,8 @@ func runGeminiServer(config *Config) {
 	}
 
 	// replace with wildcard cert
-	server.HandleFunc("localhost", gmiIndex)
+	server.HandleFunc(c.RootDomain, gmiIndex)
+	server.HandleFunc("*."+c.RootDomain, gmiPage)
 
 	server.ListenAndServe()
 }
