@@ -84,7 +84,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		data := struct {
 			Error     string
 			PageTitle string
-		}{"", c.SiteTitle}
+		}{"", "Login"}
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
 			log.Println(err)
@@ -118,8 +118,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func register(w http.ResponseWriter, r *http.Request) {
+func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		data := struct {
+			Domain    string
+			Errors    []string
+			PageTitle string
+		}{c.RootDomain, nil, "Register"}
+		err := t.ExecuteTemplate(w, "register.html", data)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
 	} else if r.Method == "POST" {
 	}
 }
@@ -144,6 +155,7 @@ func runHTTPServer() {
 	http.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
 	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
 	http.HandleFunc(c.RootDomain+"/login", loginHandler)
+	http.HandleFunc(c.RootDomain+"/register", registerHandler)
 	// http.HandleFunc("/delete/", deleteFileHandler)
 	// login+register functions
 

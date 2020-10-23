@@ -1,0 +1,37 @@
+{{template "header" .}}
+<h1>Register</h1>
+<form action="/register" method="post">
+  <div>
+    <label for="username">Username</label>
+    <input
+      id="username"
+      name="username"
+      size="32"
+      type="text"
+      value=""
+    />.{{.Domain}}
+  </div>
+  <div>
+    <label for="email">Email</label>
+    <input id="email" name="email" size="64" type="text" value="" />
+  </div>
+  <div>
+    <label for="password">Password</label>
+    <input id="password" name="password" size="32" type="password" value="" />
+  </div>
+  <div>
+    <label for="password2">Repeat Password</label>
+    <input id="password2" name="password2" size="32" type="password" value="" />
+  </div>
+  <div class="error">{{ range .Errors}}<p>{{.}}</p>{{end}} </div>
+  <div>
+    <input
+      class="button"
+      id="submit"
+      name="submit"
+      type="submit"
+      value="Join"
+    />
+  </div>
+</form>
+{{template "footer" .}}
