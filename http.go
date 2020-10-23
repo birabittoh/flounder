@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -51,30 +50,41 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	// get vs post
-	// read file content
-	authUser := "alex"
-	files, _ := getUserFiles(authUser)
-	for _, file := range files {
-		fmt.Fprintf(w, "%s\n", file.Name)
+	// read file content. create if dne
+	// authUser := "alex"
+	data := struct {
+		FileName  string
+		FileText  string
+		PageTitle string
+	}{"filename", "filetext", c.SiteTitle}
+	err := t.ExecuteTemplate(w, "edit_file.html", data)
+	if err != nil {
+		log.Println(err)
+		renderError(w, InternalServerErrorMsg, 500)
+		return
 	}
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	authUser := "alex"
+	// check auth
 	files, _ := getUserFiles(authUser)
-	for _, file := range files {
-		fmt.Fprintf(w, "%s\n", file.Name)
-	}
+	data := struct {
+		Domain    string
+		PageTitle string
+		AuthUser  string
+		Files     []*File
+	}{c.RootDomain, c.SiteTitle, authUser, files}
+	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		// show page
 		data := struct {
-			Error     error
+			Error     string
 			PageTitle string
-		}{nil, c.SiteTitle}
+		}{"", c.SiteTitle}
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
 			log.Println(err)
@@ -90,7 +100,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("logged in")
 			// redirect home
 		} else {
-			log.Println(err)
+			data := struct {
+				Error     string
+				PageTitle string
+			}{"Invalid login or password", c.SiteTitle}
+			err := t.ExecuteTemplate(w, "login.html", data)
+			if err != nil {
+				log.Println(err)
+				renderError(w, InternalServerErrorMsg, 500)
+				return
+			}
 		}
 		// create session
 		// redirect home

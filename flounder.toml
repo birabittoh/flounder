@@ -1,4 +1,4 @@
 SiteTitle="🐟flounder"
 RootDomain="localhost"
 FilesDirectory="./files"
-PasswdFile="accounts.htpasswd"
+DBFile="./flounder.db"
