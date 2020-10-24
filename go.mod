@@ -9,5 +9,4 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/mattn/go-sqlite3 v1.14.4
 	golang.org/x/crypto v0.0.0-20200115085410-6d4e4cb37c7d
-	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 )
