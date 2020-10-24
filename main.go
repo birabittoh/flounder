@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"log"
@@ -11,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 )
@@ -22,6 +20,7 @@ type File struct {
 	Creator     string
 	Name        string
 	UpdatedTime time.Time
+	TimeAgo     string
 }
 
 func getUsers() ([]string, error) {
@@ -41,24 +40,6 @@ func getUsers() ([]string, error) {
 	return users, nil
 }
 
-/// Perform some checks to make sure the file is OK
-func checkIfValidFile(filename string, fileBytes []byte) error {
-	ext := strings.ToLower(path.Ext(filename))
-	found := false
-	for _, mimetype := range c.OkExtensions {
-		if ext == mimetype {
-			found = true
-		}
-	}
-	if !found {
-		return fmt.Errorf("Invalid file extension: %s", ext)
-	}
-	if len(fileBytes) > c.MaxFileSize {
-		return fmt.Errorf("File too large. File was %s bytes, Max file size is %s", len(fileBytes), c.MaxFileSize)
-	}
-	return nil
-}
-
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
@@ -69,10 +50,12 @@ func getIndexFiles() ([]*File, error) { // cache this function
 		// make this do what it should
 		if !info.IsDir() {
 			creatorFolder, _ := path.Split(thepath)
+			updatedTime := info.ModTime()
 			result = append(result, &File{
 				Name:        info.Name(),
 				Creator:     path.Base(creatorFolder),
-				UpdatedTime: info.ModTime(),
+				UpdatedTime: updatedTime,
+				TimeAgo:     timeago(&updatedTime),
 			})
 		}
 		return nil
