@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -27,7 +29,21 @@ func getUsers() ([]string, error) {
 }
 
 /// Perform some checks to make sure the file is OK
-func checkIfValidFile() {
+func checkIfValidFile(filename string, fileBytes []byte) error {
+	ext := strings.ToLower(path.Ext(filename))
+	found := false
+	for _, mimetype := range c.OkExtensions {
+		if ext == mimetype {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("Invalid file extension: %s", ext)
+	}
+	if len(fileBytes) > c.MaxFileSize {
+		return fmt.Errorf("File too large. File was %s bytes, Max file size is %s", len(fileBytes), c.MaxFileSize)
+	}
+	return nil
 }
 
 func getIndexFiles() ([]*File, error) { // cache this function

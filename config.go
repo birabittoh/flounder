@@ -13,6 +13,8 @@ type Config struct {
 	SecretKey          string
 	DBFile             string
 	PasswdFile         string // TODO remove
+	OkExtensions       []string
+	MaxFileSize        int
 }
 
 func getConfig(filename string) (Config, error) {

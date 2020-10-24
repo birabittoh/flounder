@@ -16,10 +16,9 @@ import (
 
 var t *template.Template
 
-// TODO somewhat better error handling
 const InternalServerErrorMsg = "500: Internal Server Error"
 
-func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TODO think about pointers
+func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 	data := struct{ ErrorMsg string }{errorMsg}
 	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // shouldn't happen probably
@@ -66,6 +65,12 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "GET" {
+		err := checkIfValidFile(filePath, nil)
+		if err != nil {
+			log.Println(err)
+			renderError(w, err.Error(), 400)
+			return
+		}
 		f, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0644)
 		defer f.Close()
 		fileBytes, err := ioutil.ReadAll(f)
@@ -88,8 +93,14 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		// get post body
 		r.ParseForm()
-		fileText := r.Form.Get("file_text")
-		err := ioutil.WriteFile(filePath, []byte(fileText), 0644)
+		fileBytes := []byte(r.Form.Get("file_text"))
+		err := checkIfValidFile(filePath, fileBytes)
+		if err != nil {
+			log.Println(err)
+			renderError(w, err.Error(), 400)
+			return
+		}
+		err = ioutil.WriteFile(filePath, fileBytes, 0644)
 		if err != nil {
 			log.Println(err)
 			renderError(w, InternalServerErrorMsg, 500)
@@ -104,7 +115,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "POST" {
-		os.Remove(filePath)
+		os.Remove(filePath) // suppress error
 		http.Redirect(w, r, "/my_site", 302)
 	}
 }
@@ -203,7 +214,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 func runHTTPServer() {
 	log.Println("Running http server")
 	var err error
-	t, err = template.ParseGlob("./templates/*.html") // TODO make template dir configruable
+	t, err = template.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
 	if err != nil {
 		log.Fatal(err)
 	}
