@@ -7,6 +7,8 @@ Designed to help make the Gemini ecosystem more accessible.
 
 ## Hosting
 
+Flounder is designed to be very simple to host, and should be able to be relatively easily run by a single person.
+
 Very simple to host -- a single binary with a gemini server, http server included. 
 
 ## Customizing

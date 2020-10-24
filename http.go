@@ -4,6 +4,7 @@ import (
 	"git.sr.ht/~adnano/gmi"
 	"github.com/gorilla/handlers"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -61,21 +62,35 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	// read file content. create if dne
-	// authUser := "alex"
+	authUser := "alex"
+	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
+	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "GET" {
+		f, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0644)
+		defer f.Close()
+		fileBytes, err := ioutil.ReadAll(f)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
 		data := struct {
 			FileName  string
 			FileText  string
 			PageTitle string
-		}{"filename", "filetext", c.SiteTitle}
-		err := t.ExecuteTemplate(w, "edit_file.html", data)
+		}{fileName, string(fileBytes), c.SiteTitle}
+		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			log.Println(err)
 			renderError(w, InternalServerErrorMsg, 500)
 			return
 		}
 	} else if r.Method == "POST" {
+		// get post body
+		r.ParseForm()
+		fileText := r.Form.Get("file_text")
+		ioutil.WriteFile(filePath, []byte(fileText), 0644)
+		http.Redirect(w, r, "/my_site", 302)
 	}
 }
 
