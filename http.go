@@ -1,9 +1,11 @@
 package main
 
 import (
+	"git.sr.ht/~adnano/gmi"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 )
@@ -139,9 +141,26 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
 	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
-	// if gemini -- parse, convert, serve
-	// else
-	http.ServeFile(w, r, fileName)
+	extension := path.Ext(fileName)
+	log.Println(extension)
+	if extension == ".gmi" || extension == ".gemini" {
+		if strings.Contains(fileName, "..") {
+			// prevent directory traversal TODO verify
+			http.Error(w, "invalid URL path", http.StatusBadRequest)
+		} else {
+			// covert to html
+			stat, _ := os.Stat(fileName)
+			file, _ := os.Open(fileName)
+			htmlString := gmi.Parse(file).HTML()
+			log.Println(htmlString)
+			reader := strings.NewReader(htmlString)
+			w.Header().Set("Content-Type", "text/html")
+			http.ServeContent(w, r, fileName, stat.ModTime(), reader)
+		}
+		// TODO clean
+	} else {
+		http.ServeFile(w, r, fileName)
+	}
 }
 
 func runHTTPServer() {
