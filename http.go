@@ -43,6 +43,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, fileName)
 		return
 	}
+	_, authd := getAuthUser(r)
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
@@ -60,7 +61,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		PageTitle string
 		Files     []*File
 		Users     []string
-	}{c.RootDomain, c.SiteTitle, indexFiles, allUsers}
+		LoggedIn  bool
+	}{c.RootDomain, c.SiteTitle, indexFiles, allUsers, authd}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
@@ -164,10 +166,15 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/my_site", 302)
 }
 
-func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+// bool whether auth'd, string is auth user
+func getAuthUser(r *http.Request) (string, bool) {
 	session, _ := SessionStore.Get(r, "cookie-session")
-	authUser, ok := session.Values["auth_user"].(string)
-	if !ok {
+	user, ok := session.Values["auth_user"].(string)
+	return user, ok
+}
+func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	authUser, authd := getAuthUser(r)
+	if !authd {
 		renderError(w, "Forbidden", 403)
 		return
 	}
@@ -180,9 +187,8 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := SessionStore.Get(r, "cookie-session")
-	authUser, ok := session.Values["auth_user"].(string)
-	if !ok {
+	authUser, authd := getAuthUser(r)
+	if !authd {
 		renderError(w, "Forbidden", 403)
 		return
 	}
@@ -193,7 +199,8 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 		PageTitle string
 		AuthUser  string
 		Files     []*File
-	}{c.RootDomain, c.SiteTitle, authUser, files}
+		LoggedIn  bool
+	}{c.RootDomain, c.SiteTitle, authUser, files, authd}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
@@ -214,9 +221,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT password_hash FROM user where username = $1", name)
+		row := DB.QueryRow("SELECT password_hash, approved FROM user where username = $1", name)
 		var db_password []byte
-		_ = row.Scan(&db_password)
+		var active bool
+		_ = row.Scan(&db_password, &active)
+		if !active {
+			data := struct {
+				Error     string
+				PageTitle string
+			}{"Your account is not active yet. Pending admin approval", c.SiteTitle}
+			t.ExecuteTemplate(w, "login.html", data)
+		}
 		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
 			session, _ := SessionStore.Get(r, "cookie-session")
