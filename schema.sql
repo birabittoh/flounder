@@ -3,7 +3,7 @@ CREATE TABLE user (
   username TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  active boolean NOT NULL DEFAULT false,
+  approved boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 

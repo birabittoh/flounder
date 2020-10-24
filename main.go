@@ -61,17 +61,20 @@ func checkIfValidFile(filename string, fileBytes []byte) error {
 
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
-	err := filepath.Walk(c.FilesDirectory, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("Failure accessing a path %q: %v\n", path, err)
+			log.Printf("Failure accessing a path %q: %v\n", thepath, err)
 			return err // think about
 		}
 		// make this do what it should
-		result = append(result, &File{
-			Name:        info.Name(),
-			Creator:     "alex",
-			UpdatedTime: info.ModTime(),
-		})
+		if !info.IsDir() {
+			creatorFolder, _ := path.Split(thepath)
+			result = append(result, &File{
+				Name:        info.Name(),
+				Creator:     path.Base(creatorFolder),
+				UpdatedTime: info.ModTime(),
+			})
+		}
 		return nil
 	})
 	if err != nil {
