@@ -187,9 +187,12 @@ func runHTTPServer() {
 	serveMux.HandleFunc(c.RootDomain+"/", rootHandler)
 	serveMux.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
 	serveMux.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
+	// serveMux.HandleFunc(c.RootDomain+"/upload/", uploadFilesHandler)
 	serveMux.HandleFunc(c.RootDomain+"/login", loginHandler)
 	serveMux.HandleFunc(c.RootDomain+"/register", registerHandler)
 	serveMux.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
+
+	// TODO rate limit login https://github.com/ulule/limiter
 
 	wrapped := handlers.LoggingHandler(os.Stdout, serveMux)
 
