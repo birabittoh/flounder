@@ -116,6 +116,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		authUser := "alex"
 		r.ParseMultipartForm(10 << 20)
 		file, fileHeader, err := r.FormFile("file")
+		fileName := filepath.Clean(fileHeader.Filename)
 		defer file.Close()
 		if err != nil {
 			log.Println(err)
@@ -125,13 +126,13 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		var dest []byte
 		file.Read(dest)
 		log.Println("asdfadf")
-		err = checkIfValidFile(fileHeader.Filename, dest)
+		err = checkIfValidFile(fileName, dest)
 		if err != nil {
 			log.Println(err)
 			renderError(w, err.Error(), 400)
 			return
 		}
-		destPath := path.Join(c.FilesDirectory, authUser, fileHeader.Filename)
+		destPath := path.Join(c.FilesDirectory, authUser, fileName)
 
 		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
