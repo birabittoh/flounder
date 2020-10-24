@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"git.sr.ht/~adnano/gmi"
 	"github.com/gorilla/handlers"
+	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -16,6 +19,7 @@ import (
 )
 
 var t *template.Template
+var DB *sql.DB
 
 const InternalServerErrorMsg = "500: Internal Server Error"
 
@@ -211,6 +215,22 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
+
+func isOkUsername(s string) bool {
+	if len(s) < 1 {
+		return false
+	}
+	if len(s) > 31 {
+		return false
+	}
+	for _, char := range s {
+		if !strings.Contains(ok, strings.ToLower(string(char))) {
+			return false
+		}
+	}
+	return true
+}
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := struct {
@@ -225,6 +245,44 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "POST" {
+		r.ParseForm()
+		email := r.Form.Get("email")
+		password := r.Form.Get("password")
+		errors := []string{}
+		if !strings.Contains(email, "@") {
+			errors = append(errors, "Invalid Email")
+		}
+		if r.Form.Get("password") != r.Form.Get("password2") {
+			errors = append(errors, "Passwords don't match")
+		}
+		if len(password) < 6 {
+			errors = append(errors, "Password is too short")
+		}
+		username := strings.ToLower(r.Form.Get("username"))
+		if !isOkUsername(username) {
+			errors = append(errors, "Username is invalid: can only contain letters, numbers and hypens. Maximum 32 characters.")
+		}
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
+		_, err = DB.Exec("insert into user (username, email, password_hash) values ($1, $2, $3)", username, email, string(hashedPassword))
+		if err != nil {
+			log.Println(err)
+			errors = append(errors, "Username or email is already used")
+		}
+		if len(errors) > 0 {
+			data := struct {
+				Domain    string
+				Errors    []string
+				PageTitle string
+			}{c.RootDomain, errors, "Register"}
+			t.ExecuteTemplate(w, "register.html", data)
+		} else {
+			data := struct {
+				Domain    string
+				Message   string
+				PageTitle string
+			}{c.RootDomain, "Registration complete! The server admin will approve your request before you can log in.", "Registration Complete"}
+			t.ExecuteTemplate(w, "message.html", data)
+		}
 	}
 }
 

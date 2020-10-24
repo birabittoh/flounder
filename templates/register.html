@@ -2,7 +2,7 @@
 <h1>Register</h1>
 <form action="/register" method="post">
   <div>
-    <label for="username">Username</label>
+    <label for="username">Username</label><br>
     <input
       id="username"
       name="username"
@@ -17,13 +17,13 @@
   </div>
   <div>
     <label for="password">Password</label>
-    <input id="password" name="password" size="32" type="password" value="" />
+    <input id="password" name="password" size="55" type="password" value="" />
   </div>
   <div>
     <label for="password2">Repeat Password</label>
-    <input id="password2" name="password2" size="32" type="password" value="" />
+    <input id="password2" name="password2" size="55" type="password" value="" />
   </div>
-  <div class="error">{{ range .Errors}}<p>{{.}}</p>{{end}} </div>
+  <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
   <div>
     <input
       class="button"
