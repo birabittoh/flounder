@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"git.sr.ht/~adnano/gmi"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
@@ -20,6 +21,7 @@ import (
 
 var t *template.Template
 var DB *sql.DB
+var SessionStore *sessions.CookieStore
 
 const InternalServerErrorMsg = "500: Internal Server Error"
 
@@ -68,7 +70,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	authUser := "alex"
+	session, _ := SessionStore.Get(r, "cookie-session")
+	authUser, ok := session.Values["auth_user"].(string)
+	if !ok {
+		renderError(w, "Forbidden", 403)
+		return
+	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "GET" {
@@ -119,7 +126,12 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 
 func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		authUser := "alex"
+		session, _ := SessionStore.Get(r, "cookie-session")
+		authUser, ok := session.Values["auth_user"].(string)
+		if !ok {
+			renderError(w, "Forbidden", 403)
+			return
+		}
 		r.ParseMultipartForm(10 << 20)
 		file, fileHeader, err := r.FormFile("file")
 		fileName := filepath.Clean(fileHeader.Filename)
@@ -153,7 +165,12 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
-	authUser := "alex"
+	session, _ := SessionStore.Get(r, "cookie-session")
+	authUser, ok := session.Values["auth_user"].(string)
+	if !ok {
+		renderError(w, "Forbidden", 403)
+		return
+	}
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "POST" {
@@ -163,7 +180,12 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	authUser := "alex"
+	session, _ := SessionStore.Get(r, "cookie-session")
+	authUser, ok := session.Values["auth_user"].(string)
+	if !ok {
+		renderError(w, "Forbidden", 403)
+		return
+	}
 	// check auth
 	files, _ := getUserFiles(authUser)
 	data := struct {
@@ -197,7 +219,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		_ = row.Scan(&db_password)
 		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
-			// create session
+			session, _ := SessionStore.Get(r, "cookie-session")
+			session.Values["auth_user"] = name
+			session.Save(r, w)
 			http.Redirect(w, r, "/", 302)
 		} else {
 			data := struct {
@@ -212,6 +236,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := SessionStore.Get(r, "cookie-session")
+	session.Options.MaxAge = -1
+	session.Save(r, w)
+	http.Redirect(w, r, "/", 302)
 }
 
 const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
@@ -320,6 +351,7 @@ func runHTTPServer() {
 	serveMux.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
 	serveMux.HandleFunc(c.RootDomain+"/upload", uploadFilesHandler)
 	serveMux.HandleFunc(c.RootDomain+"/login", loginHandler)
+	serveMux.HandleFunc(c.RootDomain+"/logout", logoutHandler)
 	serveMux.HandleFunc(c.RootDomain+"/register", registerHandler)
 	serveMux.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
 

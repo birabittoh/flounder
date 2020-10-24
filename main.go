@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/gorilla/sessions"
 	"io/ioutil"
 	"log"
 	"os"
@@ -110,7 +111,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	SessionStore = sessions.NewCookieStore([]byte(c.CookieStoreKey))
 	DB, err = sql.Open("sqlite3", c.DBFile)
 	if err != nil {
 		log.Fatal(err)

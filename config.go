@@ -13,6 +13,7 @@ type Config struct {
 	SecretKey          string
 	DBFile             string
 	PasswdFile         string // TODO remove
+	CookieStoreKey     string
 	OkExtensions       []string
 	MaxFileSize        int
 }

@@ -2,6 +2,8 @@
 SiteTitle="🐟flounder"
 RootDomain="localhost"
 FilesDirectory="./files"
+# Generate a secure key
+CookieStoreKey="12345678123456781234567812345678"
 # handles templates and static files
 # everything in the static subfolder will be served at root
 TemplatesDirectory="./templates"
