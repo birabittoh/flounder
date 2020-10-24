@@ -24,7 +24,20 @@ type File struct {
 }
 
 func getUsers() ([]string, error) {
-	return []string{"me", "other guy"}, nil
+	rows, err := DB.Query(`SELECT username from user`)
+	if err != nil {
+		return nil, err
+	}
+	var users []string
+	for rows.Next() {
+		var user string
+		err = rows.Scan(&user)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
 
 /// Perform some checks to make sure the file is OK
