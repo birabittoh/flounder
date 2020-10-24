@@ -321,6 +321,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			}{c.RootDomain, errors, "Register"}
 			t.ExecuteTemplate(w, "register.html", data)
 		} else {
+			os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 			data := struct {
 				Domain    string
 				Message   string
