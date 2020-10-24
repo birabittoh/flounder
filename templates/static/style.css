@@ -2,14 +2,14 @@ main {
   max-width: 70ch;
   padding: 2ch;
   margin: auto;
-  font-family: monospace;
+  font-family: Helvetica, Arial, monospace;
   word-wrap: break-word;
   border: 1px solid black;
   background-color: white;
 }
 
 body {
-  background-color: lightgray;
+  background-color: #cfe6fc;
 }
 
 .inline {
