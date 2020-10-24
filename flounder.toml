@@ -6,7 +6,7 @@ FilesDirectory="./files"
 # everything in the static subfolder will be served at root
 TemplatesDirectory="./templates"
 DBFile="./flounder.db"
-MaxFileSize=1000000 # 1 MB
+MaxFileSize=128000 # 128 KB
 OkExtensions=[".gmi", ".txt", ".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".midi", ".json", ".csv", ".gemini", ".mp3", ".css", ".ttf", ".otf", ".woff", ".woff2"]
 
 # log file

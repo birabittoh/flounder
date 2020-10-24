@@ -4,6 +4,7 @@ import (
 	"git.sr.ht/~adnano/gmi"
 	"github.com/gorilla/handlers"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -110,14 +111,48 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		authUser := "alex"
+		r.ParseMultipartForm(10 << 20)
+		file, fileHeader, err := r.FormFile("file")
+		defer file.Close()
+		if err != nil {
+			log.Println(err)
+			renderError(w, err.Error(), 400)
+			return
+		}
+		var dest []byte
+		file.Read(dest)
+		log.Println("asdfadf")
+		err = checkIfValidFile(fileHeader.Filename, dest)
+		if err != nil {
+			log.Println(err)
+			renderError(w, err.Error(), 400)
+			return
+		}
+		destPath := path.Join(c.FilesDirectory, authUser, fileHeader.Filename)
+
+		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
+		defer f.Close()
+		io.Copy(f, file)
+	}
+	http.Redirect(w, r, "/my_site", 302)
+}
+
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	authUser := "alex"
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "POST" {
 		os.Remove(filePath) // suppress error
-		http.Redirect(w, r, "/my_site", 302)
 	}
+	http.Redirect(w, r, "/my_site", 302)
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
@@ -223,7 +258,7 @@ func runHTTPServer() {
 	serveMux.HandleFunc(c.RootDomain+"/", rootHandler)
 	serveMux.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
 	serveMux.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
-	// serveMux.HandleFunc(c.RootDomain+"/upload/", uploadFilesHandler)
+	serveMux.HandleFunc(c.RootDomain+"/upload", uploadFilesHandler)
 	serveMux.HandleFunc(c.RootDomain+"/login", loginHandler)
 	serveMux.HandleFunc(c.RootDomain+"/register", registerHandler)
 	serveMux.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
