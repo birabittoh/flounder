@@ -8,8 +8,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 var c Config // global var to hold static configuration
@@ -21,7 +23,7 @@ const ( // todo make configurable
 type File struct {
 	Creator     string
 	Name        string
-	UpdatedTime string
+	UpdatedTime time.Time
 }
 
 func getUsers() ([]string, error) {
@@ -57,7 +59,7 @@ func getIndexFiles() ([]*File, error) { // cache this function
 		result = append(result, &File{
 			Name:        info.Name(),
 			Creator:     "alex",
-			UpdatedTime: "123123",
+			UpdatedTime: info.ModTime(),
 		})
 		return nil
 	})
@@ -66,6 +68,12 @@ func getIndexFiles() ([]*File, error) { // cache this function
 	}
 	// sort
 	// truncate
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].UpdatedTime.Before(result[j].UpdatedTime)
+	})
+	if len(result) > 50 {
+		result = result[:50]
+	}
 	return result, nil
 } // todo clean up paths
 
@@ -79,7 +87,7 @@ func getUserFiles(user string) ([]*File, error) {
 		result = append(result, &File{
 			Name:        file.Name(),
 			Creator:     user,
-			UpdatedTime: "123123",
+			UpdatedTime: file.ModTime(),
 		})
 	}
 	return result, nil
