@@ -20,7 +20,10 @@ var t *template.Template
 const InternalServerErrorMsg = "500: Internal Server Error"
 
 func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
-	data := struct{ ErrorMsg string }{errorMsg}
+	data := struct {
+		PageTitle string
+		ErrorMsg  string
+	}{"Error!", errorMsg}
 	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
@@ -58,7 +61,6 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		renderError(w, InternalServerErrorMsg, 500)
 		return
 	}
-
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
