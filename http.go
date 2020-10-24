@@ -23,7 +23,7 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TO
 	}
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// serve everything inside static directory
 	if r.URL.Path != "/" {
 		fileName := path.Join(c.TemplatesDirectory, "static", r.URL.Path)
@@ -185,7 +185,7 @@ func runHTTPServer() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc(c.RootDomain+"/", indexHandler)
+	http.HandleFunc(c.RootDomain+"/", rootHandler)
 	http.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
 	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
 	http.HandleFunc(c.RootDomain+"/login", loginHandler)
