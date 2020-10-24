@@ -89,13 +89,23 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		// get post body
 		r.ParseForm()
 		fileText := r.Form.Get("file_text")
-		ioutil.WriteFile(filePath, []byte(fileText), 0644)
+		err := ioutil.WriteFile(filePath, []byte(fileText), 0644)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
 		http.Redirect(w, r, "/my_site", 302)
 	}
 }
 
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	authUser := "alex"
+	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
+	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 	if r.Method == "POST" {
+		os.Remove(filePath)
+		http.Redirect(w, r, "/my_site", 302)
 	}
 }
 

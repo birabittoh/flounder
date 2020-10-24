@@ -26,6 +26,10 @@ func getUsers() ([]string, error) {
 	return []string{"me", "other guy"}, nil
 }
 
+/// Perform some checks to make sure the file is OK
+func checkIfValidFile() {
+}
+
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(userFilesPath, func(path string, info os.FileInfo, err error) error {
