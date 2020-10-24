@@ -4,12 +4,7 @@ main {
   margin: auto;
   font-family: Helvetica, Arial, monospace;
   word-wrap: break-word;
-  border: 1px solid black;
   background-color: white;
-}
-
-body {
-  background-color: #cfe6fc;
 }
 
 .inline {

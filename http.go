@@ -2,12 +2,15 @@ package main
 
 import (
 	"git.sr.ht/~adnano/gmi"
+	"github.com/gorilla/handlers"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
 var t *template.Template
@@ -26,7 +29,7 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TO
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// serve everything inside static directory
 	if r.URL.Path != "/" {
-		fileName := path.Join(c.TemplatesDirectory, "static", r.URL.Path)
+		fileName := path.Join(c.TemplatesDirectory, "static", filepath.Clean(r.URL.Path))
 		http.ServeFile(w, r, fileName)
 		return
 	}
@@ -154,25 +157,19 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
-	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
+	fileName := path.Join(c.FilesDirectory, userName, filepath.Clean(r.URL.Path))
 	extension := path.Ext(fileName)
 	if r.URL.Path == "/static/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 	}
 	if extension == ".gmi" || extension == ".gemini" {
-		if strings.Contains(fileName, "..") {
-			// prevent directory traversal TODO verify
-			http.Error(w, "invalid URL path", http.StatusBadRequest)
-		} else {
-			// covert to html
-			stat, _ := os.Stat(fileName)
-			file, _ := os.Open(fileName)
-			htmlString := gmi.Parse(file).HTML()
-			reader := strings.NewReader(htmlString)
-			w.Header().Set("Content-Type", "text/html")
-			http.ServeContent(w, r, fileName, stat.ModTime(), reader)
-		}
-		// TODO clean
+		// covert to html
+		stat, _ := os.Stat(fileName)
+		file, _ := os.Open(fileName)
+		htmlString := gmi.Parse(file).HTML()
+		reader := strings.NewReader(htmlString)
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeContent(w, r, fileName, stat.ModTime(), reader)
 	} else {
 		http.ServeFile(w, r, fileName)
 	}
@@ -185,22 +182,27 @@ func runHTTPServer() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc(c.RootDomain+"/", rootHandler)
-	http.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
-	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
-	http.HandleFunc(c.RootDomain+"/login", loginHandler)
-	http.HandleFunc(c.RootDomain+"/register", registerHandler)
-	http.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
-	// login+register functions
+	serveMux := http.NewServeMux()
+
+	serveMux.HandleFunc(c.RootDomain+"/", rootHandler)
+	serveMux.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
+	serveMux.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
+	serveMux.HandleFunc(c.RootDomain+"/login", loginHandler)
+	serveMux.HandleFunc(c.RootDomain+"/register", registerHandler)
+	serveMux.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
+
+	wrapped := handlers.LoggingHandler(os.Stdout, serveMux)
 
 	// handle user files based on subdomain
-	http.HandleFunc("/", userFile)
-	log.Fatal(http.ListenAndServe(":8080", logRequest(http.DefaultServeMux)))
-}
-
-func logRequest(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-		handler.ServeHTTP(w, r)
-	})
+	serveMux.HandleFunc("/", userFile)
+	// login+register functions
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+		Addr:         ":8080",
+		// TLSConfig:    tlsConfig,
+		Handler: wrapped,
+	}
+	log.Fatal(srv.ListenAndServe())
 }

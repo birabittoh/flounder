@@ -1,3 +1,4 @@
+# Used in HTML templates and titles
 SiteTitle="🐟flounder"
 RootDomain="localhost"
 FilesDirectory="./files"
@@ -5,3 +6,5 @@ FilesDirectory="./files"
 # everything in the static subfolder will be served at root
 TemplatesDirectory="./templates"
 DBFile="./flounder.db"
+
+# Log file

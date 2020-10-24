@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 )
 
 var c Config // global var to hold static configuration
@@ -71,7 +72,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	runHTTPServer()
-	// runGeminiServer()
-	// go log.Fatal(gmi.ListenAndServe(":8080", nil))
+
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
+	go func() {
+		runHTTPServer()
+		wg.Done()
+	}()
+	go func() {
+		runGeminiServer()
+		wg.Done()
+	}()
+	wg.Wait()
 }

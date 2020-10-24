@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"text/template"
 	"time"
 )
@@ -24,21 +25,24 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	files, _ := getIndexFiles()
 	users, _ := getUsers()
 	data := struct {
-		Domain string
-		Files  []*File
-		Users  []string
+		Domain    string
+		SiteTitle string
+		Files     []*File
+		Users     []string
 	}{
-		Domain: "flounder.online",
-		Files:  files,
-		Users:  users,
+		Domain:    c.RootDomain,
+		SiteTitle: c.SiteTitle,
+		Files:     files,
+		Users:     users,
 	}
 	t.Execute(w, data)
 }
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	userName := strings.Split(r.URL.Host, ".")[0]
-	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
+	fileName := path.Join(c.FilesDirectory, userName, filepath.Clean(r.URL.Path))
 	data, err := ioutil.ReadFile(fileName)
+	// serve file?
 	// TODO write mimetype
 	if err != nil {
 		// TODO return 404 equivalent
@@ -91,6 +95,8 @@ func runGeminiServer() {
 
 	server.ListenAndServe()
 }
+
+// TODO log request
 
 // writeCertificate writes the provided certificate and private key
 // to path.crt and path.key respectively.
