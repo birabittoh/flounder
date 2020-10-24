@@ -192,10 +192,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		err := checkAuth(name, password)
-		if err == nil {
+		row := DB.QueryRow("SELECT password_hash FROM user where username = $1", name)
+		var db_password []byte
+		_ = row.Scan(&db_password)
+		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
-			// redirect home
+			// create session
+			http.Redirect(w, r, "/", 302)
 		} else {
 			data := struct {
 				Error     string
@@ -208,10 +211,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		// create session
-		// redirect home
-		// verify login
-		// check for errors
 	}
 }
 
