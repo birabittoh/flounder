@@ -24,6 +24,12 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) { // TO
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	// serve everything inside static directory
+	if r.URL.Path != "/" {
+		fileName := path.Join(c.TemplatesDirectory, "static", r.URL.Path)
+		http.ServeFile(w, r, fileName)
+		return
+	}
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
@@ -54,16 +60,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	// read file content. create if dne
 	// authUser := "alex"
-	data := struct {
-		FileName  string
-		FileText  string
-		PageTitle string
-	}{"filename", "filetext", c.SiteTitle}
-	err := t.ExecuteTemplate(w, "edit_file.html", data)
-	if err != nil {
-		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
-		return
+	if r.Method == "GET" {
+		data := struct {
+			FileName  string
+			FileText  string
+			PageTitle string
+		}{"filename", "filetext", c.SiteTitle}
+		err := t.ExecuteTemplate(w, "edit_file.html", data)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
+	} else if r.Method == "POST" {
+	}
+}
+
+func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
 	}
 }
 
@@ -142,7 +156,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
 	fileName := path.Join(c.FilesDirectory, userName, r.URL.Path)
 	extension := path.Ext(fileName)
-	log.Println(extension)
+	if r.URL.Path == "/static/style.css" {
+		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
+	}
 	if extension == ".gmi" || extension == ".gemini" {
 		if strings.Contains(fileName, "..") {
 			// prevent directory traversal TODO verify
@@ -152,7 +168,6 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			stat, _ := os.Stat(fileName)
 			file, _ := os.Open(fileName)
 			htmlString := gmi.Parse(file).HTML()
-			log.Println(htmlString)
 			reader := strings.NewReader(htmlString)
 			w.Header().Set("Content-Type", "text/html")
 			http.ServeContent(w, r, fileName, stat.ModTime(), reader)
@@ -175,7 +190,7 @@ func runHTTPServer() {
 	http.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
 	http.HandleFunc(c.RootDomain+"/login", loginHandler)
 	http.HandleFunc(c.RootDomain+"/register", registerHandler)
-	// http.HandleFunc("/delete/", deleteFileHandler)
+	http.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
 	// login+register functions
 
 	// handle user files based on subdomain

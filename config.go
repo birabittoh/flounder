@@ -5,13 +5,14 @@ import (
 )
 
 type Config struct {
-	FilesDirectory string
-	RootDomain     string
-	SiteTitle      string
-	Debug          bool
-	SecretKey      string
-	DBFile         string
-	PasswdFile     string // TODO remove
+	FilesDirectory     string
+	TemplatesDirectory string
+	RootDomain         string
+	SiteTitle          string
+	Debug              bool
+	SecretKey          string
+	DBFile             string
+	PasswdFile         string // TODO remove
 }
 
 func getConfig(filename string) (Config, error) {

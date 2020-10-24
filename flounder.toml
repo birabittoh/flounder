@@ -1,4 +1,7 @@
 SiteTitle="🐟flounder"
 RootDomain="localhost"
 FilesDirectory="./files"
+# handles templates and static files
+# everything in the static subfolder will be served at root
+TemplatesDirectory="./templates"
 DBFile="./flounder.db"

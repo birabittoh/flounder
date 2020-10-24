@@ -8,3 +8,7 @@ Designed to help make the Gemini ecosystem more accessible.
 ## Hosting
 
 Very simple to host -- a single binary with a gemini server, http server included. 
+
+## Customizing
+
+You can relatively easily change the style and layout of your instance if you'd like.
