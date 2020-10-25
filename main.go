@@ -97,6 +97,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Generate self signed cert if does not exist. This is not suitable for production.
+	_, err1 := os.Stat(c.TLSCertFile)
+	_, err2 := os.Stat(c.TLSKeyFile)
+	if os.IsNotExist(err1) || os.IsNotExist(err2) {
+		log.Println("Keyfile or certfile does not exist.")
+	}
+
+	// Generate session cookie key if does not exist
+
 	SessionStore = sessions.NewCookieStore([]byte(c.CookieStoreKey))
 	DB, err = sql.Open("sqlite3", c.DBFile)
 	if err != nil {

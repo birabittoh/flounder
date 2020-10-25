@@ -7,3 +7,6 @@ CREATE TABLE user (
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
+CREATE TABLE cookie_key (
+  value TEXT NOT NULL;
+);

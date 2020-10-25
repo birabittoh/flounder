@@ -57,12 +57,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		Domain    string
+		Host      string
 		PageTitle string
 		Files     []*File
 		Users     []string
 		LoggedIn  bool
-	}{c.RootDomain, c.SiteTitle, indexFiles, allUsers, authd}
+	}{c.Host, c.SiteTitle, indexFiles, allUsers, authd}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
@@ -195,12 +195,12 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	// check auth
 	files, _ := getUserFiles(authUser)
 	data := struct {
-		Domain    string
+		Host      string
 		PageTitle string
 		AuthUser  string
 		Files     []*File
 		LoggedIn  bool
-	}{c.RootDomain, c.SiteTitle, authUser, files, authd}
+	}{c.Host, c.SiteTitle, authUser, files, authd}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
@@ -279,10 +279,10 @@ func isOkUsername(s string) bool {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := struct {
-			Domain    string
+			Host      string
 			Errors    []string
 			PageTitle string
-		}{c.RootDomain, nil, "Register"}
+		}{c.Host, nil, "Register"}
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
 			log.Println(err)
@@ -315,18 +315,18 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(errors) > 0 {
 			data := struct {
-				Domain    string
+				Host      string
 				Errors    []string
 				PageTitle string
-			}{c.RootDomain, errors, "Register"}
+			}{c.Host, errors, "Register"}
 			t.ExecuteTemplate(w, "register.html", data)
 		} else {
 			os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 			data := struct {
-				Domain    string
+				Host      string
 				Message   string
 				PageTitle string
-			}{c.RootDomain, "Registration complete! The server admin will approve your request before you can log in.", "Registration Complete"}
+			}{c.Host, "Registration complete! The server admin will approve your request before you can log in.", "Registration Complete"}
 			t.ExecuteTemplate(w, "message.html", data)
 		}
 	}
@@ -354,7 +354,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func runHTTPServer() {
-	log.Println("Running http server")
+	log.Printf("Running http server on %s", c.Host)
 	var err error
 	t, err = template.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
 	if err != nil {
@@ -362,14 +362,22 @@ func runHTTPServer() {
 	}
 	serveMux := http.NewServeMux()
 
-	serveMux.HandleFunc(c.RootDomain+"/", rootHandler)
-	serveMux.HandleFunc(c.RootDomain+"/my_site", mySiteHandler)
-	serveMux.HandleFunc(c.RootDomain+"/edit/", editFileHandler)
-	serveMux.HandleFunc(c.RootDomain+"/upload", uploadFilesHandler)
-	serveMux.HandleFunc(c.RootDomain+"/login", loginHandler)
-	serveMux.HandleFunc(c.RootDomain+"/logout", logoutHandler)
-	serveMux.HandleFunc(c.RootDomain+"/register", registerHandler)
-	serveMux.HandleFunc(c.RootDomain+"/delete/", deleteFileHandler)
+	s := strings.SplitN(c.Host, ":", 2)
+	hostname := s[0]
+	var port string
+	if len(s) > 1 {
+		port = s[1]
+	} else {
+		port = "443"
+	}
+	serveMux.HandleFunc(hostname+"/", rootHandler)
+	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
+	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
+	serveMux.HandleFunc(hostname+"/upload", uploadFilesHandler)
+	serveMux.HandleFunc(hostname+"/login", loginHandler)
+	serveMux.HandleFunc(hostname+"/logout", logoutHandler)
+	serveMux.HandleFunc(hostname+"/register", registerHandler)
+	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
 
 	// TODO rate limit login https://github.com/ulule/limiter
 
@@ -382,9 +390,9 @@ func runHTTPServer() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		Addr:         ":8080",
+		Addr:         ":" + port,
 		// TLSConfig:    tlsConfig,
 		Handler: wrapped,
 	}
-	log.Fatal(srv.ListenAndServe())
+	log.Fatal(srv.ListenAndServeTLS(c.TLSCertFile, c.TLSKeyFile))
 }

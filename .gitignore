@@ -1,2 +1,3 @@
 files/
-tmpcerts/
+*.crt
+*.key

@@ -1,13 +1,24 @@
 # Used in HTML templates and titles
 SiteTitle="🐟flounder"
-RootDomain="localhost"
+
+# Include port if != 443
+Host="localhost:8443"
+
+# Folder containing subfolders for each user's files
 FilesDirectory="./files"
-# Generate a secure key
+
+# Secure key for Cookie Store TODO remove
 CookieStoreKey="12345678123456781234567812345678"
-# handles templates and static files
-# everything in the static subfolder will be served at root
+
+# A wildcard TLS cert
+TLSCertFile="./server.crt"
+TLSKeyFile="./server.key"
+
+# Templates and static files
+# Everything in the static subfolder will be served at /
 TemplatesDirectory="./templates"
 DBFile="./flounder.db"
+
 MaxFileSize=128000 # 128 KB
 OkExtensions=["", ".gmi", ".txt", ".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".midi", ".json", ".csv", ".gemini", ".mp3", ".css", ".ttf", ".otf", ".woff", ".woff2"]
 

@@ -7,7 +7,8 @@ import (
 type Config struct {
 	FilesDirectory     string
 	TemplatesDirectory string
-	RootDomain         string
+	Hostname           string
+	Host               string
 	SiteTitle          string
 	Debug              bool
 	SecretKey          string
@@ -16,6 +17,8 @@ type Config struct {
 	CookieStoreKey     string
 	OkExtensions       []string
 	MaxFileSize        int
+	TLSCertFile        string
+	TLSKeyFile         string
 }
 
 func getConfig(filename string) (Config, error) {
