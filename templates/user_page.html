@@ -1,20 +1,3 @@
-{{$domain := .Host}}
 {{template "header" .}}
-<h1>{{.PageTitle}}!</h1>
-{{template "nav.html" .}}
-<h2>All users:</h2>
-{{ range .Users}}
-<a href="https://{{.}}.{{$domain}}" class='person-link'>{{.}}</a>
-{{end}}
-<h2>Recently updated files:</h2>
-{{ range .Files }}
-<div>
-  <a href="https://{{.Creator}}.{{$domain}}" class='person-link'>
-   {{ .Creator }}</a>
-  <em>{{.UpdatedTime}}</em>
-  <a href="https://{{.Creator}}.{{$domain}}/{{.Name}}">
-   {{ .Name}}
-  </a>
-</div>
-{{end}}
+{{.SiteBody}}
 {{template "footer" .}}

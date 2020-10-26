@@ -231,6 +231,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				PageTitle string
 			}{"Your account is not active yet. Pending admin approval", c.SiteTitle}
 			t.ExecuteTemplate(w, "login.html", data)
+			return
 		}
 		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
@@ -321,7 +322,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			}{c.Host, errors, "Register"}
 			t.ExecuteTemplate(w, "register.html", data)
 		} else {
-			os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 			data := struct {
 				Host      string
 				Message   string
@@ -335,19 +335,29 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
-	fileName := path.Join(c.FilesDirectory, userName, filepath.Clean(r.URL.Path))
+	p := filepath.Clean(r.URL.Path)
+	if p == "/" {
+		p = "index.gmi"
+	}
+	fileName := path.Join(c.FilesDirectory, userName, p)
 	extension := path.Ext(fileName)
-	if r.URL.Path == "/static/style.css" {
+	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 	}
 	if extension == ".gmi" || extension == ".gemini" {
-		// covert to html
-		stat, _ := os.Stat(fileName)
+		_, err := os.Stat(fileName)
+		if err != nil {
+			renderError(w, "404: file not found", 404)
+			return
+		}
 		file, _ := os.Open(fileName)
+
 		htmlString := gmi.Parse(file).HTML()
-		reader := strings.NewReader(htmlString)
-		w.Header().Set("Content-Type", "text/html")
-		http.ServeContent(w, r, fileName, stat.ModTime(), reader)
+		data := struct {
+			SiteBody  template.HTML
+			PageTitle string
+		}{template.HTML(htmlString), userName}
+		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
 		http.ServeFile(w, r, fileName)
 	}

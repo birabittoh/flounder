@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"flag"
+	"fmt"
 	"github.com/gorilla/sessions"
 	"io"
 	"io/ioutil"
@@ -26,7 +27,7 @@ type File struct {
 }
 
 func getUsers() ([]string, error) {
-	rows, err := DB.Query(`SELECT username from user`)
+	rows, err := DB.Query(`SELECT username from user WHERE active is true`)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,8 @@ func createTablesIfDNE() {
   username TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  approved boolean NOT NULL DEFAULT false,
+  active boolean NOT NULL DEFAULT false,
+  admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -113,6 +115,7 @@ CREATE TABLE IF NOT EXISTS cookie_key (
 // Generate a cryptographically secure key for the cookie store
 func generateCookieKeyIfDNE() []byte {
 	rows, err := DB.Query("SELECT value FROM cookie_key LIMIT 1")
+	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,8 +141,15 @@ func generateCookieKeyIfDNE() []byte {
 }
 
 func main() {
-	configPath := flag.String("c", "flounder.toml", "path to config file")
+	configPath := flag.String("c", "flounder.toml", "path to config file") // doesnt work atm
+	if len(os.Args) < 2 {
+		fmt.Println("expected 'admin' or 'serve' subcommand")
+		os.Exit(1)
+	}
+	flag.Parse()
+
 	var err error
+	log.Println("Loading config", *configPath)
 	c, err = getConfig(*configPath)
 	if err != nil {
 		log.Fatal(err)
@@ -161,15 +171,21 @@ func main() {
 	createTablesIfDNE()
 	cookie := generateCookieKeyIfDNE()
 	SessionStore = sessions.NewCookieStore(cookie)
-	wg := new(sync.WaitGroup)
-	wg.Add(2)
-	go func() {
-		runHTTPServer()
-		wg.Done()
-	}()
-	go func() {
-		runGeminiServer()
-		wg.Done()
-	}()
-	wg.Wait()
+
+	switch os.Args[1] {
+	case "serve":
+		wg := new(sync.WaitGroup)
+		wg.Add(2)
+		go func() {
+			runHTTPServer()
+			wg.Done()
+		}()
+		go func() {
+			runGeminiServer()
+			wg.Done()
+		}()
+		wg.Wait()
+	case "admin":
+		runAdminCommand()
+	}
 }
