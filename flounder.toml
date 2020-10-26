@@ -6,6 +6,7 @@ Host="localhost:8443"
 
 # Folder containing subfolders for each user's files
 FilesDirectory="./files"
+LogFile="./flounder.log"
 
 # A wildcard TLS cert
 TLSCertFile="./server.crt"
@@ -19,4 +20,3 @@ DBFile="./flounder.db"
 MaxFileSize=128000 # 128 KB
 OkExtensions=["", ".gmi", ".txt", ".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".midi", ".json", ".csv", ".gemini", ".mp3", ".css", ".ttf", ".otf", ".woff", ".woff2"]
 
-# log file

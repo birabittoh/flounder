@@ -1,15 +1,15 @@
-{{$domain := .Host}}
+{{$host := .Host}}
 # {{.SiteTitle}}!
 
 Welcome to flounder, a home for Gemini sites. Flounder hosts small Gemini web pages over https and Gemini. Right now, the only way to make an account is via the https portal, but I'm working on adding alternatives. Feel free to make an account and join if you'd like!
 
-=> gemini://admin.{{$domain}} Admin page
-=> https://{{$domain}} View on HTTPS
+=> gemini://admin.{{$host}} Admin page
+=> https://{{$host}} View on HTTPS
 
 ## All Users:
-{{range .Users}}=> gemini://{{.}}.{{$domain}}
+{{range .Users}}=> gemini://{{.}}.{{$host}}
 {{end}}
 
 ## Recently updated files:
-{{range .Files}}=> gemini://{{.Creator}}.{{$domain}}/{{.Name}} {{.Name}} ({{.UpdatedTime}})
+{{range .Files}}=> gemini://{{.Creator}}.{{$host}}/{{.Name}} {{.Name}} ({{.UpdatedTime}})
 {{end}}

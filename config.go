@@ -7,13 +7,12 @@ import (
 type Config struct {
 	FilesDirectory     string
 	TemplatesDirectory string
-	Hostname           string
 	Host               string
 	SiteTitle          string
 	Debug              bool
 	SecretKey          string
 	DBFile             string
-	PasswdFile         string // TODO remove
+	LogFile            string
 	CookieStoreKey     string
 	OkExtensions       []string
 	MaxFileSize        int

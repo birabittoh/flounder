@@ -66,10 +66,8 @@ func getIndexFiles() ([]*File, error) { // cache this function
 	if err != nil {
 		return nil, err
 	}
-	// sort
-	// truncate
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].UpdatedTime.Before(result[j].UpdatedTime)
+		return result[i].UpdatedTime.After(result[j].UpdatedTime)
 	})
 	if len(result) > 50 {
 		result = result[:50]
@@ -149,11 +147,16 @@ func main() {
 	flag.Parse()
 
 	var err error
-	log.Println("Loading config", *configPath)
 	c, err = getConfig(*configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+	logFile, err := os.OpenFile(c.LogFile, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	if err != nil {
+		panic(err)
+	}
+	mw := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(mw)
 
 	// Generate self signed cert if does not exist. This is not suitable for production.
 	_, err1 := os.Stat(c.TLSCertFile)

@@ -394,7 +394,7 @@ func runHTTPServer() {
 
 	// TODO rate limit login https://github.com/ulule/limiter
 
-	wrapped := handlers.LoggingHandler(os.Stdout, serveMux)
+	wrapped := handlers.LoggingHandler(log.Writer(), serveMux)
 
 	// handle user files based on subdomain
 	serveMux.HandleFunc("/", userFile)

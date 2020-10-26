@@ -20,12 +20,12 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	files, _ := getIndexFiles()
 	users, _ := getUsers()
 	data := struct {
-		Domain    string
+		Host      string
 		SiteTitle string
 		Files     []*File
 		Users     []string
 	}{
-		Domain:    c.Hostname,
+		Host:      c.Host,
 		SiteTitle: c.SiteTitle,
 		Files:     files,
 		Users:     users,
@@ -57,12 +57,13 @@ func runGeminiServer() {
 	if err := server.CertificateStore.Load("./tmpcerts"); err != nil {
 		log.Fatal(err)
 	}
+	// is this necc?
 	server.GetCertificate = func(hostname string, store *gmi.CertificateStore) *tls.Certificate {
-		cert, err := store.Lookup(hostname)
+		cert, err := tls.LoadX509KeyPair(c.TLSCertFile, c.TLSKeyFile)
 		if err != nil {
 			log.Fatal("Invalid TLS cert")
 		}
-		return cert
+		return &cert
 	}
 
 	// replace with wildcard cert
