@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"flag"
 	"github.com/gorilla/sessions"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -90,6 +92,51 @@ func getUserFiles(user string) ([]*File, error) {
 	return result, nil
 }
 
+func createTablesIfDNE() {
+	_, err := DB.Exec(`CREATE TABLE IF NOT EXISTS user (
+  id INTEGER PRIMARY KEY NOT NULL,
+  username TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  approved boolean NOT NULL DEFAULT false,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS cookie_key (
+  value TEXT NOT NULL
+);`)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Generate a cryptographically secure key for the cookie store
+func generateCookieKeyIfDNE() []byte {
+	rows, err := DB.Query("SELECT value FROM cookie_key LIMIT 1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if rows.Next() {
+		var cookie []byte
+		err := rows.Scan(&cookie)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return cookie
+	} else {
+		k := make([]byte, 32)
+		_, err := io.ReadFull(rand.Reader, k)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = DB.Exec("insert into cookie_key values ($1)", k)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return k
+	}
+}
+
 func main() {
 	configPath := flag.String("c", "flounder.toml", "path to config file")
 	var err error
@@ -106,13 +153,14 @@ func main() {
 	}
 
 	// Generate session cookie key if does not exist
-
-	SessionStore = sessions.NewCookieStore([]byte(c.CookieStoreKey))
 	DB, err = sql.Open("sqlite3", c.DBFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	createTablesIfDNE()
+	cookie := generateCookieKeyIfDNE()
+	SessionStore = sessions.NewCookieStore(cookie)
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 	go func() {

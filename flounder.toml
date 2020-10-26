@@ -7,9 +7,6 @@ Host="localhost:8443"
 # Folder containing subfolders for each user's files
 FilesDirectory="./files"
 
-# Secure key for Cookie Store TODO remove
-CookieStoreKey="12345678123456781234567812345678"
-
 # A wildcard TLS cert
 TLSCertFile="./server.crt"
 TLSKeyFile="./server.key"
