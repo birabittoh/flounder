@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"git.sr.ht/~adnano/gmi"
 	"github.com/gorilla/handlers"
@@ -134,7 +135,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, "Forbidden", 403)
 			return
 		}
-		r.ParseMultipartForm(10 << 20)
+		r.ParseMultipartForm(10 << 6) // why does this not work
 		file, fileHeader, err := r.FormFile("file")
 		fileName := filepath.Clean(fileHeader.Filename)
 		defer file.Close()
@@ -143,9 +144,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, err.Error(), 400)
 			return
 		}
-		var dest []byte
-		file.Read(dest)
-		log.Println("asdfadf")
+		dest, _ := ioutil.ReadAll(file)
 		err = checkIfValidFile(fileName, dest)
 		if err != nil {
 			log.Println(err)
@@ -161,7 +160,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer f.Close()
-		io.Copy(f, file)
+		io.Copy(f, bytes.NewReader(dest))
 	}
 	http.Redirect(w, r, "/my_site", 302)
 }
@@ -221,11 +220,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT password_hash, approved FROM user where username = $1", name)
+		row := DB.QueryRow("SELECT password_hash, active FROM user where username = $1", name)
 		var db_password []byte
 		var active bool
 		_ = row.Scan(&db_password, &active)
-		if !active {
+		if db_password != nil && !active {
 			data := struct {
 				Error     string
 				PageTitle string
@@ -309,10 +308,12 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			errors = append(errors, "Username is invalid: can only contain letters, numbers and hypens. Maximum 32 characters.")
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
-		_, err = DB.Exec("insert into user (username, email, password_hash) values ($1, $2, $3)", username, email, string(hashedPassword))
-		if err != nil {
-			log.Println(err)
-			errors = append(errors, "Username or email is already used")
+		if len(errors) == 0 {
+			_, err = DB.Exec("insert into user (username, email, password_hash) values ($1, $2, $3)", username, email, string(hashedPassword))
+			if err != nil {
+				log.Println(err)
+				errors = append(errors, "Username or email is already used")
+			}
 		}
 		if len(errors) > 0 {
 			data := struct {
@@ -344,7 +345,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 	}
-	if extension == ".gmi" || extension == ".gemini" {
+	query := r.URL.Query()
+	_, raw := query["raw"]
+	if !raw && (extension == ".gmi" || extension == ".gemini") {
 		_, err := os.Stat(fileName)
 		if err != nil {
 			renderError(w, "404: file not found", 404)
