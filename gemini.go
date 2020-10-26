@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"strings"
 	// "fmt"
-	"git.sr.ht/~adnano/gmi"
+	gmi "git.sr.ht/~adnano/go-gemini"
 	"io/ioutil"
 	"log"
 	"path"
@@ -57,16 +57,22 @@ func runGeminiServer() {
 	hostname := strings.SplitN(c.Host, ":", 1)[0]
 	// is this necc?
 	server.GetCertificate = func(hostname string, store *gmi.CertificateStore) *tls.Certificate {
-		cert, err := tls.LoadX509KeyPair(c.TLSCertFile, c.TLSKeyFile)
+		cert, err := store.Lookup(hostname)
 		if err != nil {
-			log.Fatal("Invalid TLS cert")
+			cert, err := tls.LoadX509KeyPair(c.TLSCertFile, c.TLSKeyFile)
+			if err != nil {
+				log.Fatal("Invalid TLS cert")
+			}
+			store.Add(hostname, cert)
+			return &cert
 		}
-		return &cert
+		return cert
 	}
 
+	var mux gmi.ServeMux
 	// replace with wildcard cert
-	server.HandleFunc(hostname, gmiIndex)
-	server.HandleFunc("*."+hostname, gmiPage)
+	mux.HandleFunc(hostname, gmiIndex)
+	mux.HandleFunc("*."+hostname, gmiPage)
 
 	server.ListenAndServe()
 }

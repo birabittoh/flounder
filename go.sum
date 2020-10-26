@@ -1,5 +1,5 @@
-git.sr.ht/~adnano/gmi v0.1.0-alpha.2 h1:5/wzImYT3mJmZ27lazJ8YAdpiVN3QNJruLX7PXOITeo=
-git.sr.ht/~adnano/gmi v0.1.0-alpha.2/go.mod h1:t/m2KtH+7lXIF7jjVN+bNvwPbE0nxHOpvlA/WZ/KeLQ=
+git.sr.ht/~adnano/go-gemini v0.1.1 h1:g6OwUxLviy6dkPiuW2eRQP5Fow412vUsKmKYbCr2H9U=
+git.sr.ht/~adnano/go-gemini v0.1.1/go.mod h1:If1VxEWcZDrRt5FeAFnGTcM2Ud1E3BXs3VJ5rnZWKq0=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/felixge/httpsnoop v1.0.1 h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=

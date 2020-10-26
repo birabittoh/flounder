@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"git.sr.ht/~adnano/gmi"
+	gmi "git.sr.ht/~adnano/go-gemini"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
@@ -355,7 +355,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}
 		file, _ := os.Open(fileName)
 
-		htmlString := gmi.Parse(file).HTML()
+		htmlString := textToHTML(gmi.Parse(file))
 		data := struct {
 			SiteBody  template.HTML
 			PageTitle string
