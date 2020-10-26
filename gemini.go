@@ -13,6 +13,7 @@ import (
 )
 
 func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
+	log.Println("Index request")
 	t, err := template.ParseFiles("templates/index.gmi")
 	if err != nil {
 		log.Fatal(err)
@@ -35,8 +36,13 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	userName := strings.Split(r.URL.Host, ".")[0]
-	fileName := path.Join(c.FilesDirectory, userName, filepath.Clean(r.URL.Path))
-	data, err := ioutil.ReadFile(fileName)
+	fileName := filepath.Clean(r.URL.Path)
+	if fileName == "/" {
+		fileName = "index.gmi"
+	}
+	filePath := path.Join(c.FilesDirectory, userName, fileName)
+	log.Println("Request for gemini file at", filePath)
+	data, err := ioutil.ReadFile(filePath)
 	// serve file?
 	// TODO write mimetype
 	if err != nil {
@@ -54,7 +60,7 @@ func runGeminiServer() {
 	log.Println("Starting gemini server")
 	var server gmi.Server
 
-	hostname := strings.SplitN(c.Host, ":", 1)[0]
+	hostname := strings.SplitN(c.Host, ":", 2)[0]
 	// is this necc?
 	server.GetCertificate = func(hostname string, store *gmi.CertificateStore) *tls.Certificate {
 		cert, err := store.Lookup(hostname)
@@ -71,8 +77,15 @@ func runGeminiServer() {
 
 	var mux gmi.ServeMux
 	// replace with wildcard cert
-	mux.HandleFunc(hostname, gmiIndex)
-	mux.HandleFunc("*."+hostname, gmiPage)
+	mux.HandleFunc("/", gmiIndex)
 
-	server.ListenAndServe()
+	var wildcardMux gmi.ServeMux
+	wildcardMux.HandleFunc("/", gmiPage)
+	server.Register(hostname, &mux)
+	server.Register("*."+hostname, &wildcardMux)
+
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
