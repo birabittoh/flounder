@@ -9,7 +9,8 @@ main {
 }
 
 p {
-    margin-bottom: 0px; 
+    margin-bottom: .2em; 
+    line-height: 1.5;
     margin-top: 0px; 
 }
 
@@ -42,6 +43,11 @@ img {
 
 .button:hover {
   background-color: black;
+  color: white;
+}
+
+.delete:hover {
+  background-color: red;
   color: white;
 }
 

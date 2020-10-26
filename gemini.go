@@ -54,9 +54,7 @@ func runGeminiServer() {
 	log.Println("Starting gemini server")
 	var server gmi.Server
 
-	if err := server.CertificateStore.Load("./tmpcerts"); err != nil {
-		log.Fatal(err)
-	}
+	hostname := strings.SplitN(c.Host, ":", 1)[0]
 	// is this necc?
 	server.GetCertificate = func(hostname string, store *gmi.CertificateStore) *tls.Certificate {
 		cert, err := tls.LoadX509KeyPair(c.TLSCertFile, c.TLSKeyFile)
@@ -67,7 +65,6 @@ func runGeminiServer() {
 	}
 
 	// replace with wildcard cert
-	hostname := strings.SplitN(c.Host, ":", 1)[0]
 	server.HandleFunc(hostname, gmiIndex)
 	server.HandleFunc("*."+hostname, gmiPage)
 
