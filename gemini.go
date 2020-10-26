@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"mime"
 	"strings"
 	// "fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
@@ -43,16 +44,19 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	filePath := path.Join(c.FilesDirectory, userName, fileName)
 	log.Println("Request for gemini file at", filePath)
 	data, err := ioutil.ReadFile(filePath)
-	// serve file?
-	// TODO write mimetype
+
 	if err != nil {
-		// TODO return 404 equivalent
-		log.Fatal(err)
+		w.WriteHeader(51, "Not Found")
+		return
 	}
+	ext := filepath.Ext(filePath)
+	mimetype := mime.TypeByExtension(ext)
+	w.SetMimetype(mimetype)
 	_, err = w.Write(data)
 	if err != nil {
-		// return internal server error
 		log.Fatal(err)
+		w.WriteHeader(40, "Internal server error")
+		return
 	}
 }
 
