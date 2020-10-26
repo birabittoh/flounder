@@ -5,6 +5,12 @@ main {
   font-family: Helvetica, Arial, monospace;
   word-wrap: break-word;
   background-color: white;
+  line-height: 1.5;
+}
+
+p {
+    margin-bottom: 0px; 
+    margin-top: 0px; 
 }
 
 .inline {
