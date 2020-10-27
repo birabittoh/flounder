@@ -10,7 +10,8 @@ Requires go 1.15 and sqlite3 development libraries.
 
 `go build`
 
-## Hosting
+## Running
 
-tbd
+For local development, generate some ssl certs, copy `example-config.toml` to `flounder.toml` and set the env variables, then run:
 
+`./flounder serve`
