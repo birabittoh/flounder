@@ -56,14 +56,16 @@ img {
 }
 
 a:visited {
-  color: blue;
+  color: black;
 }
 
 a {
   transition-duration: 0.2s;
+  font-weight: bold;
+  color: black;
 }
 
 a:hover {
-  background-color: blue;
+  background-color: black;
   color: white;
 }
