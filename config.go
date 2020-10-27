@@ -9,7 +9,7 @@ type Config struct {
 	TemplatesDirectory string
 	Host               string
 	HttpsEnabled       bool
-	Port               string
+	HttpPort           string
 	SiteTitle          string
 	Debug              bool
 	SecretKey          string

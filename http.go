@@ -377,7 +377,7 @@ func runHTTPServer() {
 
 	s := strings.SplitN(c.Host, ":", 2)
 	hostname := s[0]
-	port := c.Port
+	port := c.HttpPort
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
