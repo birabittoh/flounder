@@ -19,8 +19,12 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	files, _ := getIndexFiles()
-	users, _ := getUsers()
+	files, err := getIndexFiles()
+	users, err := getUsers()
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(40, "Internal server error")
+	}
 	data := struct {
 		Host      string
 		SiteTitle string
@@ -54,7 +58,7 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	w.SetMimetype(mimetype)
 	_, err = w.Write(data)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		w.WriteHeader(40, "Internal server error")
 		return
 	}
