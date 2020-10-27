@@ -1,8 +1,12 @@
 # Used in HTML templates and titles
 SiteTitle="🐟flounder"
 
-# Include port if != 443
-Host="localhost:8443"
+# Include port if running locally
+Host="localhost:8080"
+
+# Set this depending on whether you want to run this service standalone or through a reverse proxy server
+Port="8443"
+HttpsEnabled=false
 
 # Folder containing subfolders for each user's files
 FilesDirectory="./files"

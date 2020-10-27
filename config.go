@@ -8,6 +8,8 @@ type Config struct {
 	FilesDirectory     string
 	TemplatesDirectory string
 	Host               string
+	HttpsEnabled       bool
+	Port               string
 	SiteTitle          string
 	Debug              bool
 	SecretKey          string

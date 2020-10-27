@@ -377,12 +377,8 @@ func runHTTPServer() {
 
 	s := strings.SplitN(c.Host, ":", 2)
 	hostname := s[0]
-	var port string
-	if len(s) > 1 {
-		port = s[1]
-	} else {
-		port = "443"
-	}
+	port := c.Port
+
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
@@ -407,5 +403,9 @@ func runHTTPServer() {
 		// TLSConfig:    tlsConfig,
 		Handler: wrapped,
 	}
-	log.Fatal(srv.ListenAndServeTLS(c.TLSCertFile, c.TLSKeyFile))
+	if c.HttpsEnabled {
+		log.Fatal(srv.ListenAndServeTLS(c.TLSCertFile, c.TLSKeyFile))
+	} else {
+		log.Fatal(srv.ListenAndServe())
+	}
 }

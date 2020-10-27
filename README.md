@@ -14,6 +14,11 @@ Once you've installed Flounder, you'll want to set the configuration variables. 
 2. For local testing, flounder will generate a TLS cert for you. However, for production, you'll need to generate a cert that matches \*.your-domain signed by a Certificate Authority.
 3. Set the cookie store key
 
+configure flounder.toml
+change host
+
+To limit security concerns, we don't want to run this server as root.
+
 I'm working on an admin interface and some admin tools, but right now, you'll have to do a lot of administration at the command line via sqlite
 
 Flounder uses the HTTP templates in the specified templates folder. If you want to modify the look and feel of your site, or host new files, you can modify these files.
