@@ -61,7 +61,6 @@ a:visited {
 
 a {
   transition-duration: 0.2s;
-  font-weight: bold;
 }
 
 a:hover {
