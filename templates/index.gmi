@@ -11,5 +11,5 @@ Welcome to flounder, a home for Gemini sites. Flounder hosts small Gemini web pa
 {{end}}
 
 ## Recently updated files:
-{{range .Files}}=> gemini://{{.Creator}}.{{$host}}/{{.Name}} {{.Name}} ({{.UpdatedTime}})
+{{range .Files}}=> gemini://{{.Creator}}.{{$host}}/{{.Name}} {{.Creator}}: {{.Name}} ({{.TimeAgo}})
 {{end}}

@@ -2,10 +2,10 @@
 SiteTitle="🐟flounder"
 
 # Include port if running locally
-Host="localhost:8080"
+Host="localhost:8165"
 
 # Set this depending on whether you want to run this service standalone or through a reverse proxy server
-HttpPort="8443"
+HttpPort=8165
 HttpsEnabled=false
 
 # Folder containing subfolders for each user's files

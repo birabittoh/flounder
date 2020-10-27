@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/sessions"
@@ -367,7 +368,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func runHTTPServer() {
-	log.Printf("Running http server on %s", c.Host)
+	log.Printf("Running http server with hostname %s on port %d. TLS enabled: %t", c.Host, c.HttpPort, c.HttpsEnabled)
 	var err error
 	t, err = template.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
 	if err != nil {
@@ -399,7 +400,7 @@ func runHTTPServer() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		Addr:         ":" + port,
+		Addr:         fmt.Sprintf(":%d", port),
 		// TLSConfig:    tlsConfig,
 		Handler: wrapped,
 	}
