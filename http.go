@@ -45,7 +45,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, fileName)
 		return
 	}
-	_, authd := getAuthUser(r)
+	authd, _, isAdmin := getAuthUser(r)
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
@@ -64,7 +64,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		Files     []*File
 		Users     []string
 		LoggedIn  bool
-	}{c.Host, c.SiteTitle, indexFiles, allUsers, authd}
+		IsAdmin   bool
+	}{c.Host, c.SiteTitle, indexFiles, allUsers, authd, isAdmin}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
@@ -167,13 +168,14 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // bool whether auth'd, string is auth user
-func getAuthUser(r *http.Request) (string, bool) {
+func getAuthUser(r *http.Request) (bool, string, bool) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	user, ok := session.Values["auth_user"].(string)
-	return user, ok
+	isAdmin, _ := session.Values["admin"].(bool)
+	return ok, user, isAdmin
 }
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
-	authUser, authd := getAuthUser(r)
+	authd, authUser, _ := getAuthUser(r)
 	if !authd {
 		renderError(w, "Forbidden", 403)
 		return
@@ -187,7 +189,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	authUser, authd := getAuthUser(r)
+	authd, authUser, _ := getAuthUser(r)
 	if !authd {
 		renderError(w, "Forbidden", 403)
 		return
@@ -221,10 +223,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT password_hash, active FROM user where username = $1", name)
+		row := DB.QueryRow("SELECT password_hash, active, admin FROM user where username = $1", name)
 		var db_password []byte
 		var active bool
-		_ = row.Scan(&db_password, &active)
+		var isAdmin bool
+		_ = row.Scan(&db_password, &active, &isAdmin)
 		if db_password != nil && !active {
 			data := struct {
 				Error     string
@@ -237,8 +240,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("logged in")
 			session, _ := SessionStore.Get(r, "cookie-session")
 			session.Values["auth_user"] = name
+			session.Values["admin"] = isAdmin
 			session.Save(r, w)
-			http.Redirect(w, r, "/", 302)
+			http.Redirect(w, r, "/my_site", 302)
 		} else {
 			data := struct {
 				Error     string
@@ -334,6 +338,25 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type User struct {
+}
+
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+	_, _, isAdmin := getAuthUser(r)
+	if !isAdmin {
+		renderError(w, "Forbidden", 403)
+		return
+	}
+	// LIST USERS
+	data := struct {
+		users     []User
+		LoggedIn  bool
+		IsAdmin   bool
+		PageTitle string
+	}{[]User{}, true, true, "admin"}
+	t.ExecuteTemplate(w, "admin.html", data)
+}
+
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := strings.Split(r.Host, ".")[0]
@@ -382,6 +405,7 @@ func runHTTPServer() {
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
+	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
 	serveMux.HandleFunc(hostname+"/upload", uploadFilesHandler)
 	serveMux.HandleFunc(hostname+"/login", loginHandler)

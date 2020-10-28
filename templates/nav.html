@@ -2,6 +2,9 @@
   <a href="/">home</a>
 {{ if .LoggedIn }}
   <a href="/my_site">my_site</a>
+  {{ if .IsAdmin }}
+  <a href="/admin">admin</a>
+  {{ end }}
   <a href="/logout">logout</a>
 {{ else }}
   <a href="/register">register</a>
