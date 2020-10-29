@@ -12,6 +12,18 @@ Requires go 1.15 and sqlite3 development libraries.
 
 ## Running
 
-For local development, generate some ssl certs, copy `example-config.toml` to `flounder.toml` and set the env variables, then run:
+For the Http(s) server, you have two options:
+
+1. Expose the flounder server to the internet directly
+
+2. Route the flounder server through a reverse proxy
+
+This will determine how you set the values in flounder.toml
+
+(More TBD)
 
 `./flounder serve`
+
+## Admin
+
+Flounder comes with an admin panel acessible to users with the admin db flag set.
