@@ -20,7 +20,7 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 		log.Fatal(err)
 	}
 	files, err := getIndexFiles()
-	users, err := getUsers()
+	users, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(40, "Internal server error")

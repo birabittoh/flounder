@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 // TODO improve cli
@@ -23,16 +24,21 @@ func runAdminCommand() {
 	switch os.Args[2] {
 	case "activate-user":
 		username := os.Args[3]
-		activateUser(username)
-		// reset password
-		// delete user (with are you sure?)
+		err := activateUser(username)
+		log.Fatal(err)
+	case "delete-user":
+		username := os.Args[3]
+		err := deleteUser(username)
+		log.Fatal(err)
 	}
+	// reset password
+
 }
 
-func activateUser(username string) {
+func activateUser(username string) error {
 	_, err := DB.Exec("UPDATE user SET active = true WHERE username = $1", username)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Println("Activated user", username)
 	baseIndex := `# Welcome to Flounder!
@@ -44,7 +50,19 @@ And here's a guide to the text format that Flounder uses to create pages, Gemini
 => //admin.flounder.online/gemini_text_guide.gmi
 
 Have fun!`
+	// Redundant filepath.Clean call just in case.
+	username = filepath.Clean(username)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	ioutil.WriteFile(path.Join(c.FilesDirectory, username, "index.gmi"), []byte(baseIndex), 0644)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
+	return nil
+}
+
+func deleteUser(username string) error {
+	// not sure whether we should delete files too
+	_, err := DB.Exec("DELETE FROM user WHERE username = $1", username)
+	if err != nil {
+		return err
+	}
+	return nil
 }

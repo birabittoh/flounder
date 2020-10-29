@@ -3,18 +3,18 @@
 <h1>{{.PageTitle}}!</h1>
 {{template "nav.html" .}}
 <br>
-Welcome to flounder! For more information and site updates, check out the <a href="https://admin.{{$domain}}">admin page</a>
+Welcome to flounder! For more information and site updates, check out the <a href="//admin.{{$domain}}">admin page</a>
 <h2>All users:</h2>
 {{ range .Users}}
-<a href="https://{{.}}.{{$domain}}" class='person-link'>{{.}}</a>
+<a href="//{{.}}.{{$domain}}" class='person-link'>{{.}}</a>
 {{end}}
 <h2>Recently updated files:</h2>
 {{ range .Files }}
 <div>
-  <a href="https://{{.Creator}}.{{$domain}}" class='person-link'>
+  <a href="//{{.Creator}}.{{$domain}}" class='person-link'>
    {{ .Creator }}</a>
   <em>{{.TimeAgo}}</em>
-  <a href="https://{{.Creator}}.{{$domain}}/{{.Name}}">
+  <a href="//{{.Creator}}.{{$domain}}/{{.Name}}">
    {{ .Name}}
   </a>
 </div>

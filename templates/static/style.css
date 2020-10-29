@@ -55,17 +55,16 @@ img {
   color: red;
 }
 
+.nav {
+  color: blue;
+}
 a:visited {
-  color: black;
 }
 
 a {
   transition-duration: 0.2s;
-  font-weight: bold;
-  color: black;
 }
 
 a:hover {
-  background-color: black;
-  color: white;
+  background-color: yellow;
 }

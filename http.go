@@ -52,7 +52,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		renderError(w, InternalServerErrorMsg, 500)
 		return
 	}
-	allUsers, err := getUsers()
+	allUsers, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)
 		renderError(w, InternalServerErrorMsg, 500)
@@ -78,7 +78,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	authUser, ok := session.Values["auth_user"].(string)
 	if !ok {
-		renderError(w, "Forbidden", 403)
+		renderError(w, "403: Forbidden", 403)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
@@ -134,7 +134,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		session, _ := SessionStore.Get(r, "cookie-session")
 		authUser, ok := session.Values["auth_user"].(string)
 		if !ok {
-			renderError(w, "Forbidden", 403)
+			renderError(w, "403: Forbidden", 403)
 			return
 		}
 		r.ParseMultipartForm(10 << 6) // why does this not work
@@ -177,7 +177,7 @@ func getAuthUser(r *http.Request) (bool, string, bool) {
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
-		renderError(w, "Forbidden", 403)
+		renderError(w, "403: Forbidden", 403)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
@@ -189,9 +189,9 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	authd, authUser, _ := getAuthUser(r)
+	authd, authUser, isAdmin := getAuthUser(r)
 	if !authd {
-		renderError(w, "Forbidden", 403)
+		renderError(w, "403: Forbidden", 403)
 		return
 	}
 	// check auth
@@ -202,7 +202,8 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 		AuthUser  string
 		Files     []*File
 		LoggedIn  bool
-	}{c.Host, c.SiteTitle, authUser, files, authd}
+		IsAdmin   bool
+	}{c.Host, c.SiteTitle, authUser, files, authd, isAdmin}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
@@ -338,23 +339,31 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type User struct {
-}
-
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if !isAdmin {
-		renderError(w, "Forbidden", 403)
+		renderError(w, "403: Forbidden", 403)
 		return
 	}
-	// LIST USERS
+	allUsers, err := getUsers()
+	if err != nil {
+		log.Println(err)
+		renderError(w, InternalServerErrorMsg, 500)
+		return
+	}
 	data := struct {
-		users     []User
+		Users     []User
 		LoggedIn  bool
 		IsAdmin   bool
 		PageTitle string
-	}{[]User{}, true, true, "admin"}
-	t.ExecuteTemplate(w, "admin.html", data)
+		Host      string
+	}{allUsers, true, true, "Admin", c.Host}
+	err = t.ExecuteTemplate(w, "admin.html", data)
+	if err != nil {
+		log.Println(err)
+		renderError(w, InternalServerErrorMsg, 500)
+		return
+	}
 }
 
 // Server a user's file
@@ -390,6 +399,35 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func adminUserHandler(w http.ResponseWriter, r *http.Request) {
+	_, _, isAdmin := getAuthUser(r)
+	if r.Method == "POST" {
+		if !isAdmin {
+			renderError(w, "403: Forbidden", 403)
+			return
+		}
+		components := strings.Split(r.URL.Path, "/")
+		if len(components) < 5 {
+			renderError(w, "Invalid action", 400)
+			return
+		}
+		userName := components[3]
+		action := components[4]
+		var err error
+		if action == "activate" {
+			err = activateUser(userName)
+		} else if action == "delete" {
+			err = deleteUser(userName)
+		}
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
+		http.Redirect(w, r, "/admin", 302)
+	}
+}
+
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d. TLS enabled: %t", c.Host, c.HttpPort, c.HttpsEnabled)
 	var err error
@@ -412,6 +450,9 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/logout", logoutHandler)
 	serveMux.HandleFunc(hostname+"/register", registerHandler)
 	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
+
+	// admin commands
+	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
 
 	// TODO rate limit login https://github.com/ulule/limiter
 

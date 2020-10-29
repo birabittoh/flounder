@@ -2,7 +2,7 @@
 {{$authUser := .AuthUser}}
 {{template "header" .}}
 <h1>Managing
-  <a href="https://{{$authUser}}.{{$domain}}">
+  <a href="//{{$authUser}}.{{$domain}}">
     {{.AuthUser}}.{{$domain}}
   </a>
 </h1>
@@ -10,7 +10,7 @@
 <h3>Your files:</h3>
 {{ range .Files }}
 <div>
-  <a href="https://{{$authUser}}.{{$domain}}/{{.Name}}">
+  <a href="//{{$authUser}}.{{$domain}}/{{.Name}}">
       {{ .Name }}</a>
   <a href="/edit/{{.Name}}">edit</a>
   <form action="/delete/{{.Name}}" method="POST" class="inline">

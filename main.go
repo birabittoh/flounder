@@ -26,7 +26,15 @@ type File struct {
 	TimeAgo     string
 }
 
-func getUsers() ([]string, error) {
+type User struct {
+	Username  string
+	Email     string
+	Active    bool
+	Admin     bool
+	CreatedAt int // timestamp
+}
+
+func getActiveUserNames() ([]string, error) {
 	rows, err := DB.Query(`SELECT username from user WHERE active is true`)
 	if err != nil {
 		return nil, err
@@ -35,6 +43,23 @@ func getUsers() ([]string, error) {
 	for rows.Next() {
 		var user string
 		err = rows.Scan(&user)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
+func getUsers() ([]User, error) {
+	rows, err := DB.Query(`SELECT username, email, active, admin, created_at from user ORDER BY created_at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	var users []User
+	for rows.Next() {
+		var user User
+		err = rows.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
