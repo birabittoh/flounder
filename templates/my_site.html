@@ -12,7 +12,9 @@
 <div>
   <a href="//{{$authUser}}.{{$domain}}/{{.Name}}">
       {{ .Name }}</a>
+  {{ if .IsText }}
   <a href="/edit/{{.Name}}">edit</a>
+  {{ end }}
   <form action="/delete/{{.Name}}" method="POST" class="inline">
     <input
       class="button delete"

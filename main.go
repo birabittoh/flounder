@@ -9,10 +9,12 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -24,6 +26,7 @@ type File struct {
 	Name        string
 	UpdatedTime time.Time
 	TimeAgo     string
+	IsText      bool
 }
 
 type User struct {
@@ -107,10 +110,12 @@ func getUserFiles(user string) ([]*File, error) {
 		return nil, err
 	}
 	for _, file := range files {
+		isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(file.Name())), "text")
 		result = append(result, &File{
 			Name:        file.Name(),
 			Creator:     user,
 			UpdatedTime: file.ModTime(),
+			IsText:      isText,
 		})
 	}
 	return result, nil
