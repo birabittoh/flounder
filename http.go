@@ -230,7 +230,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT password_hash, active, admin FROM user where username = $1", name)
+		row := DB.QueryRow("SELECT password_hash, active, admin FROM user where username = $1 OR email = $1", name)
 		var db_password []byte
 		var active bool
 		var isAdmin bool
