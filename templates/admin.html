@@ -4,7 +4,7 @@
 {{template "nav.html" .}}
 <br>
 {{ range .Users }}
-<a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  
+<a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  <a href=mailto:{{.Email}}>{{.Email}}</a>
 {{ if not .Active }}
 <form action="/admin/user/{{.Username}}/activate" method="POST" class="inline">
 <input
