@@ -31,9 +31,21 @@ func runAdminCommand() {
 		// TODO add confirmation
 		err := deleteUser(username)
 		log.Fatal(err)
+	case "make-admin":
+		username := os.Args[3]
+		err := makeAdmin(username)
+		log.Fatal(err)
 	}
 	// reset password
 
+}
+
+func makeAdmin(username string) error {
+	_, err := DB.Exec("UPDATE user SET admin = true WHERE username = $1", username)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func activateUser(username string) error {
