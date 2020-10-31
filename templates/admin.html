@@ -3,8 +3,14 @@
 <h1>{{.PageTitle}}</h1>
 {{template "nav.html" .}}
 <br>
+<table>
 {{ range .Users }}
-<a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  <a href=mailto:{{.Email}}>{{.Email}}</a>
+<tr>
+  <td>
+<a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  
+<td><a href=mailto:{{.Email}}>{{.Email}}</a>
+</td>
+<td>
 {{ if not .Active }}
 <form action="/admin/user/{{.Username}}/activate" method="POST" class="inline">
 <input
@@ -14,6 +20,8 @@
 />
 </form>
 {{ end }}
+</td>
+<td>
 <form action="/admin/user/{{.Username}}/delete" method="POST" class="inline">
 <input
   class="button delete"
@@ -22,7 +30,9 @@
   value="delete"
 />
 </form>
-<br>
+</td>
+</tr>
 {{end}}
+</table>
 
 {{template "footer" .}}

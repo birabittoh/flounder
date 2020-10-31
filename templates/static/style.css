@@ -63,10 +63,9 @@ a:visited {
 }
 
 a {
-  text-decoration: none;
 }
 
 a:hover {
   background-color: yellow;
-  text-decoration: underline;
+  text-decoration: none;
 }

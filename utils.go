@@ -22,6 +22,9 @@ func timeago(t *time.Time) string {
 
 /// Perform some checks to make sure the file is OK
 func checkIfValidFile(filename string, fileBytes []byte) error {
+	if len(filename) == 0 {
+		return fmt.Errorf("Please enter a filename")
+	}
 	ext := strings.ToLower(path.Ext(filename))
 	found := false
 	for _, mimetype := range c.OkExtensions {
