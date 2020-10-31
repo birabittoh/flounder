@@ -8,13 +8,20 @@
 </h1>
 {{template "nav.html" .}}
 <h3>Your files:</h3>
+<table>
 {{ range .Files }}
+<tr>
 <div>
+  <td>
   <a href="//{{$authUser}}.{{$domain}}/{{.Name}}">
       {{ .Name }}</a>
+  </td>
+  <td>
   {{ if .IsText }}
   <a href="/edit/{{.Name}}">edit</a>
   {{ end }}
+  </td>
+  <td>
   <form action="/delete/{{.Name}}" method="POST" class="inline">
     <input
       class="button delete"
@@ -22,9 +29,12 @@
       onclick="return confirm('Are you sure you want to delete this file?');"
       value="delete"
     />
+  </td>
   </form>
 </div>
+</tr>
 {{ end }}
+</table>
 <h3>Create file by name:</h3>
 <noscript>Create a new page by going to /edit/[filename]</noscript>
 <input id="edit_new" size=32 placeholder="New filename, e.g. newfile.gmi" />

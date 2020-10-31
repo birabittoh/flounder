@@ -59,12 +59,14 @@ img {
   color: blue;
 }
 a:visited {
+  color:blue
 }
 
 a {
-  transition-duration: 0.2s;
+  text-decoration: none;
 }
 
 a:hover {
   background-color: yellow;
+  text-decoration: underline;
 }
