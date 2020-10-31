@@ -12,7 +12,10 @@ HttpsEnabled=false
 FilesDirectory="./files"
 LogFile="./flounder.log"
 
-# A wildcard TLS cert
+# Gemini autogenerates self-signed certs
+GeminiCertStore="./"
+
+# A wildcard TLS cert for HTTPS.
 TLSCertFile="./server.crt"
 TLSKeyFile="./server.key"
 

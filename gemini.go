@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"text/template"
+	"time"
 )
 
 func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
@@ -70,17 +71,17 @@ func runGeminiServer() {
 
 	hostname := strings.SplitN(c.Host, ":", 2)[0]
 	// is this necc?
-	server.GetCertificate = func(hostname string, store *gmi.CertificateStore) *tls.Certificate {
-		cert, err := store.Lookup(hostname)
-		if err != nil {
-			cert, err := tls.LoadX509KeyPair(c.TLSCertFile, c.TLSKeyFile)
-			if err != nil {
-				log.Fatal("Invalid TLS cert")
-			}
-			store.Add(hostname, cert)
-			return &cert
+	server.CreateCertificate = func(hostname string) (tls.Certificate, error) {
+		log.Println("Generating certificate for", hostname)
+		cert, err := gmi.CreateCertificate(gmi.CertificateOptions{
+			DNSNames: []string{hostname},
+			Duration: time.Minute, // for testing purposes
+		})
+		if err == nil {
+			// Write the new certificate to disk
+			err = writeCertificate(path.Join(c.GeminiCertStore, hostname), cert)
 		}
-		return cert
+		return cert, err
 	}
 
 	var mux gmi.ServeMux

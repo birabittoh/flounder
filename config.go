@@ -15,6 +15,7 @@ type Config struct {
 	SecretKey          string
 	DBFile             string
 	LogFile            string
+	GeminiCertStore    string
 	CookieStoreKey     string
 	OkExtensions       []string
 	MaxFileSize        int
