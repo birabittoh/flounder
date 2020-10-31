@@ -213,6 +213,23 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
+func archiveHandler(w http.ResponseWriter, r *http.Request) {
+	authd, authUser, _ := getAuthUser(r)
+	if !authd {
+		renderError(w, "403: Forbidden", 403)
+		return
+	}
+	if r.Method == "GET" {
+		userFolder := filepath.Join(c.FilesDirectory, filepath.Clean(authUser))
+		err := zipit(userFolder, w)
+		if err != nil {
+			log.Println(err)
+			renderError(w, InternalServerErrorMsg, 500)
+			return
+		}
+
+	}
+}
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		// show page
@@ -450,6 +467,7 @@ func runHTTPServer() {
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
+	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
 	serveMux.HandleFunc(hostname+"/upload", uploadFilesHandler)
