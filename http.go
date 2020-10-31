@@ -230,11 +230,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := r.Form.Get("username")
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT password_hash, active, admin FROM user where username = $1 OR email = $1", name)
+		row := DB.QueryRow("SELECT username, password_hash, active, admin FROM user where username = $1 OR email = $1", name)
 		var db_password []byte
+		var username string
 		var active bool
 		var isAdmin bool
-		_ = row.Scan(&db_password, &active, &isAdmin)
+		_ = row.Scan(&username, &db_password, &active, &isAdmin)
 		if db_password != nil && !active {
 			data := struct {
 				Error     string
@@ -246,7 +247,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
 			session, _ := SessionStore.Get(r, "cookie-session")
-			session.Values["auth_user"] = name
+			session.Values["auth_user"] = username
 			session.Values["admin"] = isAdmin
 			session.Save(r, w)
 			http.Redirect(w, r, "/my_site", 303)
