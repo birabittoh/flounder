@@ -10,7 +10,11 @@ Requires go 1.15 and sqlite3 development libraries.
 
 `go build`
 
-## Running
+To run locally, you can use the example-config.toml to start a test server. Easy!
+
+`./flounder serve`
+
+## Deploying
 
 For the Http(s) server, you have two options:
 
@@ -20,10 +24,7 @@ For the Http(s) server, you have two options:
 
 This will determine how you set the values in flounder.toml
 
-(More TBD)
-
-`./flounder serve`
 
 ## Admin
 
-Flounder comes with an admin panel acessible to users with the admin db flag set.
+Flounder comes with an admin panel acessible to users with the admin db flag set. 
