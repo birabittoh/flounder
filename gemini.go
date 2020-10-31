@@ -59,7 +59,7 @@ func runGeminiServer() {
 		log.Println("Generating certificate for", hostname)
 		cert, err := gmi.CreateCertificate(gmi.CertificateOptions{
 			DNSNames: []string{hostname},
-			Duration: time.Minute, // for testing purposes
+			Duration: time.Minute * 43200, // one month
 		})
 		if err == nil {
 			// Write the new certificate to disk
