@@ -28,6 +28,7 @@ func runAdminCommand() {
 		log.Fatal(err)
 	case "delete-user":
 		username := os.Args[3]
+		// TODO add confirmation
 		err := deleteUser(username)
 		log.Fatal(err)
 	}
@@ -59,10 +60,11 @@ Have fun!`
 }
 
 func deleteUser(username string) error {
-	// not sure whether we should delete files too
 	_, err := DB.Exec("DELETE FROM user WHERE username = $1", username)
 	if err != nil {
 		return err
 	}
+	username = filepath.Clean(username)
+	os.RemoveAll(path.Join(c.FilesDirectory, username))
 	return nil
 }
