@@ -2,11 +2,9 @@ package main
 
 import (
 	"crypto/tls"
-	"mime"
 	"strings"
 	// "fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
-	"io/ioutil"
 	"log"
 	"path"
 	"path/filepath"
@@ -41,28 +39,14 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 }
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
-	userName := strings.Split(r.URL.Host, ".")[0]
+	userName := filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
 	fileName := filepath.Clean(r.URL.Path)
 	if fileName == "/" {
 		fileName = "index.gmi"
 	}
-	filePath := path.Join(c.FilesDirectory, userName, fileName)
-	log.Println("Request for gemini file at", filePath)
-	data, err := ioutil.ReadFile(filePath)
+	log.Println("Request for gemini file", fileName, "for user", userName)
 
-	if err != nil {
-		w.WriteHeader(51, "Not Found")
-		return
-	}
-	ext := filepath.Ext(filePath)
-	mimetype := mime.TypeByExtension(ext)
-	w.SetMimetype(mimetype)
-	_, err = w.Write(data)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(40, "Internal server error")
-		return
-	}
+	gmi.ServeFile(w, gmi.Dir(path.Join(c.FilesDirectory, userName)), fileName)
 }
 
 func runGeminiServer() {

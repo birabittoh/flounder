@@ -374,7 +374,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
-	userName := strings.Split(r.Host, ".")[0]
+	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // clean probably unnecessary
 	p := filepath.Clean(r.URL.Path)
 	if p == "/" {
 		p = "index.gmi"
