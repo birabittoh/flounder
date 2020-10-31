@@ -131,7 +131,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, InternalServerErrorMsg, 500)
 			return
 		}
-		http.Redirect(w, r, "/my_site", 302)
+		http.Redirect(w, r, "/my_site", 303)
 	}
 }
 
@@ -170,7 +170,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		defer f.Close()
 		io.Copy(f, bytes.NewReader(dest))
 	}
-	http.Redirect(w, r, "/my_site", 302)
+	http.Redirect(w, r, "/my_site", 303)
 }
 
 // bool whether auth'd, string is auth user
@@ -191,7 +191,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		os.Remove(filePath) // suppress error
 	}
-	http.Redirect(w, r, "/my_site", 302)
+	http.Redirect(w, r, "/my_site", 303)
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
@@ -249,7 +249,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["auth_user"] = name
 			session.Values["admin"] = isAdmin
 			session.Save(r, w)
-			http.Redirect(w, r, "/my_site", 302)
+			http.Redirect(w, r, "/my_site", 303)
 		} else {
 			data := struct {
 				Error     string
@@ -269,7 +269,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	session.Options.MaxAge = -1
 	session.Save(r, w)
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/", 303)
 }
 
 const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
@@ -430,7 +430,7 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, InternalServerErrorMsg, 500)
 			return
 		}
-		http.Redirect(w, r, "/admin", 302)
+		http.Redirect(w, r, "/admin", 303)
 	}
 }
 
