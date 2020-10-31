@@ -1,8 +1,6 @@
 # Flounder: a portal into the small web
 
-A lightweight server to help users build simple Gemini sites over http(s)
-
-Designed to help make the Gemini ecosystem more accessible.
+A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and gemini
 
 ## Building
 
@@ -22,9 +20,11 @@ For the Http(s) server, you have two options:
 
 2. Route the flounder server through a reverse proxy
 
-This will determine how you set the values in flounder.toml
+This will determine how you set the values in flounder.toml 
 
 
 ## Admin
+
+Backup your users' data regularly! The admin deletion commands are irreversible.
 
 Flounder comes with an admin panel acessible to users with the admin db flag set. 

@@ -16,8 +16,9 @@ LogFile="./flounder.log"
 GeminiCertStore="./"
 
 # A wildcard TLS cert for HTTPS.
-TLSCertFile="./server.crt"
-TLSKeyFile="./server.key"
+# Only required if HttpsEnabled=true
+# TLSCertFile="./server.crt"
+# TLSKeyFile="./server.key"
 
 # Templates and static files
 # Everything in the static subfolder will be served at /
