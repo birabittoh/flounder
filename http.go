@@ -85,7 +85,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
 	if !isText {
-		renderError(w, "Not a text file", 400) // correct status code?
+		renderError(w, "Not a text file, cannot be edited here", 400) // correct status code?
 		return
 	}
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)

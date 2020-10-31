@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	mathrand "math/rand"
 	"mime"
 	"os"
 	"path"
@@ -37,6 +38,7 @@ type User struct {
 	CreatedAt int // timestamp
 }
 
+// returns in a random order
 func getActiveUserNames() ([]string, error) {
 	rows, err := DB.Query(`SELECT username from user WHERE active is true`)
 	if err != nil {
@@ -51,7 +53,13 @@ func getActiveUserNames() ([]string, error) {
 		}
 		users = append(users, user)
 	}
-	return users, nil
+
+	dest := make([]string, len(users))
+	perm := mathrand.Perm(len(users))
+	for i, v := range perm {
+		dest[v] = users[i]
+	}
+	return dest, nil
 }
 
 func getUsers() ([]User, error) {

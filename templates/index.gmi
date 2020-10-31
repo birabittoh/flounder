@@ -6,10 +6,10 @@ Welcome to flounder, a home for Gemini sites. Flounder hosts small Gemini web pa
 => gemini://admin.{{$host}} Admin page
 => https://{{$host}} View on HTTPS
 
-## All Users:
-{{range .Users}}=> gemini://{{.}}.{{$host}}
-{{end}}
-
 ## Recently updated files:
 {{range .Files}}=> gemini://{{.Creator}}.{{$host}}/{{.Name}} {{.Creator}}: {{.Name}} ({{.TimeAgo}})
+{{end}}
+
+## All Users:
+{{range .Users}}=> gemini://{{.}}.{{$host}}
 {{end}}
