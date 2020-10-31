@@ -25,6 +25,10 @@ This will determine how you set the values in flounder.toml
 
 ## Admin
 
+To make yourself an admin, create a user through the web browser, then run `./flounder make-admin [your user]` -- this gives you access to admin tools to manage users.
+
 Backup your users' data regularly! The admin deletion commands are irreversible.
 
 Flounder comes with an admin panel acessible to users with the admin db flag set. 
+
+You can also manage users directly through the sqlite database.
