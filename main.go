@@ -196,7 +196,6 @@ func main() {
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
 
-	// Generate self signed cert if does not exist. This is not suitable for production.
 	_, err1 := os.Stat(c.TLSCertFile)
 	_, err2 := os.Stat(c.TLSKeyFile)
 	if os.IsNotExist(err1) || os.IsNotExist(err2) {
