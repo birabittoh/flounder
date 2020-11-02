@@ -57,21 +57,15 @@ func runGeminiServer() {
 
 	hostname := strings.SplitN(c.Host, ":", 2)[0]
 	// is this necc?
+	err := server.Certificates.Load(c.GeminiCertStore)
+	if err != nil {
+	}
 	server.CreateCertificate = func(h string) (tls.Certificate, error) {
-		wildcard := strings.SplitN(h, ".", 2)
-		if len(wildcard) == 2 {
-			h = "*." + wildcard[1]
-		}
 		log.Println("Generating certificate for", h)
-		cert, err := gmi.CreateCertificate(gmi.CertificateOptions{
+		return gmi.CreateCertificate(gmi.CertificateOptions{
 			DNSNames: []string{h},
-			Duration: time.Minute * 43200, // one month
+			Duration: time.Hour * 760, // one month
 		})
-		if err == nil {
-			// Write the new certificate to disk
-			err = writeCertificate(path.Join(c.GeminiCertStore, h), cert)
-		}
-		return cert, err
 	}
 
 	var mux gmi.ServeMux
@@ -83,7 +77,7 @@ func runGeminiServer() {
 	server.Register(hostname, &mux)
 	server.Register("*."+hostname, &wildcardMux)
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
