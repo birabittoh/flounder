@@ -412,7 +412,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}
 		file, _ := os.Open(fileName)
 
-		htmlString := textToHTML(gmi.Parse(file))
+		htmlString := textToHTML(gmi.ParseText(file))
 		data := struct {
 			SiteBody  template.HTML
 			PageTitle string

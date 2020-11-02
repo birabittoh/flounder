@@ -52,6 +52,8 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 func runGeminiServer() {
 	log.Println("Starting gemini server")
 	var server gmi.Server
+	server.ReadTimeout = 1 * time.Minute
+	server.WriteTimeout = 2 * time.Minute
 
 	hostname := strings.SplitN(c.Host, ":", 2)[0]
 	// is this necc?
