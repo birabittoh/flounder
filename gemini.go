@@ -2,12 +2,12 @@ package main
 
 import (
 	"crypto/tls"
-	"strings"
-	// "fmt"
+	"crypto/x509/pkix"
 	gmi "git.sr.ht/~adnano/go-gemini"
 	"log"
 	"path"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -63,6 +63,9 @@ func runGeminiServer() {
 	server.CreateCertificate = func(h string) (tls.Certificate, error) {
 		log.Println("Generating certificate for", h)
 		return gmi.CreateCertificate(gmi.CertificateOptions{
+			Subject: pkix.Name{
+				CommonName: hostname,
+			},
 			DNSNames: []string{h},
 			Duration: time.Hour * 760, // one month
 		})
