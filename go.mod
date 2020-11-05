@@ -3,7 +3,7 @@ module git.sr.ht/flounder
 go 1.15
 
 require (
-	git.sr.ht/~adnano/go-gemini v0.1.6-0.20201104004304-95716296b425 // indirect
+	git.sr.ht/~adnano/go-gemini v0.1.6-0.20201105050458-53390dad6bb1 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/sessions v1.2.1
