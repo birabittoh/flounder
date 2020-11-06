@@ -390,6 +390,19 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getFavicon(user string) string {
+	faviconPath := path.Join(c.FilesDirectory, filepath.Clean(user), "favicon.txt")
+	content, err := ioutil.ReadFile(faviconPath)
+	if err != nil {
+		return ""
+	}
+	strcontent := []rune(string(content))
+	if len(strcontent) > 0 {
+		return string(strcontent[0])
+	}
+	return ""
+}
+
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // clean probably unnecessary
@@ -413,10 +426,13 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		file, _ := os.Open(fileName)
 
 		htmlString := textToHTML(gmi.ParseText(file))
+		favicon := getFavicon(userName)
+		log.Println(favicon)
 		data := struct {
 			SiteBody  template.HTML
+			Favicon   string
 			PageTitle string
-		}{template.HTML(htmlString), userName}
+		}{template.HTML(htmlString), favicon, userName}
 		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
 		http.ServeFile(w, r, fileName)
