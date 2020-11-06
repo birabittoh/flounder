@@ -1,5 +1,5 @@
 # Used in HTML templates and titles
-SiteTitle="🐟flounder"
+SiteTitle="flounder"
 
 # Include port if running locally
 Host="localhost:8165"
