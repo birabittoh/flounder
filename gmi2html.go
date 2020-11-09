@@ -34,6 +34,11 @@ func textToHTML(text gemini.Text) string {
 		case gemini.LinePreformattingToggle:
 			pre = !pre
 			if pre {
+				altText := string(l.(gemini.LinePreformattingToggle))
+				if altText != "" {
+					altText = html.EscapeString(altText)
+					fmt.Fprintf(&b, "<pre title='%s'>\n", altText)
+				}
 				fmt.Fprint(&b, "<pre>\n")
 			} else {
 				fmt.Fprint(&b, "</pre>\n")
