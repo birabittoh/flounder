@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"html"
-	"mime"
-	neturl "net/url"
-	"path"
 	"strings"
 
 	"git.sr.ht/~adnano/go-gemini"
@@ -30,28 +27,13 @@ func textToHTML(text gemini.Text) string {
 			link := l.(gemini.LineLink)
 			url := html.EscapeString(link.URL)
 			name := html.EscapeString(link.Name)
-			var internal bool
-			parsedUrl, err := neturl.Parse(url) // simpler way to do this?
-			if err == nil {
-				// only show images inline if they are relative links
-				internal = parsedUrl.Host == ""
+			if name == "" {
+				name = url
 			}
-			if strings.HasPrefix(mime.TypeByExtension(path.Ext(url)), "image") && internal {
-				fmt.Fprintf(&b, "<img src='%s' alt='%s'>\n", url, name)
-			} else {
-				if name == "" {
-					name = url
-				}
-				fmt.Fprintf(&b, "<p><a href='%s'>%s</a></p>\n", url, name)
-			}
+			fmt.Fprintf(&b, "<p><a href='%s'>%s</a></p>\n", url, name)
 		case gemini.LinePreformattingToggle:
 			pre = !pre
 			if pre {
-				altText := string(l.(gemini.LinePreformattingToggle))
-				if altText != "" {
-					altText = html.EscapeString(altText)
-					fmt.Fprintf(&b, "<pre title='%s'>\n", altText)
-				}
 				fmt.Fprint(&b, "<pre>\n")
 			} else {
 				fmt.Fprint(&b, "</pre>\n")
