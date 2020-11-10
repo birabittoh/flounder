@@ -7,6 +7,7 @@ package main
 // Run some scripts to setup your instance
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,22 +18,23 @@ import (
 
 // TODO improve cli
 func runAdminCommand() {
-	if len(os.Args) < 4 {
-		fmt.Println("expected subcommand with parameter")
+	args := flag.Args() // again?
+	if len(args) < 3 {
+		fmt.Println("Expected subcommand with parameter activate-user|delete-user|make-admin")
 		os.Exit(1)
 	}
-	switch os.Args[2] {
+	switch args[0] {
 	case "activate-user":
-		username := os.Args[3]
+		username := args[1]
 		err := activateUser(username)
 		log.Fatal(err)
 	case "delete-user":
-		username := os.Args[3]
+		username := args[1]
 		// TODO add confirmation
 		err := deleteUser(username)
 		log.Fatal(err)
 	case "make-admin":
-		username := os.Args[3]
+		username := args[1]
 		err := makeAdmin(username)
 		log.Fatal(err)
 	}

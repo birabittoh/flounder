@@ -178,11 +178,12 @@ func generateCookieKeyIfDNE() []byte {
 
 func main() {
 	configPath := flag.String("c", "flounder.toml", "path to config file") // doesnt work atm
-	if len(os.Args) < 2 {
+	flag.Parse()
+	args := flag.Args()
+	if len(args) < 1 {
 		fmt.Println("expected 'admin' or 'serve' subcommand")
 		os.Exit(1)
 	}
-	flag.Parse()
 
 	var err error
 	c, err = getConfig(*configPath)
@@ -196,10 +197,12 @@ func main() {
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
 
-	_, err1 := os.Stat(c.TLSCertFile)
-	_, err2 := os.Stat(c.TLSKeyFile)
-	if os.IsNotExist(err1) || os.IsNotExist(err2) {
-		log.Println("Keyfile or certfile does not exist.")
+	if c.HttpsEnabled {
+		_, err1 := os.Stat(c.TLSCertFile)
+		_, err2 := os.Stat(c.TLSKeyFile)
+		if os.IsNotExist(err1) || os.IsNotExist(err2) {
+			log.Fatal("Keyfile or certfile does not exist.")
+		}
 	}
 
 	// Generate session cookie key if does not exist
@@ -212,7 +215,7 @@ func main() {
 	cookie := generateCookieKeyIfDNE()
 	SessionStore = sessions.NewCookieStore(cookie)
 
-	switch os.Args[1] {
+	switch args[0] {
 	case "serve":
 		wg := new(sync.WaitGroup)
 		wg.Add(2)
