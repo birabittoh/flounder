@@ -417,7 +417,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 	query := r.URL.Query()
 	_, raw := query["raw"]
-	if !raw && (extension == ".gmi" || extension == ".gemini") {
+	// dumb content negotiation
+	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
+	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
 		_, err := os.Stat(fileName)
 		if err != nil {
 			renderError(w, "404: file not found", 404)
