@@ -14,13 +14,29 @@ import (
 func timeago(t *time.Time) string {
 	d := time.Since(*t)
 	if d.Seconds() < 60 {
-		return fmt.Sprintf("%d seconds ago", int(d.Seconds()))
+		seconds := int(d.Seconds())
+		if seconds == 1 {
+			return "1 second ago"
+		}
+		return fmt.Sprintf("%d seconds ago", seconds)
 	} else if d.Minutes() < 60 {
-		return fmt.Sprintf("%d minutes ago", int(d.Minutes()))
+		minutes := int(d.Minutes())
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
 	} else if d.Hours() < 24 {
-		return fmt.Sprintf("%d hours ago", int(d.Hours()))
+		hours := int(d.Hours())
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
 	} else {
-		return fmt.Sprintf("%d days ago", int(d.Hours())/24)
+		days := int(d.Hours()) / 24
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
 	}
 }
 
