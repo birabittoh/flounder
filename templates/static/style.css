@@ -1,11 +1,16 @@
 main {
   max-width: 70ch;
   padding: 2ch;
+  padding-top: 1px;
   margin: auto;
   font-family: Helvetica, Arial, monospace;
   word-wrap: break-word;
   background-color: white;
   line-height: 1.5;
+}
+
+body {
+  background-color: #c2cfdc;
 }
 
 p {
