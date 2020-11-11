@@ -58,6 +58,11 @@ img {
 .nav {
   color: blue;
 }
+
+.user-admin-details {
+  margin-left: 1em;
+  margin-bottom: 1em;
+}
 a:visited {
   color:blue
 }

@@ -3,15 +3,14 @@
 <h1>{{.PageTitle}}</h1>
 {{template "nav.html" .}}
 <br>
-<table>
 {{ range .Users }}
-<tr>
-  <td>
-<a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  
-<td><a href=mailto:{{.Email}}>{{.Email}}</a>
-</td>
-<td>
+<details>
+  <summary><b>{{.Username}}</b> {{if not .Active}}<em>(inactive)</em>{{end}}</summary>
+  <div class="user-admin-details">
+    <p>Home: <a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  </p>
+    <p>Email: <a href=mailto:{{.Email}}>{{.Email}}</a></p>
 {{ if not .Active }}
+<p>
 <form action="/admin/user/{{.Username}}/activate" method="POST" class="inline">
 <input
   class="button"
@@ -19,9 +18,9 @@
   value="activate"
 />
 </form>
+</p>
 {{ end }}
-</td>
-<td>
+  <p>
 <form action="/admin/user/{{.Username}}/delete" method="POST" class="inline">
 <input
   class="button delete"
@@ -30,9 +29,8 @@
   value="delete"
 />
 </form>
-</td>
-</tr>
+</div>
+</details>
 {{end}}
-</table>
 
 {{template "footer" .}}
