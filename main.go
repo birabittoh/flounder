@@ -22,12 +22,13 @@ import (
 
 var c Config // global var to hold static configuration
 
-type File struct {
+type File struct { // also folders
 	Creator     string
 	Name        string
 	UpdatedTime time.Time
 	TimeAgo     string
 	IsText      bool
+	Children    []*File
 }
 
 type User struct {
@@ -111,20 +112,24 @@ func getIndexFiles() ([]*File, error) { // cache this function
 	return result, nil
 } // todo clean up paths
 
-func getUserFiles(user string) ([]*File, error) {
+func getFiles(p string) ([]*File, error) {
 	result := []*File{}
-	files, err := ioutil.ReadDir(path.Join(c.FilesDirectory, user))
+	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		return nil, err
 	}
 	for _, file := range files {
 		isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(file.Name())), "text")
-		result = append(result, &File{
-			Name:        file.Name(),
-			Creator:     user,
+		f := &File{
+			Name: file.Name(),
+			// Creator:     strings.Split(p, "/")[0],
 			UpdatedTime: file.ModTime(),
 			IsText:      isText,
-		})
+		}
+		if file.IsDir() {
+			f.Children, err = getFiles(path.Join(p, f.Name))
+		}
+		result = append(result, f)
 	}
 	return result, nil
 }

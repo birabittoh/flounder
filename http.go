@@ -206,7 +206,8 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// check auth
-	files, _ := getUserFiles(authUser)
+	userFolder := path.Join(c.FilesDirectory, authUser)
+	files, _ := getFiles(userFolder)
 	data := struct {
 		Host      string
 		PageTitle string
