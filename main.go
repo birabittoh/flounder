@@ -88,7 +88,7 @@ func getIndexFiles() ([]*File, error) { // cache this function
 		}
 		// make this do what it should
 		if !info.IsDir() {
-			creatorFolder, _ := path.Split(thepath)
+			creatorFolder := strings.Split(thepath, "/")[1]
 			updatedTime := info.ModTime()
 			result = append(result, &File{
 				Name:        info.Name(),

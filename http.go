@@ -89,6 +89,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
+
 	if r.Method == "GET" {
 		err := checkIfValidFile(filePath, nil)
 		if err != nil {
@@ -96,6 +97,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, err.Error(), 400)
 			return
 		}
+		// create directories if dne
+		os.MkdirAll(path.Dir(filePath), os.ModePerm)
 		f, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0644)
 		defer f.Close()
 		fileBytes, err := ioutil.ReadAll(f)
@@ -125,6 +128,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, err.Error(), 400)
 			return
 		}
+		// create directories if dne
+		os.MkdirAll(path.Dir(filePath), os.ModePerm)
 		err = ioutil.WriteFile(filePath, fileBytes, 0644)
 		if err != nil {
 			log.Println(err)
