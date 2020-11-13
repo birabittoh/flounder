@@ -38,8 +38,9 @@ func textToHTML(text gemini.Text) string {
 				if altText != "" {
 					altText = html.EscapeString(altText)
 					fmt.Fprintf(&b, "<pre title='%s'>\n", altText)
+				} else {
+					fmt.Fprint(&b, "<pre>\n")
 				}
-				fmt.Fprint(&b, "<pre>\n")
 			} else {
 				fmt.Fprint(&b, "</pre>\n")
 			}
