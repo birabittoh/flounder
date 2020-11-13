@@ -80,6 +80,7 @@ text-decoration: none;
 
 pre {
     white-space: pre-wrap;
+    line-height: 1;
 }
 
 a:hover {
