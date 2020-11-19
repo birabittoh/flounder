@@ -142,7 +142,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newName := filepath.Clean(r.Form.Get("rename"))
-		err := checkIfValidFile(newName, fileBytes)
+		err = checkIfValidFile(newName, fileBytes)
 		if err != nil {
 			log.Println(err)
 			renderError(w, err.Error(), 400)
