@@ -98,10 +98,15 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// create directories if dne
-		os.MkdirAll(path.Dir(filePath), os.ModePerm)
-		f, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0644)
-		defer f.Close()
-		fileBytes, err := ioutil.ReadAll(f)
+		f, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		var fileBytes []byte
+		if os.IsNotExist(err) {
+			fileBytes = []byte{}
+			err = nil
+		} else {
+			defer f.Close()
+			fileBytes, err = ioutil.ReadAll(f)
+		}
 		if err != nil {
 			log.Println(err)
 			renderError(w, InternalServerErrorMsg, 500)

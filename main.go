@@ -91,7 +91,6 @@ func getLocalPath(filesPath string) string {
 func getCreator(filePath string) string {
 	l := len(strings.Split(c.FilesDirectory, "/"))
 	r := strings.Split(filePath, "/")[l]
-	fmt.Println(filePath, c.FilesDirectory, r)
 	return r
 }
 
