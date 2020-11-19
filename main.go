@@ -88,6 +88,11 @@ func getLocalPath(filesPath string) string {
 	return strings.Join(strings.Split(filesPath, "/")[l:], "/")
 }
 
+func getCreator(filePath string) string {
+	l := len(strings.Split(c.FilesDirectory, "/"))
+	return strings.Split(filePath, "/")[l]
+}
+
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
@@ -97,7 +102,7 @@ func getIndexFiles() ([]*File, error) { // cache this function
 		}
 		// make this do what it should
 		if !info.IsDir() {
-			creatorFolder := strings.Split(thepath, "/")[1]
+			creatorFolder := getCreator(thepath)
 			updatedTime := info.ModTime()
 			result = append(result, &File{
 				Name:        getLocalPath(thepath),
