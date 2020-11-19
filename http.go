@@ -144,6 +144,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		newName := filepath.Clean(r.Form.Get("rename"))
 		if newName != fileName {
 			newPath := path.Join(c.FilesDirectory, authUser, newName)
+			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
 		}
 		http.Redirect(w, r, "/my_site", 303)
