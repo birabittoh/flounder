@@ -24,7 +24,7 @@ var c Config // global var to hold static configuration
 
 type File struct { // also folders
 	Creator     string
-	Name        string
+	Name        string // includes folder
 	UpdatedTime time.Time
 	TimeAgo     string
 	IsText      bool
@@ -80,6 +80,13 @@ func getUsers() ([]User, error) {
 	return users, nil
 }
 
+// get the user-reltaive local path from the filespath
+// NOTE -- dont use on unsafe input ( I think )
+func getLocalPath(filesPath string) string {
+	l := len(strings.Split(c.FilesDirectory, "/"))
+	return strings.Join(strings.Split(filesPath, "/")[l:], "/")
+}
+
 func getIndexFiles() ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
@@ -92,7 +99,7 @@ func getIndexFiles() ([]*File, error) { // cache this function
 			creatorFolder := strings.Split(thepath, "/")[1]
 			updatedTime := info.ModTime()
 			result = append(result, &File{
-				Name:        info.Name(),
+				Name:        getLocalPath(thepath),
 				Creator:     path.Base(creatorFolder),
 				UpdatedTime: updatedTime,
 				TimeAgo:     timeago(&updatedTime),
@@ -120,8 +127,10 @@ func getFiles(p string) ([]*File, error) {
 	}
 	for _, file := range files {
 		isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(file.Name())), "text")
+		fullPath := path.Join(p, file.Name())
+		localPath := getLocalPath(fullPath)
 		f := &File{
-			Name: file.Name(),
+			Name: localPath,
 			// Creator:     strings.Split(p, "/")[0],
 			UpdatedTime: file.ModTime(),
 			IsText:      isText,
