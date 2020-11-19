@@ -85,12 +85,13 @@ func getUsers() ([]User, error) {
 // NOTE -- dont use on unsafe input ( I think )
 func getLocalPath(filesPath string) string {
 	l := len(strings.Split(c.FilesDirectory, "/"))
-	return strings.Join(strings.Split(filesPath, "/")[l:], "/")
+	return strings.Join(strings.Split(filesPath, "/")[l+1:], "/")
 }
 
 func getCreator(filePath string) string {
 	l := len(strings.Split(c.FilesDirectory, "/"))
-	r := strings.Split(filePath, "/")[l-1]
+	r := strings.Split(filePath, "/")[l]
+	fmt.Println(filePath, c.FilesDirectory, r)
 	return r
 }
 
