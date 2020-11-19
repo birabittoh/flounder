@@ -136,7 +136,7 @@ func getFiles(p string) ([]*File, error) {
 			IsText:      isText,
 		}
 		if file.IsDir() {
-			f.Children, err = getFiles(path.Join(p, f.Name))
+			f.Children, err = getFiles(path.Join(p, file.Name()))
 		}
 		result = append(result, f)
 	}
