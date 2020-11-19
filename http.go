@@ -142,6 +142,12 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newName := filepath.Clean(r.Form.Get("rename"))
+		err := checkIfValidFile(newName, fileBytes)
+		if err != nil {
+			log.Println(err)
+			renderError(w, err.Error(), 400)
+			return
+		}
 		if newName != fileName {
 			newPath := path.Join(c.FilesDirectory, authUser, newName)
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
