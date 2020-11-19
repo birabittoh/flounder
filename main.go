@@ -29,6 +29,7 @@ type File struct { // also folders
 	TimeAgo     string
 	IsText      bool
 	Children    []*File
+	Host        string
 }
 
 type User struct {
@@ -119,7 +120,7 @@ func getIndexFiles() ([]*File, error) { // cache this function
 	return result, nil
 } // todo clean up paths
 
-func getFiles(p string) ([]*File, error) {
+func getMyFilesRecursive(p string, creator string) ([]*File, error) {
 	result := []*File{}
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
@@ -130,13 +131,14 @@ func getFiles(p string) ([]*File, error) {
 		fullPath := path.Join(p, file.Name())
 		localPath := getLocalPath(fullPath)
 		f := &File{
-			Name: localPath,
-			// Creator:     strings.Split(p, "/")[0],
+			Name:        localPath,
+			Creator:     creator,
 			UpdatedTime: file.ModTime(),
 			IsText:      isText,
+			Host:        c.Host,
 		}
 		if file.IsDir() {
-			f.Children, err = getFiles(path.Join(p, file.Name()))
+			f.Children, err = getMyFilesRecursive(path.Join(p, file.Name()), creator)
 		}
 		result = append(result, f)
 	}
