@@ -141,6 +141,11 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, InternalServerErrorMsg, 500)
 			return
 		}
+		newName := filepath.Clean(r.Form.Get("rename"))
+		if newName != fileName {
+			newPath := path.Join(c.FilesDirectory, authUser, newName)
+			os.Rename(filePath, newPath)
+		}
 		http.Redirect(w, r, "/my_site", 303)
 	}
 }

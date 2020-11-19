@@ -1,6 +1,8 @@
 {{template "header" .}}
 <h2>Editing {{.FileName}}</h2>
 <form id="edit-form" action="/edit/{{.FileName}}" method="POST">
+ <label for="rename">Rename:</label>
+   <input type="text" value="{{.FileName}}" id="rename" name="rename">
   <textarea rows="20" name="file_text" id="editor">{{.FileText}}</textarea>
   <br>
   <input type="submit" value="Save file" class="button">

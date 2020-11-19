@@ -45,6 +45,9 @@ func checkIfValidFile(filename string, fileBytes []byte) error {
 	if len(filename) == 0 {
 		return fmt.Errorf("Please enter a filename")
 	}
+	if len(filename) > 256 { // arbitrarily chosen
+		return fmt.Errorf("Filename is too long")
+	}
 	ext := strings.ToLower(path.Ext(filename))
 	found := false
 	for _, mimetype := range c.OkExtensions {
