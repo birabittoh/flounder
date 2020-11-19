@@ -90,7 +90,8 @@ func getLocalPath(filesPath string) string {
 
 func getCreator(filePath string) string {
 	l := len(strings.Split(c.FilesDirectory, "/"))
-	return strings.Split(filePath, "/")[l]
+	r := strings.Split(filePath, "/")[l-1]
+	return r
 }
 
 func getIndexFiles() ([]*File, error) { // cache this function
