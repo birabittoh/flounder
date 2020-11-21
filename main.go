@@ -22,6 +22,8 @@ import (
 
 var c Config // global var to hold static configuration
 
+const HIDDEN_FOLDER = ".hidden"
+
 type File struct { // also folders
 	Creator     string
 	Name        string // includes folder
@@ -100,6 +102,9 @@ func getIndexFiles() ([]*File, error) { // cache this function
 		if err != nil {
 			log.Printf("Failure accessing a path %q: %v\n", thepath, err)
 			return err // think about
+		}
+		if info.IsDir() && info.Name() == HIDDEN_FOLDER {
+			return filepath.SkipDir
 		}
 		// make this do what it should
 		if !info.IsDir() {

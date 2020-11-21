@@ -43,6 +43,9 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	fileName := filepath.Clean(r.URL.Path)
 	if fileName == "/" {
 		fileName = "index.gmi"
+	} else if strings.HasPrefix(fileName, ".hidden") {
+		w.WriteStatus(gmi.StatusNotFound)
+		return
 	}
 	log.Println("Request for gemini file", fileName, "for user", userName)
 

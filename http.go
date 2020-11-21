@@ -434,6 +434,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	p := filepath.Clean(r.URL.Path)
 	if p == "/" {
 		p = "index.gmi"
+	} else if strings.HasPrefix(p, "/.hidden") {
+		renderError(w, "404: file not found", 404)
+		return
 	}
 	fileName := path.Join(c.FilesDirectory, userName, p)
 	extension := path.Ext(fileName)
