@@ -459,7 +459,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			SiteBody  template.HTML
 			Favicon   string
 			PageTitle string
-		}{template.HTML(htmlString), favicon, userName}
+		}{template.HTML(htmlString), favicon, userName + p}
 		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
 		http.ServeFile(w, r, fileName)
