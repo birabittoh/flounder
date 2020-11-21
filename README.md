@@ -1,10 +1,12 @@
-# Flounder: a portal into the small web
+# Flounder: a portal into the small web 
 
-A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and gemini
+A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
+
+Flounder is in ALPHA -- development and features are changing frequently, especially as the Gemini spec and ecosystem remains relatively unstable.
 
 ## Building
 
-Requires go 1.15 and sqlite3 development libraries.
+Requires go >= 1.15 and sqlite3 development libraries.
 
 `go build`
 
