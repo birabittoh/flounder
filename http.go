@@ -116,7 +116,9 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			FileName  string
 			FileText  string
 			PageTitle string
-		}{fileName, string(fileBytes), c.SiteTitle}
+			AuthUser  string
+			Host      string
+		}{fileName, string(fileBytes), c.SiteTitle, authUser, c.Host}
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			log.Println(err)

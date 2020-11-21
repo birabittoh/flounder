@@ -39,7 +39,7 @@ img {
   width: 100%;
   margin: 5px 0;
   padding: 3px;
-  resize: none;
+  resize: vertical;
 }
 
 .button {
