@@ -471,7 +471,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}{template.HTML(htmlString), favicon, userName + p}
 		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
-		http.ServeFile(w, r, fileName)
+		http.ServeFile(w, r, fileName) // TODO make errors pretty
 	}
 }
 
