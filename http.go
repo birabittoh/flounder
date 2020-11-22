@@ -432,13 +432,19 @@ func getFavicon(user string) string {
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // clean probably unnecessary
 	p := filepath.Clean(r.URL.Path)
-	if p == "/" {
-		p = "index.gmi"
+	// chcek if is directory for index.gmi file
+	var isDir bool
+	fileName := path.Join(c.FilesDirectory, userName, p)
+	stat, _ := os.Stat(fileName)
+	if stat != nil {
+		isDir = stat.IsDir()
+	}
+	if p == "/" || isDir {
+		fileName = path.Join(fileName, "index.gmi")
 	} else if strings.HasPrefix(p, "/.hidden") {
 		renderError(w, "404: file not found", 404)
 		return
 	}
-	fileName := path.Join(c.FilesDirectory, userName, p)
 	extension := path.Ext(fileName)
 	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
