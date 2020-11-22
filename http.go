@@ -463,7 +463,6 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 
 		htmlString := textToHTML(gmi.ParseText(file))
 		favicon := getFavicon(userName)
-		log.Println(favicon)
 		data := struct {
 			SiteBody  template.HTML
 			Favicon   string
