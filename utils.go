@@ -58,7 +58,6 @@ func checkIfValidFile(filename string, fileBytes []byte) error {
 	if !found {
 		return fmt.Errorf("Invalid file extension: %s", ext)
 	}
-	fmt.Println(len(fileBytes))
 	if len(fileBytes) > c.MaxFileSize {
 		return fmt.Errorf("File too large. File was %d bytes, Max file size is %d", len(fileBytes), c.MaxFileSize)
 	}
