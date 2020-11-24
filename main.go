@@ -163,7 +163,7 @@ func createTablesIfDNE() {
   username TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  reference TEXT,
+  reference TEXT NOT NULL default "",
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
