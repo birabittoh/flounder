@@ -9,6 +9,7 @@
   <div class="user-admin-details">
     <p>Home: <a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  </p>
     <p>Email: <a href=mailto:{{.Email}}>{{.Email}}</a></p>
+    <p>Reference: {{.Reference}}</p>
 {{ if not .Active }}
 <p>
 <form action="/admin/user/{{.Username}}/activate" method="POST" class="inline">

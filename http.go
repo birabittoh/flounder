@@ -363,8 +363,9 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			errors = append(errors, "Username is invalid: can only contain letters, numbers and hypens. Maximum 32 characters.")
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
+		reference := r.Form.Get("reference")
 		if len(errors) == 0 {
-			_, err = DB.Exec("insert into user (username, email, password_hash) values ($1, $2, $3)", username, email, string(hashedPassword))
+			_, err = DB.Exec("insert into user (username, email, password_hash, reference) values ($1, $2, $3, $4)", username, email, string(hashedPassword), reference)
 			if err != nil {
 				log.Println(err)
 				errors = append(errors, "Username or email is already used")

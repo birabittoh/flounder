@@ -40,6 +40,7 @@ type User struct {
 	Active    bool
 	Admin     bool
 	CreatedAt int // timestamp
+	Reference string
 }
 
 // returns in a random order
@@ -67,14 +68,14 @@ func getActiveUserNames() ([]string, error) {
 }
 
 func getUsers() ([]User, error) {
-	rows, err := DB.Query(`SELECT username, email, active, admin, created_at from user ORDER BY created_at DESC`)
+	rows, err := DB.Query(`SELECT username, email, active, admin, created_at, reference from user ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
 	var users []User
 	for rows.Next() {
 		var user User
-		err = rows.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt)
+		err = rows.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference)
 		if err != nil {
 			return nil, err
 		}
@@ -162,6 +163,7 @@ func createTablesIfDNE() {
   username TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  reference TEXT,
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))

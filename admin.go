@@ -23,18 +23,18 @@ func runAdminCommand() {
 		fmt.Println("Expected subcommand with parameter activate-user|delete-user|make-admin")
 		os.Exit(1)
 	}
-	switch args[0] {
+	switch args[1] {
 	case "activate-user":
-		username := args[1]
+		username := args[2]
 		err := activateUser(username)
 		log.Fatal(err)
 	case "delete-user":
-		username := args[1]
+		username := args[2]
 		// TODO add confirmation
 		err := deleteUser(username)
 		log.Fatal(err)
 	case "make-admin":
-		username := args[1]
+		username := args[2]
 		err := makeAdmin(username)
 		log.Fatal(err)
 	}
