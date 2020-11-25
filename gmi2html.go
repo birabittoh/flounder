@@ -16,11 +16,11 @@ func textToHTML(text gemini.Text) string {
 		if _, ok := l.(gemini.LineListItem); ok {
 			if !list {
 				list = true
-				fmt.Fprint(&b, "<ul>")
+				fmt.Fprint(&b, "<ul>\n")
 			}
 		} else if list {
 			list = false
-			fmt.Fprint(&b, "</ul>")
+			fmt.Fprint(&b, "</ul>\n")
 		}
 		switch l.(type) {
 		case gemini.LineLink:
@@ -37,12 +37,12 @@ func textToHTML(text gemini.Text) string {
 				altText := string(l.(gemini.LinePreformattingToggle))
 				if altText != "" {
 					altText = html.EscapeString(altText)
-					fmt.Fprintf(&b, "<pre title='%s'>", altText)
+					fmt.Fprintf(&b, "<pre title='%s'>\n", altText)
 				} else {
 					fmt.Fprint(&b, "<pre>\n")
 				}
 			} else {
-				fmt.Fprint(&b, "</pre>")
+				fmt.Fprint(&b, "</pre>\n")
 			}
 		case gemini.LinePreformattedText:
 			text := string(l.(gemini.LinePreformattedText))
@@ -72,10 +72,10 @@ func textToHTML(text gemini.Text) string {
 		}
 	}
 	if pre {
-		fmt.Fprint(&b, "</pre>")
+		fmt.Fprint(&b, "</pre>\n")
 	}
 	if list {
-		fmt.Fprint(&b, "</ul>")
+		fmt.Fprint(&b, "</ul>\n")
 	}
 	return b.String()
 }
