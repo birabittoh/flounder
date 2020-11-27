@@ -155,7 +155,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
 		}
-		http.Redirect(w, r, "/my_site", 303)
+		http.Redirect(w, r, path.Join("/edit", fileName), 303)
 	}
 }
 
