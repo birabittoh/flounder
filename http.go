@@ -432,6 +432,7 @@ func getFavicon(user string) string {
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // clean probably unnecessary
+	query := r.URL.Query()
 	p := filepath.Clean(r.URL.Path)
 	// chcek if is directory for index.gmi file
 	var isDir bool
@@ -450,16 +451,16 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 	}
-	query := r.URL.Query()
-	_, raw := query["raw"]
+	_, err := os.Stat(fileName)
+	if err != nil {
+		renderError(w, "404: file not found", 404)
+		return
+	}
 	// dumb content negotiation
+	_, raw := query["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
 	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
-		_, err := os.Stat(fileName)
-		if err != nil {
-			renderError(w, "404: file not found", 404)
-			return
-		}
+
 		file, _ := os.Open(fileName)
 
 		htmlString := textToHTML(gmi.ParseText(file))
