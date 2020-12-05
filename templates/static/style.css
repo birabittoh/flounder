@@ -53,7 +53,6 @@ resize: vertical;
   padding: 2px 5px;
   display: inline-block;
   margin: 0px;
-  transition-duration: 0.2s;
 }
 
 .button:hover {
