@@ -31,6 +31,6 @@ To make yourself an admin, create a user through the web browser, then run `./fl
 
 Backup your users' data regularly! The admin deletion commands are irreversible.
 
-Flounder comes with an admin panel accessible to users with the admin db flag set. 
+Flounder comes with an admin panel accessible to users with the admin db flag set. Admins can also impersonate users if you need to take actions like moderating their content, deleting their account, changing their password, etc.
 
 You can also manage users directly through the sqlite database.
