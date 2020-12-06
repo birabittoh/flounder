@@ -134,7 +134,11 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		// get post body
 		r.ParseForm()
-		fileBytes := []byte(r.Form.Get("file_text"))
+		fileText := r.Form.Get("file_text")
+		// Web form by default gives us CR LF newlines.
+		// Unix files use just LF
+		fileText = strings.ReplaceAll(fileText, "\r\n", "\n")
+		fileBytes := []byte(fileText)
 		err := checkIfValidFile(filePath, fileBytes)
 		if err != nil {
 			log.Println(err)
