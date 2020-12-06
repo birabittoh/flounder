@@ -605,6 +605,7 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					panic(err)
 				}
+				log.Printf("User %s reset password", user.Username)
 				http.Redirect(w, r, "/me", http.StatusSeeOther)
 				return
 			} else {
