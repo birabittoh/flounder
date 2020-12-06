@@ -79,14 +79,14 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	ok, authUser, _ := getAuthUser(r)
-	if !ok {
+	user := newGetAuthUser(r)
+	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
-	filePath := path.Join(c.FilesDirectory, authUser, fileName)
+	filePath := path.Join(c.FilesDirectory, user.Username, fileName)
 
 	if r.Method == "GET" {
 		err := checkIfValidFile(filePath, nil)
@@ -112,10 +112,10 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			FileName  string
 			FileText  string
 			PageTitle string
-			AuthUser  string
+			AuthUser  AuthUser
 			Host      string
 			IsText    bool
-		}{fileName, string(fileBytes), c.SiteTitle, authUser, c.Host, isText}
+		}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText}
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			panic(err)
@@ -136,7 +136,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// create directories if dne
 		os.MkdirAll(path.Dir(filePath), os.ModePerm)
-		if userHasSpace(authUser, len(fileBytes)) {
+		if userHasSpace(user.Username, len(fileBytes)) {
 			if isText { // Cant edit binary files here
 				err = ioutil.WriteFile(filePath, fileBytes, 0644)
 			}
@@ -155,7 +155,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if newName != fileName {
-			newPath := path.Join(c.FilesDirectory, authUser, newName)
+			newPath := path.Join(c.FilesDirectory, user.Username, newName)
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
 			fileName = newName
@@ -223,26 +223,6 @@ func newGetAuthUser(r *http.Request) AuthUser {
 		IsAdmin:           isAdmin,
 		ImpersonatingUser: impers,
 	}
-}
-
-//TODO deprecate
-func getAuthUser(r *http.Request) (bool, string, bool) {
-	session, _ := SessionStore.Get(r, "cookie-session")
-	user, ok := session.Values["auth_user"].(string)
-	isAdmin, _ := session.Values["admin"].(bool)
-	return ok, user, isAdmin
-}
-func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
-	if !user.LoggedIn {
-		renderDefaultError(w, http.StatusForbidden)
-		return
-	}
-	filePath := safeGetFilePath(user.Username, r.URL.Path[len("/delete/"):])
-	if r.Method == "POST" {
-		os.Remove(filePath) // TODO handle error
-	}
-	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
@@ -321,13 +301,13 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func archiveHandler(w http.ResponseWriter, r *http.Request) {
-	authd, authUser, _ := getAuthUser(r)
-	if !authd {
+	authUser := newGetAuthUser(r)
+	if !authUser.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	if r.Method == "GET" {
-		userFolder := filepath.Join(c.FilesDirectory, filepath.Clean(authUser))
+		userFolder := getUserDirectory(authUser.Username)
 		err := zipit(userFolder, w)
 		if err != nil {
 			panic(err)
@@ -460,9 +440,22 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	user := newGetAuthUser(r)
+	if !user.LoggedIn {
+		renderDefaultError(w, http.StatusForbidden)
+		return
+	}
+	filePath := safeGetFilePath(user.Username, r.URL.Path[len("/delete/"):])
+	if r.Method == "POST" {
+		os.Remove(filePath) // TODO handle error
+	}
+	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
+}
+
 func adminHandler(w http.ResponseWriter, r *http.Request) {
-	_, _, isAdmin := getAuthUser(r)
-	if !isAdmin {
+	user := newGetAuthUser(r)
+	if !user.IsAdmin {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
@@ -547,9 +540,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
-	_, authUser, _ := getAuthUser(r)
+	user := newGetAuthUser(r)
 	if r.Method == "POST" {
-		err := deleteUser(authUser)
+		err := deleteUser(user.Username)
 		if err != nil {
 			log.Println(err)
 			renderDefaultError(w, http.StatusInternalServerError)
@@ -560,13 +553,12 @@ func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	getAuthUser(r)
 }
 
 func adminUserHandler(w http.ResponseWriter, r *http.Request) {
-	_, _, isAdmin := getAuthUser(r)
+	user := newGetAuthUser(r)
 	if r.Method == "POST" {
-		if !isAdmin {
+		if !user.IsAdmin {
 			renderDefaultError(w, http.StatusForbidden)
 			return
 		}
@@ -612,9 +604,9 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
 	serveMux.HandleFunc(hostname+"/upload", uploadFilesHandler)
-	serveMux.HandleFunc(hostname+"/login", loginHandler)
+	serveMux.Handle(hostname+"/login", limit(http.HandlerFunc(loginHandler)))
+	serveMux.Handle(hostname+"/register", limit(http.HandlerFunc(registerHandler)))
 	serveMux.HandleFunc(hostname+"/logout", logoutHandler)
-	serveMux.HandleFunc(hostname+"/register", registerHandler)
 	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
 	serveMux.HandleFunc(hostname+"/delete-account", deleteAccountHandler)
 	serveMux.HandleFunc(hostname+"/reset-password", resetPasswordHandler)

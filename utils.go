@@ -47,6 +47,7 @@ func getUserDirectory(username string) string {
 	return userFolder
 }
 
+// ugh idk
 func safeGetFilePath(username string, filename string) string {
 	return path.Join(getUserDirectory(username), filepath.Clean(filename))
 }
