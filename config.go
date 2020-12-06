@@ -18,7 +18,8 @@ type Config struct {
 	GeminiCertStore    string
 	CookieStoreKey     string
 	OkExtensions       []string
-	MaxFileSize        int
+	MaxFileBytes       int
+	MaxUserBytes       int64
 	TLSCertFile        string
 	TLSKeyFile         string
 }

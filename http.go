@@ -47,9 +47,15 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// serve everything inside static directory
 	if r.URL.Path != "/" {
 		fileName := path.Join(c.TemplatesDirectory, "static", filepath.Clean(r.URL.Path))
-		http.ServeFile(w, r, fileName)
+		_, err := os.Stat(fileName)
+		if err != nil {
+			renderDefaultError(w, http.StatusNotFound)
+			return
+		}
+		http.ServeFile(w, r, fileName) // TODO better error handling
 		return
 	}
+
 	authd, _, isAdmin := getAuthUser(r)
 	indexFiles, err := getIndexFiles()
 	if err != nil {
@@ -80,16 +86,14 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := SessionStore.Get(r, "cookie-session")
-	authUser, ok := session.Values["auth_user"].(string)
+	ok, authUser, _ := getAuthUser(r)
 	if !ok {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
-	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
-	if !isText {
-		renderError(w, "Bad Request: Not a text file, cannot be edited here", http.StatusBadRequest) // correct status code?
+	if !strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text") {
+		renderError(w, "Bad Request: Not a text file, cannot be edited here", http.StatusBadRequest)
 		return
 	}
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
@@ -101,7 +105,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		// create directories if dne
+		// Create directories if dne
 		f, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 		var fileBytes []byte
 		if os.IsNotExist(err) {
@@ -141,7 +145,12 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// create directories if dne
 		os.MkdirAll(path.Dir(filePath), os.ModePerm)
-		err = ioutil.WriteFile(filePath, fileBytes, 0644)
+		if userHasSpace(authUser, len(fileBytes)) {
+			err = ioutil.WriteFile(filePath, fileBytes, 0644)
+		} else {
+			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
+			return
+		}
 		if err != nil {
 			log.Println(err)
 			renderDefaultError(w, http.StatusInternalServerError)
@@ -196,12 +205,16 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer f.Close()
-		io.Copy(f, bytes.NewReader(dest))
+		if userHasSpace(authUser, c.MaxFileBytes) { // Not quite right
+			io.Copy(f, bytes.NewReader(dest))
+		} else {
+			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
+			return
+		}
 	}
 	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
-// bool whether auth'd, string is auth user
 func getAuthUser(r *http.Request) (bool, string, bool) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	user, ok := session.Values["auth_user"].(string)
@@ -477,7 +490,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}{template.HTML(htmlString), favicon, userName + p}
 		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
-		http.ServeFile(w, r, fileName) // TODO make errors pretty
+		http.ServeFile(w, r, fileName)
 	}
 }
 

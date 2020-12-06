@@ -40,6 +40,29 @@ func timeago(t *time.Time) string {
 	}
 }
 
+func userHasSpace(user string, newBytes int) bool {
+	userPath := path.Join(c.FilesDirectory, user)
+	size, err := dirSize(userPath)
+	if err != nil || size+int64(newBytes) > c.MaxUserBytes {
+		return false
+	}
+	return true
+}
+
+func dirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return err
+	})
+	return size, err
+}
+
 /// Perform some checks to make sure the file is OK
 func checkIfValidFile(filename string, fileBytes []byte) error {
 	if len(filename) == 0 {
@@ -58,9 +81,10 @@ func checkIfValidFile(filename string, fileBytes []byte) error {
 	if !found {
 		return fmt.Errorf("Invalid file extension: %s", ext)
 	}
-	if len(fileBytes) > c.MaxFileSize {
-		return fmt.Errorf("File too large. File was %d bytes, Max file size is %d", len(fileBytes), c.MaxFileSize)
+	if len(fileBytes) > c.MaxFileBytes {
+		return fmt.Errorf("File too large. File was %d bytes, Max file size is %d", len(fileBytes), c.MaxFileBytes)
 	}
+	//
 	return nil
 }
 
