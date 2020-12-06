@@ -452,6 +452,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
+		return
 	}
 
 	_, err := os.Stat(fileName)
