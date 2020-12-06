@@ -40,6 +40,17 @@ func timeago(t *time.Time) string {
 	}
 }
 
+// safe
+func getUserDirectory(username string) string {
+	// extra filepath.clean just to be safe
+	userFolder := path.Join(c.FilesDirectory, filepath.Clean(username))
+	return userFolder
+}
+
+func safeGetFilePath(username string, filename string) string {
+	return path.Join(getUserDirectory(username), filepath.Clean(filename))
+}
+
 // TODO move into checkIfValidFile. rename it
 func userHasSpace(user string, newBytes int) bool {
 	userPath := path.Join(c.FilesDirectory, user)

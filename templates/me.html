@@ -9,7 +9,7 @@
       name="username"
       size="32"
       type="text"
-      value="{{.AuthUser}}"
+      value="{{.AuthUser.Username}}"
     />
   </div>
   <div>
@@ -27,7 +27,7 @@
     />
   </div>
 </form>
-<a href="/reset_password">Reset password</a>
+<a href="/reset-password">Reset password</a>
 <p><a href="/my_site/flounder-archive.zip">🗄️ Download my site archive (.zip)</a></p>
 <form action="/delete-account" method="POST" class="inline">
 <input

@@ -2,29 +2,42 @@
 <h1>Reset Password</h1>
 <form action="/reset_password" method="post">
   <div>
-    <label for="username">Username</label><br>
+    <label for="password">Current Password</label><br>
     <input
-      id="username"
-      name="username"
+      id="password"
+      name="password"
       size="32"
       type="text"
       value="{{.AuthUser}}"
     />
   </div>
   <div>
-    <label for="email">Email</label>
-    <input id="email" name="email" size="64" type="text" value="{{.Email}}" />
-  </div>
-  <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
-  <div>
+    <label for="new_password1">New Password</label><br>
     <input
-      class="button"
-      id="submit"
-      name="submit"
-      type="submit"
-      value="Save"
+      id="new_password1"
+      name="new_password1"
+      size="32"
+      type="text"
+      value=""
     />
   </div>
+  <div>
+    <label for="new_password2">New Password (repeat)</label><br>
+    <input
+      id="new_password2"
+      name="new_password2"
+      size="32"
+      type="text"
+      value=""
+    />
+  </div>    
+  <input
+  class="button"
+  id="submit"
+  name="submit"
+  type="submit"
+  value="Change"
+/>
+
 </form>
-<a href="/reset_password">Reset password</a>
 {{template "footer" .}}

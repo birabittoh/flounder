@@ -1,9 +1,9 @@
 {{$domain := .Host}}
-{{$authUser := .AuthUser}}
+{{$authUser := .AuthUser.Username}}
 {{template "header" .}}
 <h1>Managing
   <a href="//{{$authUser}}.{{$domain}}">
-    {{.AuthUser}}.{{$domain}}
+    {{$authUser}}.{{$domain}}
   </a>
 </h1>
 {{template "nav.html" .}}

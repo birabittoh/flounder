@@ -56,32 +56,25 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authd, _, isAdmin := getAuthUser(r)
-	indexFiles, err := getIndexFiles(isAdmin)
+	user := newGetAuthUser(r)
+	indexFiles, err := getIndexFiles(user.IsAdmin)
 	if err != nil {
-		log.Println(err)
-		renderDefaultError(w, http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	allUsers, err := getActiveUserNames()
 	if err != nil {
-		log.Println(err)
-		renderDefaultError(w, http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	data := struct {
 		Host      string
 		PageTitle string
 		Files     []*File
 		Users     []string
-		LoggedIn  bool
-		IsAdmin   bool
-	}{c.Host, c.SiteTitle, indexFiles, allUsers, authd, isAdmin}
+		AuthUser  AuthUser
+	}{c.Host, c.SiteTitle, indexFiles, allUsers, user}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
-		log.Println(err)
-		renderDefaultError(w, http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 }
 
@@ -113,9 +106,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			fileBytes, err = ioutil.ReadAll(f)
 		}
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 		data := struct {
 			FileName  string
@@ -127,9 +118,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}{fileName, string(fileBytes), c.SiteTitle, authUser, c.Host, isText}
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 	} else if r.Method == "POST" {
 		// get post body
@@ -156,9 +145,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 		newName := filepath.Clean(r.Form.Get("rename"))
 		err = checkIfValidFile(newName, fileBytes)
@@ -179,9 +166,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 
 func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		session, _ := SessionStore.Get(r, "cookie-session")
-		authUser, ok := session.Values["auth_user"].(string)
-		if !ok {
+		user := newGetAuthUser(r)
+		if !user.LoggedIn {
 			renderDefaultError(w, http.StatusForbidden)
 			return
 		}
@@ -201,16 +187,14 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		destPath := path.Join(c.FilesDirectory, authUser, fileName)
+		destPath := path.Join(c.FilesDirectory, user.Username, fileName)
 
 		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 		defer f.Close()
-		if userHasSpace(authUser, c.MaxFileBytes) { // Not quite right
+		if userHasSpace(user.Username, c.MaxFileBytes) { // Not quite right
 			io.Copy(f, bytes.NewReader(dest))
 		} else {
 			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
@@ -220,6 +204,28 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
+// TODO use this
+type AuthUser struct {
+	LoggedIn          bool
+	Username          string
+	IsAdmin           bool
+	ImpersonatingUser string // used if impersonating
+}
+
+func newGetAuthUser(r *http.Request) AuthUser {
+	session, _ := SessionStore.Get(r, "cookie-session")
+	user, ok := session.Values["auth_user"].(string)
+	impers, _ := session.Values["impersonating_user"].(string)
+	isAdmin, _ := session.Values["admin"].(bool)
+	return AuthUser{
+		LoggedIn:          ok,
+		Username:          user,
+		IsAdmin:           isAdmin,
+		ImpersonatingUser: impers,
+	}
+}
+
+//TODO deprecate
 func getAuthUser(r *http.Request) (bool, string, bool) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	user, ok := session.Values["auth_user"].(string)
@@ -227,62 +233,56 @@ func getAuthUser(r *http.Request) (bool, string, bool) {
 	return ok, user, isAdmin
 }
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
-	authd, authUser, _ := getAuthUser(r)
-	if !authd {
+	user := newGetAuthUser(r)
+	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
-	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
-	filePath := path.Join(c.FilesDirectory, authUser, fileName)
+	filePath := safeGetFilePath(user.Username, r.URL.Path[len("/delete/"):])
 	if r.Method == "POST" {
-		os.Remove(filePath) // suppress error
+		os.Remove(filePath) // TODO handle error
 	}
 	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	authd, authUser, isAdmin := getAuthUser(r)
-	if !authd {
+	user := newGetAuthUser(r)
+	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	// check auth
-	userFolder := path.Join(c.FilesDirectory, authUser)
-	files, _ := getMyFilesRecursive(userFolder, authUser)
+	userFolder := getUserDirectory(user.Username)
+	files, _ := getMyFilesRecursive(userFolder, user.Username)
 	data := struct {
 		Host      string
 		PageTitle string
-		AuthUser  string
 		Files     []*File
-		LoggedIn  bool
-		IsAdmin   bool
-	}{c.Host, c.SiteTitle, authUser, files, authd, isAdmin}
+		AuthUser  AuthUser
+	}{c.Host, c.SiteTitle, files, user}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
 func myAccountHandler(w http.ResponseWriter, r *http.Request) {
-	authd, authUser, isAdmin := getAuthUser(r)
-	if !authd {
+	user := newGetAuthUser(r)
+	authUser := user.Username
+	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
-	me, _ := getUserByName(authUser)
+	me, _ := getUserByName(user.Username)
 	type pageData struct {
 		PageTitle string
-		LoggedIn  bool
-		AuthUser  string
-		IsAdmin   bool
+		AuthUser  AuthUser
 		Email     string
 		Errors    []string
 	}
-	data := pageData{"My Account", true, authUser, isAdmin, me.Email, nil}
+	data := pageData{"My Account", user, me.Email, nil}
 
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "me.html", data)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -312,9 +312,9 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		// reset auth
-		authd, authUser, isAdmin = getAuthUser(r)
+		user = newGetAuthUser(r)
 		data.Errors = errors
-		data.AuthUser = authUser
+		data.AuthUser = user
 		data.Email = newEmail
 		_ = t.ExecuteTemplate(w, "me.html", data)
 	}
@@ -330,9 +330,7 @@ func archiveHandler(w http.ResponseWriter, r *http.Request) {
 		userFolder := filepath.Join(c.FilesDirectory, filepath.Clean(authUser))
 		err := zipit(userFolder, w)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 
 	}
@@ -346,9 +344,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}{"", "Login"}
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -382,9 +378,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}{"Invalid login or password", c.SiteTitle}
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
-				log.Println(err)
-				renderDefaultError(w, http.StatusInternalServerError)
-				return
+				panic(err)
 			}
 		}
 	}
@@ -422,9 +416,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}{c.Host, nil, "Register"}
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+			panic(err)
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -489,9 +481,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}{allUsers, true, true, "Admin", c.Host}
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
-		log.Println(err)
-		renderDefaultError(w, http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 }
 
@@ -558,13 +548,19 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 
 func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	_, authUser, _ := getAuthUser(r)
-	err := deleteUser(authUser)
-	if err != nil {
-		log.Println(err)
-		renderDefaultError(w, http.StatusInternalServerError)
-		return
+	if r.Method == "POST" {
+		err := deleteUser(authUser)
+		if err != nil {
+			log.Println(err)
+			renderDefaultError(w, http.StatusInternalServerError)
+			return
+		}
+		logoutHandler(w, r)
 	}
-	logoutHandler(w, r)
+}
+
+func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	getAuthUser(r)
 }
 
 func adminUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -621,13 +617,14 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/register", registerHandler)
 	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
 	serveMux.HandleFunc(hostname+"/delete-account", deleteAccountHandler)
+	serveMux.HandleFunc(hostname+"/reset-password", resetPasswordHandler)
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
 
 	// TODO rate limit login https://github.com/ulule/limiter
 
-	wrapped := handlers.LoggingHandler(log.Writer(), serveMux)
+	wrapped := (handlers.LoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux)))
 
 	// handle user files based on subdomain
 	serveMux.HandleFunc("/", userFile)

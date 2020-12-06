@@ -1,9 +1,9 @@
 <nav>
   <a href="/">home</a>
-{{ if .LoggedIn }}
+{{ if .AuthUser.LoggedIn }}
   <a href="/my_site">my_site</a>
   <a href="/me">me</a>
-  {{ if .IsAdmin }}
+  {{ if .AuthUser.IsAdmin }}
   <a href="/admin">admin</a>
   {{ end }}
   <a href="/logout">logout</a>
