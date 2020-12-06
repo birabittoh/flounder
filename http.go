@@ -366,7 +366,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
-	session.Options.MaxAge = -1
+	impers, ok := session.Values["impersonating_user"].(string)
+	if ok {
+		session.Values["auth_user"] = impers
+		session.Values["impersonating_user"] = nil // TODO expire this automatically
+		// session.Values["admin"] = nil // TODO fix admin
+	} else {
+		session.Options.MaxAge = -1
+	}
 	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -467,11 +474,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		Users     []User
-		LoggedIn  bool
-		IsAdmin   bool
+		AuthUser  AuthUser
 		PageTitle string
 		Host      string
-	}{allUsers, true, true, "Admin", c.Host}
+	}{allUsers, user, "Admin", c.Host}
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
 		panic(err)
@@ -572,8 +578,13 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 		var err error
 		if action == "activate" {
 			err = activateUser(userName)
-		} else if action == "delete" {
-			err = deleteUser(userName)
+		} else if action == "impersonate" {
+			session, _ := SessionStore.Get(r, "cookie-session")
+			session.Values["auth_user"] = userName
+			session.Values["impersonating_user"] = user.Username
+			session.Save(r, w)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
 		}
 		if err != nil {
 			log.Println(err)

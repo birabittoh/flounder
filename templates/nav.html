@@ -7,8 +7,12 @@
   <a href="/admin">admin</a>
   {{ end }}
   <a href="/logout">logout</a>
+  {{ if .AuthUser.ImpersonatingUser }}
+  <em><b>({{.AuthUser.Username}} impersonated by {{.AuthUser.ImpersonatingUser}})</b></em>
+  {{ end }}
 {{ else }}
   <a href="/register">register</a>
   <a href="/login">login</a>
+
 {{ end }}
 </nav>

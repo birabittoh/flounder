@@ -22,12 +22,11 @@
 </p>
 {{ end }}
   <p>
-<form action="/admin/user/{{.Username}}/delete" method="POST" class="inline">
+<form action="/admin/user/{{.Username}}/impersonate" method="POST" class="inline">
 <input
-  class="button delete"
+  class="button"
   type="submit"
-  onclick="return confirm('Are you SURE you want to delete this user?');"
-  value="delete"
+  value="impersonate"
 />
 </form>
 </div>
