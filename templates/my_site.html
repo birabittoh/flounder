@@ -31,9 +31,7 @@
       {{ .Name }}</a>
   </td>
   <td>
-  {{ if .IsText }}
   <a href="/edit/{{.Name}}">edit</a>
-  {{ end }}
   </td>
   <td>
   <form action="/delete/{{.Name}}" method="POST" class="inline">

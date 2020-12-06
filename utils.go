@@ -40,6 +40,7 @@ func timeago(t *time.Time) string {
 	}
 }
 
+// TODO move into checkIfValidFile. rename it
 func userHasSpace(user string, newBytes int) bool {
 	userPath := path.Join(c.FilesDirectory, user)
 	size, err := dirSize(userPath)

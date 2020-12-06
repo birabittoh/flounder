@@ -92,10 +92,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
-	if !strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text") {
-		renderError(w, "Bad Request: Not a text file, cannot be edited here", http.StatusBadRequest)
-		return
-	}
+	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
 
 	if r.Method == "GET" {
@@ -108,7 +105,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		// Create directories if dne
 		f, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 		var fileBytes []byte
-		if os.IsNotExist(err) {
+		if os.IsNotExist(err) || !isText {
 			fileBytes = []byte{}
 			err = nil
 		} else {
@@ -126,7 +123,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			PageTitle string
 			AuthUser  string
 			Host      string
-		}{fileName, string(fileBytes), c.SiteTitle, authUser, c.Host}
+			IsText    bool
+		}{fileName, string(fileBytes), c.SiteTitle, authUser, c.Host, isText}
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			log.Println(err)
@@ -146,7 +144,9 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		// create directories if dne
 		os.MkdirAll(path.Dir(filePath), os.ModePerm)
 		if userHasSpace(authUser, len(fileBytes)) {
-			err = ioutil.WriteFile(filePath, fileBytes, 0644)
+			if isText { // Cant edit binary files here
+				err = ioutil.WriteFile(filePath, fileBytes, 0644)
+			}
 		} else {
 			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
 			return
@@ -167,6 +167,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			newPath := path.Join(c.FilesDirectory, authUser, newName)
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
+			fileName = newName
 		}
 		http.Redirect(w, r, path.Join("/edit", fileName), http.StatusSeeOther)
 	}
