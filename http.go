@@ -436,18 +436,19 @@ func getFavicon(user string) string {
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
-	query := r.URL.Query()
 	p := filepath.Clean(r.URL.Path)
 	var isDir bool
 	fileName := path.Join(c.FilesDirectory, userName, p)
-	stat, _ := os.Stat(fileName)
+	stat, err := os.Stat(fileName)
 	if stat != nil {
 		isDir = stat.IsDir()
 	}
 	if p == "/" || isDir {
 		fileName = path.Join(fileName, "index.gmi")
-	} else if strings.HasPrefix(p, "/.hidden") {
-		renderDefaultError(w, http.StatusNotFound)
+	}
+
+	if strings.HasPrefix(p, "/.hidden") {
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	if r.URL.Path == "/style.css" {
@@ -455,19 +456,18 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := os.Stat(fileName)
-	if err != nil {
+	_, err = os.Stat(fileName)
+	if os.IsNotExist(err) {
 		renderDefaultError(w, http.StatusNotFound)
 		return
 	}
+
 	// Dumb content negotiation
 	extension := path.Ext(fileName)
-	_, raw := query["raw"]
+	_, raw := r.URL.Query()["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
 	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
-
 		file, _ := os.Open(fileName)
-
 		htmlString := textToHTML(gmi.ParseText(file))
 		favicon := getFavicon(userName)
 		data := struct {
