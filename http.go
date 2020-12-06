@@ -583,6 +583,7 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["auth_user"] = userName
 			session.Values["impersonating_user"] = user.Username
 			session.Save(r, w)
+			log.Printf("User %s impersonated %s", user.Username, userName)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
