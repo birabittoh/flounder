@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/net/webdav"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -683,6 +684,14 @@ func runHTTPServer() {
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
+
+	// webdav
+	webdavHandler := webdav.Handler{
+		FileSystem: webdav.Dir(c.FilesDirectory),
+		Prefix:     "/webdav/",
+		LockSystem: webdav.NewMemLS(),
+	}
+	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler.ServeHTTP)
 
 	// TODO rate limit login https://github.com/ulule/limiter
 
