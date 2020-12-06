@@ -54,13 +54,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
-		renderDefaultError(w, 500)
+		renderDefaultError(w, http.StatusInternalServerError)
 		return
 	}
 	allUsers, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)
-		renderDefaultError(w, 500)
+		renderDefaultError(w, http.StatusInternalServerError)
 		return
 	}
 	data := struct {
@@ -74,7 +74,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
-		renderDefaultError(w, 500)
+		renderDefaultError(w, http.StatusInternalServerError)
 		return
 	}
 }
@@ -83,13 +83,13 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	authUser, ok := session.Values["auth_user"].(string)
 	if !ok {
-		renderError(w, "403 Forbidden", 403)
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
 	if !isText {
-		renderError(w, "Bad Request: Not a text file, cannot be edited here", 400) // correct status code?
+		renderError(w, "Bad Request: Not a text file, cannot be edited here", http.StatusBadRequest) // correct status code?
 		return
 	}
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
@@ -98,7 +98,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err := checkIfValidFile(filePath, nil)
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), 400)
+			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		// create directories if dne
@@ -113,7 +113,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 		data := struct {
@@ -126,7 +126,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -136,7 +136,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err := checkIfValidFile(filePath, fileBytes)
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), 400)
+			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		// create directories if dne
@@ -144,14 +144,14 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err = ioutil.WriteFile(filePath, fileBytes, 0644)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 		newName := filepath.Clean(r.Form.Get("rename"))
 		err = checkIfValidFile(newName, fileBytes)
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), 400)
+			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if newName != fileName {
@@ -159,7 +159,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
 		}
-		http.Redirect(w, r, path.Join("/edit", fileName), 303)
+		http.Redirect(w, r, path.Join("/edit", fileName), http.StatusSeeOther)
 	}
 }
 
@@ -168,7 +168,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		session, _ := SessionStore.Get(r, "cookie-session")
 		authUser, ok := session.Values["auth_user"].(string)
 		if !ok {
-			renderDefaultError(w, 403)
+			renderDefaultError(w, http.StatusForbidden)
 			return
 		}
 		r.ParseMultipartForm(10 << 6) // why does this not work
@@ -177,14 +177,14 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), 400)
+			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		dest, _ := ioutil.ReadAll(file)
 		err = checkIfValidFile(fileName, dest)
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), 400)
+			renderError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		destPath := path.Join(c.FilesDirectory, authUser, fileName)
@@ -192,13 +192,13 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 		defer f.Close()
 		io.Copy(f, bytes.NewReader(dest))
 	}
-	http.Redirect(w, r, "/my_site", 303)
+	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
 // bool whether auth'd, string is auth user
@@ -211,7 +211,7 @@ func getAuthUser(r *http.Request) (bool, string, bool) {
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
-		renderDefaultError(w, 403)
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
@@ -219,13 +219,13 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		os.Remove(filePath) // suppress error
 	}
-	http.Redirect(w, r, "/my_site", 303)
+	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, isAdmin := getAuthUser(r)
 	if !authd {
-		renderDefaultError(w, 403)
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	// check auth
@@ -245,7 +245,7 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 func archiveHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
-		renderDefaultError(w, 403)
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	if r.Method == "GET" {
@@ -253,7 +253,7 @@ func archiveHandler(w http.ResponseWriter, r *http.Request) {
 		err := zipit(userFolder, w)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 
@@ -269,7 +269,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -296,7 +296,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["auth_user"] = username
 			session.Values["admin"] = isAdmin
 			session.Save(r, w)
-			http.Redirect(w, r, "/my_site", 303)
+			http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 		} else {
 			data := struct {
 				Error     string
@@ -305,7 +305,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
 				log.Println(err)
-				renderDefaultError(w, 500)
+				renderDefaultError(w, http.StatusInternalServerError)
 				return
 			}
 		}
@@ -316,7 +316,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	session.Options.MaxAge = -1
 	session.Save(r, w)
-	http.Redirect(w, r, "/", 303)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
@@ -345,7 +345,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -396,13 +396,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if !isAdmin {
-		renderDefaultError(w, 403)
+		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
 	allUsers, err := getUsers()
 	if err != nil {
 		log.Println(err)
-		renderDefaultError(w, 500)
+		renderDefaultError(w, http.StatusInternalServerError)
 		return
 	}
 	data := struct {
@@ -415,7 +415,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
 		log.Println(err)
-		renderDefaultError(w, 500)
+		renderDefaultError(w, http.StatusInternalServerError)
 		return
 	}
 }
@@ -447,19 +447,20 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	if p == "/" || isDir {
 		fileName = path.Join(fileName, "index.gmi")
 	} else if strings.HasPrefix(p, "/.hidden") {
-		renderDefaultError(w, 404)
+		renderDefaultError(w, http.StatusNotFound)
 		return
 	}
-	extension := path.Ext(fileName)
 	if r.URL.Path == "/style.css" {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 	}
+
 	_, err := os.Stat(fileName)
 	if err != nil {
-		renderDefaultError(w, 404)
+		renderDefaultError(w, http.StatusNotFound)
 		return
 	}
 	// Dumb content negotiation
+	extension := path.Ext(fileName)
 	_, raw := query["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
 	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
@@ -483,12 +484,12 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if r.Method == "POST" {
 		if !isAdmin {
-			renderDefaultError(w, 403)
+			renderDefaultError(w, http.StatusForbidden)
 			return
 		}
 		components := strings.Split(r.URL.Path, "/")
 		if len(components) < 5 {
-			renderError(w, "Invalid action", 400)
+			renderError(w, "Invalid action", http.StatusBadRequest)
 			return
 		}
 		userName := components[3]
@@ -501,10 +502,10 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			log.Println(err)
-			renderDefaultError(w, 500)
+			renderDefaultError(w, http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/admin", 303)
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}
 }
 
