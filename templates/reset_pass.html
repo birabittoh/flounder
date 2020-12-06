@@ -7,7 +7,7 @@
       id="password"
       name="password"
       size="32"
-      type="text"
+      type="password"
       value=""
     />
   </div>
@@ -17,7 +17,7 @@
       id="new_password1"
       name="new_password1"
       size="32"
-      type="text"
+      type="password"
       value=""
     />
   </div>
@@ -27,7 +27,7 @@
       id="new_password2"
       name="new_password2"
       size="32"
-      type="text"
+      type="password"
       value=""
     />
   </div>    
@@ -38,6 +38,6 @@
   type="submit"
   value="Change"
 />
-
 </form>
+<div class="error">{{ .Error }}
 {{template "footer" .}}

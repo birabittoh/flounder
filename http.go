@@ -334,7 +334,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var username string
 		var active bool
 		var isAdmin bool
-		_ = row.Scan(&username, &db_password, &active, &isAdmin)
+		err := row.Scan(&username, &db_password, &active, &isAdmin)
+		if err != nil {
+			panic(err)
+		}
 		if db_password != nil && !active {
 			data := struct {
 				Error     string
@@ -421,6 +424,9 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			errors = append(errors, err.Error())
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
+		if err != nil {
+			panic(err)
+		}
 		reference := r.Form.Get("reference")
 		if len(errors) == 0 {
 			_, err = DB.Exec("insert into user (username, email, password_hash, reference) values ($1, $2, $3, $4)", username, email, string(hashedPassword), reference)
@@ -562,11 +568,46 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		PageTitle string
 		AuthUser  AuthUser
-		Error     error
-	}{"Reset Password", user, nil}
-	err := t.ExecuteTemplate(w, "reset_pass.html", data)
-	if err != nil {
-		panic(err)
+		Error     string
+	}{"Reset Password", user, ""}
+	if r.Method == "GET" {
+		err := t.ExecuteTemplate(w, "reset_pass.html", data)
+		if err != nil {
+			panic(err)
+		}
+	} else if r.Method == "POST" {
+		r.ParseForm()
+		enteredCurrPass := r.Form.Get("password")
+		var currPass []byte
+		password1 := r.Form.Get("new_password1")
+		password2 := r.Form.Get("new_password2")
+		row := DB.QueryRow("SELECT password_hash FROM user where username = ?", user.Username)
+		err := row.Scan(&currPass)
+		if password1 != password2 {
+			data.Error = "New passwords do not match"
+		} else if len(password1) < 6 {
+			data.Error = "Password is too short"
+		} else {
+			err = bcrypt.CompareHashAndPassword(currPass, []byte(enteredCurrPass))
+			if err == nil {
+				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password1), 8) // TODO handle error
+				if err != nil {
+					panic(err)
+				}
+				_, err = DB.Exec("update user set password_hash = ? where username = ?", hashedPassword, user.Username)
+				if err != nil {
+					panic(err)
+				}
+				http.Redirect(w, r, "/me", http.StatusSeeOther)
+				return
+			} else {
+				data.Error = "That's not your current password"
+			}
+		}
+		err = t.ExecuteTemplate(w, "reset_pass.html", data)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

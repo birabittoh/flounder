@@ -9,11 +9,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"syscall"
 )
 
 // TODO improve cli
@@ -39,7 +41,13 @@ func runAdminCommand() {
 		username := args[2]
 		newUsername := args[3]
 		err = renameUser(username, newUsername)
-		// case "set-password":
+	case "set-password":
+		username := args[2]
+		fmt.Print("Enter New Password: ")
+		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			setPassword(username, bytePassword)
+		}
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +65,7 @@ func makeAdmin(username string) error {
 	return nil
 }
 
-func setPassword(username string, newPass string) error {
+func setPassword(username string, newPass []byte) error {
 	return nil
 }
 
