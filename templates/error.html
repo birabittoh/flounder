@@ -1,4 +1,4 @@
 {{template "header" .}}
 <h1>Error</h1>
-<div class="error">{{ .ErrorMsg }}</div>
+<div class="error">{{.StatusCode}} {{ .ErrorMsg }}</div>
 {{template "footer" .}}

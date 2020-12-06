@@ -26,15 +26,19 @@ var t *template.Template
 var DB *sql.DB
 var SessionStore *sessions.CookieStore
 
-const InternalServerErrorMsg = "500: Internal Server Error"
+func renderDefaultError(w http.ResponseWriter, statusCode int) {
+	errorMsg := http.StatusText(statusCode)
+	renderError(w, errorMsg, statusCode)
+}
 
 func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 	data := struct {
-		PageTitle string
-		ErrorMsg  string
-	}{"Error!", errorMsg}
+		PageTitle  string
+		StatusCode int
+		ErrorMsg   string
+	}{"Error!", statusCode, errorMsg}
 	err := t.ExecuteTemplate(w, "error.html", data)
-	if err != nil { // shouldn't happen probably
+	if err != nil { // Shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
 	}
 }
@@ -50,13 +54,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	indexFiles, err := getIndexFiles()
 	if err != nil {
 		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
+		renderDefaultError(w, 500)
 		return
 	}
 	allUsers, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
+		renderDefaultError(w, 500)
 		return
 	}
 	data := struct {
@@ -70,7 +74,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
+		renderDefaultError(w, 500)
 		return
 	}
 }
@@ -79,13 +83,13 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	authUser, ok := session.Values["auth_user"].(string)
 	if !ok {
-		renderError(w, "403: Forbidden", 403)
+		renderError(w, "403 Forbidden", 403)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
 	if !isText {
-		renderError(w, "Not a text file, cannot be edited here", 400) // correct status code?
+		renderError(w, "Bad Request: Not a text file, cannot be edited here", 400) // correct status code?
 		return
 	}
 	filePath := path.Join(c.FilesDirectory, authUser, fileName)
@@ -109,7 +113,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 		data := struct {
@@ -122,7 +126,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err = t.ExecuteTemplate(w, "edit_file.html", data)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -140,7 +144,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		err = ioutil.WriteFile(filePath, fileBytes, 0644)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 		newName := filepath.Clean(r.Form.Get("rename"))
@@ -164,7 +168,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		session, _ := SessionStore.Get(r, "cookie-session")
 		authUser, ok := session.Values["auth_user"].(string)
 		if !ok {
-			renderError(w, "403: Forbidden", 403)
+			renderDefaultError(w, 403)
 			return
 		}
 		r.ParseMultipartForm(10 << 6) // why does this not work
@@ -188,7 +192,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 		defer f.Close()
@@ -207,7 +211,7 @@ func getAuthUser(r *http.Request) (bool, string, bool) {
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
-		renderError(w, "403: Forbidden", 403)
+		renderDefaultError(w, 403)
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/delete/"):])
@@ -221,7 +225,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, isAdmin := getAuthUser(r)
 	if !authd {
-		renderError(w, "403: Forbidden", 403)
+		renderDefaultError(w, 403)
 		return
 	}
 	// check auth
@@ -241,7 +245,7 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 func archiveHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
-		renderError(w, "403: Forbidden", 403)
+		renderDefaultError(w, 403)
 		return
 	}
 	if r.Method == "GET" {
@@ -249,7 +253,7 @@ func archiveHandler(w http.ResponseWriter, r *http.Request) {
 		err := zipit(userFolder, w)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 
@@ -265,7 +269,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -301,7 +305,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
 				log.Println(err)
-				renderError(w, InternalServerErrorMsg, 500)
+				renderDefaultError(w, 500)
 				return
 			}
 		}
@@ -341,7 +345,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 	} else if r.Method == "POST" {
@@ -392,13 +396,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if !isAdmin {
-		renderError(w, "403: Forbidden", 403)
+		renderDefaultError(w, 403)
 		return
 	}
 	allUsers, err := getUsers()
 	if err != nil {
 		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
+		renderDefaultError(w, 500)
 		return
 	}
 	data := struct {
@@ -411,7 +415,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
 		log.Println(err)
-		renderError(w, InternalServerErrorMsg, 500)
+		renderDefaultError(w, 500)
 		return
 	}
 }
@@ -431,10 +435,9 @@ func getFavicon(user string) string {
 
 // Server a user's file
 func userFile(w http.ResponseWriter, r *http.Request) {
-	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // clean probably unnecessary
+	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
 	query := r.URL.Query()
 	p := filepath.Clean(r.URL.Path)
-	// chcek if is directory for index.gmi file
 	var isDir bool
 	fileName := path.Join(c.FilesDirectory, userName, p)
 	stat, _ := os.Stat(fileName)
@@ -444,7 +447,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	if p == "/" || isDir {
 		fileName = path.Join(fileName, "index.gmi")
 	} else if strings.HasPrefix(p, "/.hidden") {
-		renderError(w, "404: file not found", 404)
+		renderDefaultError(w, 404)
 		return
 	}
 	extension := path.Ext(fileName)
@@ -453,10 +456,10 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := os.Stat(fileName)
 	if err != nil {
-		renderError(w, "404: file not found", 404)
+		renderDefaultError(w, 404)
 		return
 	}
-	// dumb content negotiation
+	// Dumb content negotiation
 	_, raw := query["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
 	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
@@ -480,7 +483,7 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if r.Method == "POST" {
 		if !isAdmin {
-			renderError(w, "403: Forbidden", 403)
+			renderDefaultError(w, 403)
 			return
 		}
 		components := strings.Split(r.URL.Path, "/")
@@ -498,7 +501,7 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			log.Println(err)
-			renderError(w, InternalServerErrorMsg, 500)
+			renderDefaultError(w, 500)
 			return
 		}
 		http.Redirect(w, r, "/admin", 303)
