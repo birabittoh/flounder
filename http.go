@@ -287,7 +287,6 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		r.ParseForm()
 		newUsername := r.Form.Get("username")
-		fmt.Println(newUsername)
 		errors := []string{}
 		newEmail := r.Form.Get("email")
 		newUsername = strings.ToLower(newUsername)
@@ -297,12 +296,13 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				// TODO better error not sql
 				errors = append(errors, err.Error())
+			} else {
+				log.Printf("Changed email for %s from %s to %s", authUser, me.Email, newEmail)
 			}
 		}
 		if newUsername != authUser {
 			// Rename User
 			err = renameUser(authUser, newUsername)
-			fmt.Println(newEmail, me.Email, newUsername, authUser)
 			if err != nil {
 				errors = append(errors, err.Error())
 			} else {
@@ -556,6 +556,17 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
+	_, authUser, _ := getAuthUser(r)
+	err := deleteUser(authUser)
+	if err != nil {
+		log.Println(err)
+		renderDefaultError(w, http.StatusInternalServerError)
+		return
+	}
+	logoutHandler(w, r)
+}
+
 func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, _, isAdmin := getAuthUser(r)
 	if r.Method == "POST" {
@@ -609,6 +620,7 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/logout", logoutHandler)
 	serveMux.HandleFunc(hostname+"/register", registerHandler)
 	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
+	serveMux.HandleFunc(hostname+"/delete-account", deleteAccountHandler)
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)

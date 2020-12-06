@@ -20,7 +20,7 @@ import (
 func runAdminCommand() {
 	args := flag.Args() // again?
 	if len(args) < 3 {
-		fmt.Println("Expected subcommand with parameter activate-user|delete-user|make-admin")
+		fmt.Println("Expected subcommand with parameter activate-user|delete-user|make-admin|rename-user")
 		os.Exit(1)
 	}
 	var err error
@@ -39,6 +39,7 @@ func runAdminCommand() {
 		username := args[2]
 		newUsername := args[3]
 		err = renameUser(username, newUsername)
+		// case "set-password":
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -56,9 +57,14 @@ func makeAdmin(username string) error {
 	return nil
 }
 
+func setPassword(username string, newPass string) error {
+	return nil
+}
+
 func activateUser(username string) error {
-	_, err := DB.Exec("UPDATE user SET active = true WHERE username = $1", username)
+	_, err := DB.Exec("UPDATE user SET active = true WHERE username = ?", username)
 	if err != nil {
+		// TODO verify 1 row updated
 		return err
 	}
 	log.Println("Activated user", username)
@@ -84,8 +90,6 @@ func renameUser(oldUsername string, newUsername string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Old user", oldUsername)
-	fmt.Println("new user", newUsername)
 	res, err := DB.Exec("UPDATE user set username = ? WHERE username = ?", newUsername, oldUsername)
 	if err != nil {
 		return err
@@ -104,6 +108,7 @@ func renameUser(oldUsername string, newUsername string) error {
 		// TODO some sort of better handling?
 		return err
 	}
+	log.Printf("Changed username from %s to %s", oldUsername, newUsername)
 	return nil
 }
 
@@ -113,6 +118,11 @@ func deleteUser(username string) error {
 		return err
 	}
 	username = filepath.Clean(username)
-	os.RemoveAll(path.Join(c.FilesDirectory, username))
+	err = os.RemoveAll(path.Join(c.FilesDirectory, username))
+	if err != nil {
+		// bad state
+		return err
+	}
+	log.Println("Deleted user", username)
 	return nil
 }
