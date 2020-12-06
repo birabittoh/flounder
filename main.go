@@ -67,6 +67,16 @@ func getActiveUserNames() ([]string, error) {
 	return dest, nil
 }
 
+func getUserByName(username string) (*User, error) {
+	var user User
+	row := DB.QueryRow(`SELECT username, email, active, admin, created_at, reference from user WHERE username = ?`, username)
+	err := row.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func getUsers() ([]User, error) {
 	rows, err := DB.Query(`SELECT username, email, active, admin, created_at, reference from user ORDER BY created_at DESC`)
 	if err != nil {
@@ -197,7 +207,7 @@ func generateCookieKeyIfDNE() []byte {
 		if err != nil {
 			log.Fatal(err)
 		}
-		_, err = DB.Exec("insert into cookie_key values ($1)", k)
+		_, err = DB.Exec("insert into cookie_key values (?)", k)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -23,19 +23,24 @@ func runAdminCommand() {
 		fmt.Println("Expected subcommand with parameter activate-user|delete-user|make-admin")
 		os.Exit(1)
 	}
+	var err error
 	switch args[1] {
 	case "activate-user":
 		username := args[2]
-		err := activateUser(username)
-		log.Fatal(err)
+		err = activateUser(username)
 	case "delete-user":
 		username := args[2]
 		// TODO add confirmation
-		err := deleteUser(username)
-		log.Fatal(err)
+		err = deleteUser(username)
 	case "make-admin":
 		username := args[2]
-		err := makeAdmin(username)
+		err = makeAdmin(username)
+	case "rename-user":
+		username := args[2]
+		newUsername := args[3]
+		err = renameUser(username, newUsername)
+	}
+	if err != nil {
 		log.Fatal(err)
 	}
 	// reset password
@@ -71,6 +76,34 @@ Have fun!`
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	ioutil.WriteFile(path.Join(c.FilesDirectory, username, "index.gmi"), []byte(baseIndex), 0644)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
+	return nil
+}
+
+func renameUser(oldUsername string, newUsername string) error {
+	err := isOkUsername(newUsername)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Old user", oldUsername)
+	fmt.Println("new user", newUsername)
+	res, err := DB.Exec("UPDATE user set username = ? WHERE username = ?", newUsername, oldUsername)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if rowsAffected != 1 {
+		return fmt.Errorf("No User updated %s %s", oldUsername, newUsername)
+	} else if err != nil {
+		return err
+	}
+	userFolder := path.Join(c.FilesDirectory, oldUsername)
+	newUserFolder := path.Join(c.FilesDirectory, newUsername)
+	err = os.Rename(userFolder, newUserFolder)
+	if err != nil {
+		// This would be bad. User in broken, insecure state.
+		// TODO some sort of better handling?
+		return err
+	}
 	return nil
 }
 

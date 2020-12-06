@@ -260,6 +260,66 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
+func myAccountHandler(w http.ResponseWriter, r *http.Request) {
+	authd, authUser, isAdmin := getAuthUser(r)
+	if !authd {
+		renderDefaultError(w, http.StatusForbidden)
+		return
+	}
+	me, _ := getUserByName(authUser)
+	type pageData struct {
+		PageTitle string
+		LoggedIn  bool
+		AuthUser  string
+		IsAdmin   bool
+		Email     string
+		Errors    []string
+	}
+	data := pageData{"My Account", true, authUser, isAdmin, me.Email, nil}
+
+	if r.Method == "GET" {
+		err := t.ExecuteTemplate(w, "me.html", data)
+		if err != nil {
+			log.Println(err)
+			renderDefaultError(w, http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == "POST" {
+		r.ParseForm()
+		newUsername := r.Form.Get("username")
+		fmt.Println(newUsername)
+		errors := []string{}
+		newEmail := r.Form.Get("email")
+		newUsername = strings.ToLower(newUsername)
+		var err error
+		if newEmail != me.Email {
+			_, err = DB.Exec("update user set email = ? where username = ?", newEmail, me.Email)
+			if err != nil {
+				// TODO better error not sql
+				errors = append(errors, err.Error())
+			}
+		}
+		if newUsername != authUser {
+			// Rename User
+			err = renameUser(authUser, newUsername)
+			fmt.Println(newEmail, me.Email, newUsername, authUser)
+			if err != nil {
+				errors = append(errors, err.Error())
+			} else {
+				session, _ := SessionStore.Get(r, "cookie-session")
+				session.Values["auth_user"] = newUsername
+				session.Save(r, w)
+			}
+		}
+		// reset auth
+		authd, authUser, isAdmin = getAuthUser(r)
+		data.Errors = errors
+		data.AuthUser = authUser
+		data.Email = newEmail
+		_ = t.ExecuteTemplate(w, "me.html", data)
+	}
+}
+
 func archiveHandler(w http.ResponseWriter, r *http.Request) {
 	authd, authUser, _ := getAuthUser(r)
 	if !authd {
@@ -339,19 +399,19 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
 
-func isOkUsername(s string) bool {
+func isOkUsername(s string) error {
 	if len(s) < 1 {
-		return false
+		return fmt.Errorf("Username is too short")
 	}
-	if len(s) > 31 {
-		return false
+	if len(s) > 32 {
+		return fmt.Errorf("Username is too long. 32 char max.")
 	}
 	for _, char := range s {
 		if !strings.Contains(ok, strings.ToLower(string(char))) {
-			return false
+			return fmt.Errorf("Username contains invalid characters. Valid characters include lowercase letters, numbers, and hyphens.")
 		}
 	}
-	return true
+	return nil
 }
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
@@ -371,9 +431,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
 		errors := []string{}
-		if !strings.Contains(email, "@") {
-			errors = append(errors, "Invalid Email")
-		}
 		if r.Form.Get("password") != r.Form.Get("password2") {
 			errors = append(errors, "Passwords don't match")
 		}
@@ -381,15 +438,15 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			errors = append(errors, "Password is too short")
 		}
 		username := strings.ToLower(r.Form.Get("username"))
-		if !isOkUsername(username) {
-			errors = append(errors, "Username is invalid: can only contain letters, numbers and hypens. Maximum 32 characters.")
+		err := isOkUsername(username)
+		if err != nil {
+			errors = append(errors, err.Error())
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
 		reference := r.Form.Get("reference")
 		if len(errors) == 0 {
 			_, err = DB.Exec("insert into user (username, email, password_hash, reference) values ($1, $2, $3, $4)", username, email, string(hashedPassword), reference)
 			if err != nil {
-				log.Println(err)
 				errors = append(errors, "Username or email is already used")
 			}
 		}
@@ -543,6 +600,7 @@ func runHTTPServer() {
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
+	serveMux.HandleFunc(hostname+"/me", myAccountHandler)
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
