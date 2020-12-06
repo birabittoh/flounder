@@ -553,13 +553,19 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	user := newGetAuthUser(r)
 	if r.Method == "POST" {
-		err := deleteUser(user.Username)
-		if err != nil {
-			log.Println(err)
-			renderDefaultError(w, http.StatusInternalServerError)
-			return
+		r.ParseForm()
+		validate := r.Form.Get("validate-delete")
+		if validate == user.Username {
+			err := deleteUser(user.Username)
+			if err != nil {
+				log.Println(err)
+				renderDefaultError(w, http.StatusInternalServerError)
+				return
+			}
+			logoutHandler(w, r)
+		} else {
+			http.Redirect(w, r, "/me", http.StatusSeeOther)
 		}
-		logoutHandler(w, r)
 	}
 }
 
