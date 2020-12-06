@@ -47,6 +47,7 @@ func makeAdmin(username string) error {
 	if err != nil {
 		return err
 	}
+	log.Println("Made admin user", username)
 	return nil
 }
 

@@ -18,7 +18,7 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	files, err := getIndexFiles()
+	files, err := getIndexFiles(false)
 	users, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)

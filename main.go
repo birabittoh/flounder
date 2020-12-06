@@ -97,14 +97,14 @@ func getCreator(filePath string) string {
 	return r
 }
 
-func getIndexFiles() ([]*File, error) { // cache this function
+func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 	result := []*File{}
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Printf("Failure accessing a path %q: %v\n", thepath, err)
 			return err // think about
 		}
-		if info.IsDir() && info.Name() == HIDDEN_FOLDER {
+		if !admin && info.IsDir() && info.Name() == HIDDEN_FOLDER {
 			return filepath.SkipDir
 		}
 		// make this do what it should

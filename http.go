@@ -57,7 +57,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authd, _, isAdmin := getAuthUser(r)
-	indexFiles, err := getIndexFiles()
+	indexFiles, err := getIndexFiles(isAdmin)
 	if err != nil {
 		log.Println(err)
 		renderDefaultError(w, http.StatusInternalServerError)
