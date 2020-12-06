@@ -204,7 +204,6 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
 
-// TODO use this
 type AuthUser struct {
 	LoggedIn          bool
 	Username          string
@@ -559,6 +558,16 @@ func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	user := newGetAuthUser(r)
+	data := struct {
+		PageTitle string
+		AuthUser  AuthUser
+		Error     error
+	}{"Reset Password", user, nil}
+	err := t.ExecuteTemplate(w, "reset_pass.html", data)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func adminUserHandler(w http.ResponseWriter, r *http.Request) {

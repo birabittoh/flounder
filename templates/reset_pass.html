@@ -1,6 +1,6 @@
 {{template "header" .}}
 <h1>Reset Password</h1>
-<form action="/reset_password" method="post">
+<form action="/reset-password" method="post">
   <div>
     <label for="password">Current Password</label><br>
     <input
@@ -8,7 +8,7 @@
       name="password"
       size="32"
       type="text"
-      value="{{.AuthUser}}"
+      value=""
     />
   </div>
   <div>

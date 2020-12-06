@@ -4,6 +4,7 @@
 <form action="/me" method="post">
   <div>
     <label for="username">Username</label><br>
+    <em>Note: renaming your account will cause links to your pages to break</em>
     <input
       id="username"
       name="username"
@@ -29,13 +30,17 @@
 </form>
 <a href="/reset-password">Reset password</a>
 <p><a href="/my_site/flounder-archive.zip">🗄️ Download my site archive (.zip)</a></p>
-<form action="/delete-account" method="POST" class="inline">
+<details>
+  <summary>Delete Account</summary>
+  <form action="/delete-account" method="POST">
+<label for="validate-delete">Type in your username to delete your account:</label>
+<input id="validate-delete" name="validate-delete" size="32" type="text" value="" />
 <input
   class="button delete"
   type="submit"
-  onclick="return confirm('Are you SURE you want to delete your account and all your files?');"
   value="Delete account"
+  onclick="return confirm('Are you SURE you want to delete your account and all your files?');"
 />
-
+</details>
 {{template "footer" .}}
 </form>
