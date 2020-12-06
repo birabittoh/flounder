@@ -283,7 +283,8 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 			// Rename User
 			err = renameUser(authUser, newUsername)
 			if err != nil {
-				errors = append(errors, err.Error())
+				log.Println(err)
+				errors = append(errors, "Could not rename user")
 			} else {
 				session, _ := SessionStore.Get(r, "cookie-session")
 				session.Values["auth_user"] = newUsername
@@ -596,7 +597,7 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			err = bcrypt.CompareHashAndPassword(currPass, []byte(enteredCurrPass))
 			if err == nil {
-				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password1), 8) // TODO handle error
+				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password1), 8)
 				if err != nil {
 					panic(err)
 				}
