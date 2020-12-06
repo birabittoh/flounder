@@ -1,0 +1,41 @@
+{{template "header" .}}
+<h1>My Account</h1>
+{{template "nav.html" .}}
+<form action="/me" method="post">
+  <div>
+    <label for="username">Username</label><br>
+    <input
+      id="username"
+      name="username"
+      size="32"
+      type="text"
+      value="{{.AuthUser}}"
+    />
+  </div>
+  <div>
+    <label for="email">Email</label>
+    <input id="email" name="email" size="64" type="text" value="{{.Email}}" />
+  </div>
+  <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
+  <div>
+    <input
+      class="button"
+      id="submit"
+      name="submit"
+      type="submit"
+      value="Save"
+    />
+  </div>
+</form>
+<a href="/reset_password">Reset password</a>
+<p><a href="/my_site/flounder-archive.zip">🗄️ Download my site archive (.zip)</a></p>
+<form action="/delete-account" method="POST" class="inline">
+<input
+  class="button delete"
+  type="submit"
+  onclick="return confirm('Are you SURE you want to delete your account and all your files?');"
+  value="Delete account"
+/>
+
+{{template "footer" .}}
+</form>

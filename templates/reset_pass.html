@@ -1,0 +1,30 @@
+{{template "header" .}}
+<h1>Reset Password</h1>
+<form action="/reset_password" method="post">
+  <div>
+    <label for="username">Username</label><br>
+    <input
+      id="username"
+      name="username"
+      size="32"
+      type="text"
+      value="{{.AuthUser}}"
+    />
+  </div>
+  <div>
+    <label for="email">Email</label>
+    <input id="email" name="email" size="64" type="text" value="{{.Email}}" />
+  </div>
+  <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
+  <div>
+    <input
+      class="button"
+      id="submit"
+      name="submit"
+      type="submit"
+      value="Save"
+    />
+  </div>
+</form>
+<a href="/reset_password">Reset password</a>
+{{template "footer" .}}
