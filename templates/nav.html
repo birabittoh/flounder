@@ -8,7 +8,13 @@
   {{ end }}
   <a href="/logout">logout</a>
   {{ if .AuthUser.ImpersonatingUser }}
-  <em><b>({{.AuthUser.Username}} impersonated by {{.AuthUser.ImpersonatingUser}})</b></em>
+<style>
+main {
+      background-color: #ffe9ec;
+}
+</style>
+<div class="impersonate">
+  ({{.AuthUser.Username}} impersonated by {{.AuthUser.ImpersonatingUser}})</div>
   {{ end }}
 {{ else }}
   <a href="/register">register</a>

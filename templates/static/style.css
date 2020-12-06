@@ -46,6 +46,12 @@ width: 100%;
 resize: vertical;
 }
 
+.impersonate {
+  font-style: italic;
+  font-weight: bold;
+  background-color: 
+}
+
 .button {
   background-color: white; /* Green */
   border: 1px solid black;
