@@ -13,17 +13,13 @@ func webdavHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Authentication Error", http.StatusUnauthorized)
 		return
 	}
-	for key, element := range r.Header {
-		fmt.Println(key, element)
-	}
-	fmt.Println(r.Body)
 	user, pass, ok := r.BasicAuth()
 	if ok && (checkAuth(user, pass) == nil) {
 		fmt.Println(user, pass)
 		webdavHandler := webdav.Handler{
 			FileSystem: webdav.Dir(getUserDirectory(user)),
 			Prefix:     "/webdav/",
-			LockSystem: webdav.NewMemLS(),
+			LockSystem: nil, //webdav.NewMemLS(),
 		}
 		webdavHandler.ServeHTTP(w, r)
 	} else {

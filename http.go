@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/webdav"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -586,17 +585,14 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		r.ParseForm()
 		enteredCurrPass := r.Form.Get("password")
-		var currPass []byte
 		password1 := r.Form.Get("new_password1")
 		password2 := r.Form.Get("new_password2")
-		row := DB.QueryRow("SELECT password_hash FROM user where username = ?", user.Username)
-		err := row.Scan(&currPass)
 		if password1 != password2 {
 			data.Error = "New passwords do not match"
 		} else if len(password1) < 6 {
 			data.Error = "Password is too short"
 		} else {
-			err = bcrypt.CompareHashAndPassword(currPass, []byte(enteredCurrPass))
+			err := checkAuth(user.Username, enteredCurrPass)
 			if err == nil {
 				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password1), 8)
 				if err != nil {
@@ -613,7 +609,7 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 				data.Error = "That's not your current password"
 			}
 		}
-		err = t.ExecuteTemplate(w, "reset_pass.html", data)
+		err := t.ExecuteTemplate(w, "reset_pass.html", data)
 		if err != nil {
 			panic(err)
 		}
@@ -684,16 +680,8 @@ func runHTTPServer() {
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
-
-	// webdav
-	webdavHandler := webdav.Handler{
-		FileSystem: webdav.Dir(c.FilesDirectory),
-		Prefix:     "/webdav/",
-		LockSystem: webdav.NewMemLS(),
-	}
-	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler.ServeHTTP)
-
-	// TODO rate limit login https://github.com/ulule/limiter
+	// TODO authentication
+	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler)
 
 	wrapped := (handlers.LoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux)))
 
