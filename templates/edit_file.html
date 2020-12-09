@@ -1,5 +1,5 @@
 {{template "header" .}}
-<h2>Editing <a href="//{{.AuthUser}}.{{.Host}}/{{.FileName}}">{{.FileName}}</a></h2>
+<h2>Editing <a href="//{{.AuthUser.Username}}.{{.Host}}/{{.FileName}}">{{.FileName}}</a></h2>
 <form id="edit-form" action="/edit/{{.FileName}}" method="POST">
  <label for="rename">Rename:</label>
    <input type="text" value="{{.FileName}}" id="rename" name="rename">
