@@ -15,11 +15,13 @@ func webdavHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user, pass, ok := r.BasicAuth()
 	if ok && (checkAuth(user, pass) == nil) {
-		fmt.Println(user, pass)
 		webdavHandler := webdav.Handler{
 			FileSystem: webdav.Dir(getUserDirectory(user)),
 			Prefix:     "/webdav/",
-			LockSystem: nil, //webdav.NewMemLS(),
+			LockSystem: webdav.NewMemLS(),
+			Logger: func(r *http.Request, e error) {
+				fmt.Println(e)
+			},
 		}
 		webdavHandler.ServeHTTP(w, r)
 	} else {
