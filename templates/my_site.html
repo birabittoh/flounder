@@ -28,7 +28,11 @@
   {{ else }}
   <td>
     <a href="//{{.Creator}}.{{.Host}}/{{.Name}}">
-      {{ .Name }}</a>
+      {{ if eq .Name  "index.gmi" }}
+      <b>{{ .Name }}</b>
+      {{ else }}
+      {{ .Name }}
+      {{ end }} </a>
   </td>
   <td>
   <a href="/edit/{{.Name}}">edit</a>
