@@ -70,7 +70,14 @@ func setPassword(username string, newPass []byte) error {
 }
 
 func activateUser(username string) error {
-	_, err := DB.Exec("UPDATE user SET active = true WHERE username = ?", username)
+	// Not ideal here
+	row := DB.QueryRow("SELECT email FROM user where username = ?", username)
+	var email string
+	err := row.Scan(&email)
+	if err != nil {
+		return err
+	}
+	_, err = DB.Exec("UPDATE user SET active = true WHERE username = ?", username)
 	if err != nil {
 		// TODO verify 1 row updated
 		return err
@@ -90,6 +97,17 @@ Have fun!`
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	ioutil.WriteFile(path.Join(c.FilesDirectory, username, "index.gmi"), []byte(baseIndex), 0644)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
+	if c.SMTPUsername != "" {
+		SendEmail(email, "Welcome to Flounder!", fmt.Sprintf(`Hi
+	%s, Welcome to Flounder! You can now log into your account at
+	https://flounder.online/login -- For more information about
+	Flounder, check out https://admin.flounder.online/
+
+	Let me know if you have any questions, and have fun!
+
+	Alex
+	`, username))
+	}
 	return nil
 }
 

@@ -22,6 +22,9 @@ type Config struct {
 	MaxUserBytes       int64
 	TLSCertFile        string
 	TLSKeyFile         string
+	SMTPServer         string
+	SMTPUsername       string
+	SMTPPassword       string
 }
 
 func getConfig(filename string) (Config, error) {

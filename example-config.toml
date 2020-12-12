@@ -1,5 +1,5 @@
 # Used in HTML templates and titles
-SiteTitle="flounder"
+SiteTitle="demoflounder"
 
 # Include port if running locally
 Host="localhost:8165"
@@ -9,7 +9,8 @@ HttpPort=8165
 HttpsEnabled=false
 
 # Folder containing subfolders for each user's files
-FilesDirectory="./files"
+# Must be absolute path due to bug
+FilesDirectory="/home/alex/dev/go-flounder/files"
 LogFile="./flounder.log"
 
 # Gemini autogenerates self-signed certs
@@ -20,11 +21,18 @@ GeminiCertStore="/tmp"
 # TLSCertFile="./server.crt"
 # TLSKeyFile="./server.key"
 
+# Optional SMTP -- to send notification emails to users on acct activation
+# SMTPServer = mail.goodsite.com:587
+# SMTPUsername = myemail@coolplace.com
+# SMTPPassword = hunter2
+
 # Templates and static files
 # Everything in the static subfolder will be served at /
 TemplatesDirectory="./templates"
 DBFile="./flounder.db"
 
-MaxFileSize=128000 # 128 KB
+MaxFileBytes=128000 # 128 KB
+MaxUserBytes=10000000 # 10 MB
+
 OkExtensions=[".gmi", ".txt", ".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".midi", ".json", ".csv", ".gemini", ".mp3", ".css", ".ttf", ".otf", ".woff", ".woff2"]
 
