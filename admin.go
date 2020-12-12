@@ -98,15 +98,12 @@ Have fun!`
 	ioutil.WriteFile(path.Join(c.FilesDirectory, username, "index.gmi"), []byte(baseIndex), 0644)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	if c.SMTPUsername != "" {
-		SendEmail(email, "Welcome to Flounder!", fmt.Sprintf(`Hi
-	%s, Welcome to Flounder! You can now log into your account at
-	https://flounder.online/login -- For more information about
-	Flounder, check out https://admin.flounder.online/
+		SendEmail(email, "Welcome to Flounder!", fmt.Sprintf(`
+Hi %s, Welcome to Flounder! You can now log into your account at
+https://flounder.online/login -- For more information about
+Flounder, check out https://admin.flounder.online/
 
-	Let me know if you have any questions, and have fun!
-
-	Alex
-	`, username))
+Let me know if you have any questions, and have fun!`, username))
 	}
 	return nil
 }
