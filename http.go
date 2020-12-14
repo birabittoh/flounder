@@ -540,11 +540,14 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		file, _ := os.Open(fileName)
 		htmlString := textToHTML(gmi.ParseText(file))
 		favicon := getFavicon(userName)
+		hostname := strings.Split(r.Host, ":")[0]
+		URI := hostname + r.URL.String()
 		data := struct {
 			SiteBody  template.HTML
 			Favicon   string
 			PageTitle string
-		}{template.HTML(htmlString), favicon, userName + p}
+			URI       string
+		}{template.HTML(htmlString), favicon, userName + p, URI}
 		t.ExecuteTemplate(w, "user_page.html", data)
 	} else {
 		http.ServeFile(w, r, fileName)
