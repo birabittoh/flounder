@@ -97,6 +97,7 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 					parsedUrl.Host = baseUrl.Host
 					parsedUrl.Path = path.Join(path.Dir(baseUrl.Path), parsedUrl.Path)
 				}
+				parsedUrl.Scheme = ""
 				if time.Now().After(date) {
 					title := strings.Trim(splits[1][10:], " -\t")
 					fe := FeedEntry{title, parsedUrl, date, dateString, &gf}
