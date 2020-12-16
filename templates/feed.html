@@ -9,7 +9,7 @@ For more information on how to format your site to show up here, see <a href="ht
 {{ range .FeedEntries}}
 <p>
 {{.DateString}} <a href="//{{.Feed.Creator}}.{{$domain}}">{{.Feed.Creator}}</a> 
-{{ if .Feed.Title }}<a href="{{.Url}}" class='person-link'>({{.Feed.Title}}){{end}} {{.Title}}</a>
+{{ if .Feed.Title }}<em><a href="{{.Feed.Url}}" class='person-link'>{{.Feed.Title}}</a></em>{{end}} <a href="{{.Url}}">{{.Title}}</a>
 </p>
 {{end}}
 {{template "footer" .}}

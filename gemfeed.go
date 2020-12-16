@@ -17,7 +17,7 @@ import (
 type Gemfeed struct {
 	Title   string
 	Creator string
-	FeedUrl *url.URL
+	Url     *url.URL
 	Entries []*FeedEntry
 }
 
@@ -46,7 +46,7 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 			f.Close()
 			if err == nil {
 				feed.Creator = creator
-				feed.FeedUrl = &baseUrl
+				feed.Url = &baseUrl
 				feedEntries = append(feedEntries, feed.Entries...)
 			}
 		}
