@@ -78,6 +78,24 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func feedHandler(w http.ResponseWriter, r *http.Request) {
+	user := newGetAuthUser(r)
+	feedEntries, err := getAllGemfeedEntries()
+	if err != nil {
+		panic(err)
+	}
+	data := struct {
+		Host        string
+		PageTitle   string
+		FeedEntries []*FeedEntry
+		AuthUser    AuthUser
+	}{c.Host, c.SiteTitle, feedEntries, user}
+	err = t.ExecuteTemplate(w, "feed.html", data)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	user := newGetAuthUser(r)
 	if !user.LoggedIn {
@@ -533,10 +551,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Dumb content negotiation
-	extension := path.Ext(fileName)
 	_, raw := r.URL.Query()["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
-	if !raw && !acceptsGemini && (extension == ".gmi" || extension == ".gemini") {
+	if !raw && !acceptsGemini && isGemini(fileName) {
 		file, _ := os.Open(fileName)
 		htmlString := textToHTML(gmi.ParseText(file))
 		favicon := getFavicon(userName)
@@ -668,6 +685,7 @@ func runHTTPServer() {
 	port := c.HttpPort
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
+	serveMux.HandleFunc(hostname+"/feed", feedHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
 	serveMux.HandleFunc(hostname+"/me", myAccountHandler)
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)

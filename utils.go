@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+func isGemini(filename string) bool {
+	extension := path.Ext(filename)
+	return extension == ".gmi" || extension == ".gemini"
+}
+
 func timeago(t *time.Time) string {
 	d := time.Since(*t)
 	if d.Seconds() < 60 {

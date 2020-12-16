@@ -1,0 +1,14 @@
+{{$domain := .Host}}
+{{template "header" .}}
+<h1>🐟{{.PageTitle}} -- Feeds</h1>
+{{template "nav.html" .}}
+<br>
+<p>
+For more information on how to format your site to show up here, see <a href="https://admin.flounder.online/gemfeed.gmi">this documentation</a>
+<h2>Feed:</h2>
+{{ range .FeedEntries}}
+<p>
+<a href="{{.Url}}" class='person-link'>{{.DateString}} [{{.FeedTitle}}] — {{.Title}}</a>
+</p>
+{{end}}
+{{template "footer" .}}
