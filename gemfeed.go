@@ -27,11 +27,13 @@ type FeedEntry struct {
 
 // TODO definitely cache this function -- it reads EVERY gemini file on flounder.
 func getAllGemfeedEntries() ([]*FeedEntry, error) {
+	maxUserItems := 25
+	maxItems := 100
 	var feedEntries []*FeedEntry
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if isGemini(info.Name()) {
 			f, err := os.Open(thepath)
-			feed, err := ParseGemfeed(f)
+			feed, err := ParseGemfeed(f, maxUserItems) // TODO make configurable
 			if err == nil {
 				feedEntries = append(feedEntries, feed.Entries...)
 			}
@@ -44,6 +46,9 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 		sort.Slice(feedEntries, func(i, j int) bool {
 			return feedEntries[i].Date.After(feedEntries[j].Date)
 		})
+		if len(feedEntries) > maxItems {
+			return feedEntries[:maxItems], nil
+		}
 		return feedEntries, nil
 	}
 }
@@ -51,10 +56,14 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 // Parsed Gemfeed text Returns error if not a gemfeed
 // Doesn't sort output
 // Doesn't get posts dated in the future
-func ParseGemfeed(text io.Reader) (*Gemfeed, error) {
+// if limit > -1 -- limit how many we are getting
+func ParseGemfeed(text io.Reader, limit int) (*Gemfeed, error) {
 	scanner := bufio.NewScanner(text)
 	gf := Gemfeed{}
 	for scanner.Scan() {
+		if limit > -1 && len(gf.Entries) >= limit {
+			break
+		}
 		line := scanner.Text()
 		if gf.Title == "" && strings.HasPrefix(line, "#") && !strings.HasPrefix(line, "##") {
 			gf.Title = strings.Trim(line[1:], " \t")
