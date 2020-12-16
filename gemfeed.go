@@ -5,7 +5,9 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -14,15 +16,17 @@ import (
 
 type Gemfeed struct {
 	Title   string
+	Creator string
+	FeedUrl *url.URL
 	Entries []*FeedEntry
 }
 
 type FeedEntry struct {
 	Title      string
-	Url        string
+	Url        *url.URL
 	Date       time.Time
-	FeedTitle  string
 	DateString string
+	Feed       *Gemfeed
 }
 
 // TODO definitely cache this function -- it reads EVERY gemini file on flounder.
@@ -33,8 +37,16 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if isGemini(info.Name()) {
 			f, err := os.Open(thepath)
-			feed, err := ParseGemfeed(f, maxUserItems) // TODO make configurable
+			// TODO verify no path bugs here
+			creator := getCreator(thepath)
+			baseUrl := url.URL{}
+			baseUrl.Host = creator + "." + c.Host
+			baseUrl.Path = getLocalPath(thepath)
+			feed, err := ParseGemfeed(f, baseUrl, maxUserItems) // TODO make configurable
+			f.Close()
 			if err == nil {
+				feed.Creator = creator
+				feed.FeedUrl = &baseUrl
 				feedEntries = append(feedEntries, feed.Entries...)
 			}
 		}
@@ -57,7 +69,7 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 // Doesn't sort output
 // Doesn't get posts dated in the future
 // if limit > -1 -- limit how many we are getting
-func ParseGemfeed(text io.Reader, limit int) (*Gemfeed, error) {
+func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) {
 	scanner := bufio.NewScanner(text)
 	gf := Gemfeed{}
 	for scanner.Scan() {
@@ -73,9 +85,21 @@ func ParseGemfeed(text io.Reader, limit int) (*Gemfeed, error) {
 			if len(splits) == 2 && len(splits[1]) >= 10 {
 				dateString := splits[1][:10]
 				date, err := time.Parse("2006-01-02", dateString)
-				if err == nil && time.Now().After(date) {
+				if err != nil {
+					continue
+				}
+				parsedUrl, err := url.Parse(splits[0])
+				if err != nil {
+					continue
+				}
+				if parsedUrl.Host == "" {
+					// Is relative link
+					parsedUrl.Host = baseUrl.Host
+					parsedUrl.Path = path.Join(path.Dir(baseUrl.Path), parsedUrl.Path)
+				}
+				if time.Now().After(date) {
 					title := strings.Trim(splits[1][10:], " -\t")
-					fe := FeedEntry{title, splits[0], date, gf.Title, dateString}
+					fe := FeedEntry{title, parsedUrl, date, dateString, &gf}
 					gf.Entries = append(gf.Entries, &fe)
 				}
 			}
