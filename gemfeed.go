@@ -46,6 +46,9 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 			f.Close()
 			if err == nil {
 				feed.Creator = creator
+				if feed.Title == "" {
+					feed.Title = "(Untitled Feed)"
+				}
 				feed.Url = &baseUrl
 				feedEntries = append(feedEntries, feed.Entries...)
 			}
@@ -101,6 +104,9 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 				if time.Now().After(date) {
 					title := strings.Trim(splits[1][10:], " -\t")
 					fe := FeedEntry{title, parsedUrl, date, dateString, &gf}
+					if fe.Title == "" {
+						fe.Title = "(Untitled)"
+					}
 					gf.Entries = append(gf.Entries, &fe)
 				}
 			}
