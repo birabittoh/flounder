@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{.PageTitle }}</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>{{.Favicon}}</text></svg>">
+  </head>
+  <body>
+<main>
+{{range .Files}}
+{{end}}
+<br>
+<div class="footer">
+  Proxied from the original at <a href="gemini://{{.URI}}">gemini://{{.URI}}</a>  (<a href="https://admin.flounder.online/gemini.gmi">about Gemini</a>)</div>
+</main>
+</body>
+</html>

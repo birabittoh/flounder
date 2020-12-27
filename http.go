@@ -525,11 +525,12 @@ func getFavicon(user string) string {
 }
 
 // Server a user's file
+// Here be dragons
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
 	p := filepath.Clean(r.URL.Path)
 	var isDir bool
-	fileName := path.Join(c.FilesDirectory, userName, p)
+	fileName := path.Join(c.FilesDirectory, userName, p) // TODO rename filepath
 	stat, err := os.Stat(fileName)
 	if stat != nil {
 		isDir = stat.IsDir()
@@ -538,7 +539,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		fileName = path.Join(fileName, "index.gmi")
 	}
 
-	if strings.HasPrefix(p, "/.hidden") {
+	if strings.HasPrefix(p, "/"+HIDDEN_FOLDER) {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
@@ -549,8 +550,40 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
-		renderDefaultError(w, http.StatusNotFound)
-		return
+		if p == "/" || isDir {
+			fileName := path.Join(c.FilesDirectory, userName, p)
+			favicon := getFavicon(userName)
+			files, _ := ioutil.ReadDir(fileName)
+			renderedFiles := []File{}
+			for _, file := range files {
+				n := file.Name()
+				if file.IsDir() {
+					n += "/"
+				}
+				newFile := File{
+					Name:        n,
+					UpdatedTime: file.ModTime(),
+					Host:        c.Host,
+					Creator:     getCreator(fileName),
+				}
+				renderedFiles = append(renderedFiles, newFile)
+			}
+			hostname := strings.Split(r.Host, ":")[0]
+			URI := hostname + r.URL.String()
+			data := struct {
+				Folder    string
+				Files     []File
+				Favicon   string
+				PageTitle string
+				URI       string
+			}{p, renderedFiles, favicon, userName + p, URI}
+			// TODO check if gemlog
+			t.ExecuteTemplate(w, "folder.html", data)
+			return
+		} else {
+			renderDefaultError(w, http.StatusNotFound)
+			return
+		}
 	}
 
 	// Dumb content negotiation
@@ -569,6 +602,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			URI       string
 		}{template.HTML(htmlString), favicon, userName + p, URI}
 		t.ExecuteTemplate(w, "user_page.html", data)
+		file.Close()
 	} else {
 		http.ServeFile(w, r, fileName)
 	}
