@@ -80,7 +80,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func feedHandler(w http.ResponseWriter, r *http.Request) {
 	user := newGetAuthUser(r)
-	feedEntries, err := getAllGemfeedEntries()
+	feedEntries, feeds, err := getAllGemfeedEntries()
 	if err != nil {
 		panic(err)
 	}
@@ -88,8 +88,9 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 		Host        string
 		PageTitle   string
 		FeedEntries []*FeedEntry
+		Feeds       []*Gemfeed
 		AuthUser    AuthUser
-	}{c.Host, c.SiteTitle, feedEntries, user}
+	}{c.Host, c.SiteTitle, feedEntries, feeds, user}
 	err = t.ExecuteTemplate(w, "feed.html", data)
 	if err != nil {
 		panic(err)

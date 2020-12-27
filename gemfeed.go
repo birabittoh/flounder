@@ -30,10 +30,11 @@ type FeedEntry struct {
 }
 
 // TODO definitely cache this function -- it reads EVERY gemini file on flounder.
-func getAllGemfeedEntries() ([]*FeedEntry, error) {
+func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 	maxUserItems := 25
-	maxItems := 100
+	maxItems := 50
 	var feedEntries []*FeedEntry
+	var feeds []*Gemfeed
 	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if isGemini(info.Name()) {
 			f, err := os.Open(thepath)
@@ -51,20 +52,21 @@ func getAllGemfeedEntries() ([]*FeedEntry, error) {
 				}
 				feed.Url = &baseUrl
 				feedEntries = append(feedEntries, feed.Entries...)
+				feeds = append(feeds, feed)
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	} else {
 		sort.Slice(feedEntries, func(i, j int) bool {
 			return feedEntries[i].Date.After(feedEntries[j].Date)
 		})
 		if len(feedEntries) > maxItems {
-			return feedEntries[:maxItems], nil
+			return feedEntries[:maxItems], feeds, nil
 		}
-		return feedEntries, nil
+		return feedEntries, feeds, nil
 	}
 }
 

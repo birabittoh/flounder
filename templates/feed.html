@@ -12,4 +12,8 @@ For more information on how to format your site to show up here, see <a href="ht
 {{ if .Feed.Title }}<em><a href="{{.Feed.Url}}" class='person-link'>{{.Feed.Title}}</a></em>{{end}} <a href="{{.Url}}">{{.Title}}</a>
 </p>
 {{end}}
+<h2>All Feeds:</h2>
+{{ range .Feeds}}
+<a href="{{.Url}}" class='person-link'>{{.Url}}</a>
+{{ end}}
 {{template "footer" .}}
