@@ -252,12 +252,14 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	// check auth
 	userFolder := getUserDirectory(user.Username)
 	files, _ := getMyFilesRecursive(userFolder, user.Username)
+	currentDate := time.Now().Format("2006-01-02")
 	data := struct {
-		Host      string
-		PageTitle string
-		Files     []*File
-		AuthUser  AuthUser
-	}{c.Host, c.SiteTitle, files, user}
+		Host        string
+		PageTitle   string
+		Files       []*File
+		AuthUser    AuthUser
+		CurrentDate string
+	}{c.Host, c.SiteTitle, files, user, currentDate}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
