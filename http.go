@@ -654,6 +654,11 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 		if action == "activate" {
 			err = activateUser(userName)
 		} else if action == "impersonate" {
+			if user.ImpersonatingUser != "" {
+				// Don't allow nested impersonation
+				renderError(w, "Cannot nest impersonation, log out from impersonated user first.", 400)
+				return
+			}
 			session, _ := SessionStore.Get(r, "cookie-session")
 			session.Values["auth_user"] = userName
 			session.Values["impersonating_user"] = user.Username
