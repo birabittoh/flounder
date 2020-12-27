@@ -8,6 +8,11 @@ main {
   line-height: 1.5;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, main { background: #1b262c; color: white; }
+  a, a:visited { color: #21e6c1 }
+}
+
 h1, h2, h3, h4, h5, h6{
     margin-top:0;
     margin-bottom:.2em;
