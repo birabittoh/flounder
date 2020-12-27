@@ -557,11 +557,8 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			renderedFiles := []File{}
 			for _, file := range files {
 				n := file.Name()
-				if file.IsDir() {
-					n += "/"
-				}
 				newFile := File{
-					Name:        n,
+					Name:        path.Join(p, n), // SHOULD be safe
 					UpdatedTime: file.ModTime(),
 					Host:        c.Host,
 					Creator:     getCreator(fileName),
