@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -70,6 +71,8 @@ func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 	}
 }
 
+var GemfeedRegex = regexp.MustCompile(`=>\s*(\S+)\s([0-9]{4}-[0-9]{2}-[0-9]{2})\s?-?\s?(.*)`)
+
 // Parsed Gemfeed text Returns error if not a gemfeed
 // Doesn't sort output
 // Doesn't get posts dated in the future
@@ -85,18 +88,17 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 		if gf.Title == "" && strings.HasPrefix(line, "#") && !strings.HasPrefix(line, "##") {
 			gf.Title = strings.Trim(line[1:], " \t")
 		} else if strings.HasPrefix(line, "=>") {
-			link := strings.Trim(line[2:], " \t")
-			splits := strings.SplitN(link, " ", 2)
-			if len(splits) == 2 && len(splits[1]) >= 10 {
-				dateString := splits[1][:10]
-				date, err := time.Parse("2006-01-02", dateString)
+			matches := GemfeedRegex.FindStringSubmatch(line)
+			if len(matches) == 4 {
+				parsedUrl, err := url.Parse(matches[1])
 				if err != nil {
 					continue
 				}
-				parsedUrl, err := url.Parse(splits[0])
+				date, err := time.Parse("2006-01-02", matches[2])
 				if err != nil {
 					continue
 				}
+				title := matches[3]
 				if parsedUrl.Host == "" {
 					// Is relative link
 					parsedUrl.Host = baseUrl.Host
@@ -104,8 +106,7 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 				}
 				parsedUrl.Scheme = ""
 				if time.Now().After(date) {
-					title := strings.Trim(splits[1][10:], " -\t")
-					fe := FeedEntry{title, parsedUrl, date, dateString, &gf}
+					fe := FeedEntry{title, parsedUrl, date, matches[2], &gf}
 					if fe.Title == "" {
 						fe.Title = "(Untitled)"
 					}
