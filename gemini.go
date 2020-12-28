@@ -19,12 +19,12 @@ import (
 var gt *template.Template
 
 func generateGemfeedPage(user string) string {
-	feedItems := generateFeedFromUser(user)
+	feed := generateFeedFromUser(user)
 	data := struct {
 		Host        string
 		Title       string
 		FeedEntries []FeedEntry
-	}{c.Host, user + "'s Gemlog", feedItems}
+	}{c.Host, user + "'s Gemlog", feed.Entries}
 	var buff bytes.Buffer
 	gt.ExecuteTemplate(&buff, "gemfeed.gmi", data)
 	return buff.String()

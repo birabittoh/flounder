@@ -41,7 +41,7 @@ func urlFromPath(fullPath string) url.URL {
 
 // Non-standard extension
 // Requires yyyy-mm-dd formatted files
-func generateFeedFromUser(user string) []FeedEntry {
+func generateFeedFromUser(user string) *Gemfeed {
 	gemlogFolder := "gemlog" // TODO make configurable
 	gemlogFolderPath := path.Join(c.FilesDirectory, user, gemlogFolder)
 	// NOTE: assumes sanitized input
@@ -51,7 +51,6 @@ func generateFeedFromUser(user string) []FeedEntry {
 		Creator: user,
 		Url:     &u,
 	}
-	var feedEntries []FeedEntry
 	err := filepath.Walk(gemlogFolderPath, func(thepath string, info os.FileInfo, err error) error {
 		base := path.Base(thepath)
 		if len(base) >= 10 {
@@ -91,17 +90,18 @@ func generateFeedFromUser(user string) []FeedEntry {
 			entry.File = getLocalPath(thepath)
 			u := urlFromPath(thepath)
 			entry.Url = &u
-			feedEntries = append(feedEntries, entry)
+			feed.Entries = append(feed.Entries, entry)
 		}
 		return nil
 	})
 	if err != nil {
 		return nil
 	}
-	sort.Slice(feedEntries, func(i, j int) bool {
-		return feedEntries[i].Date.After(feedEntries[j].Date)
+	// Reverse chronological sort
+	sort.Slice(feed.Entries, func(i, j int) bool {
+		return feed.Entries[i].Date.After(feed.Entries[j].Date)
 	})
-	return feedEntries
+	return &feed
 }
 
 // TODO definitely cache this function
@@ -117,9 +117,9 @@ func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
 	} else {
 		for _, user := range users {
 			fe := generateFeedFromUser(user)
-			if len(fe) > 0 {
-				feeds = append(feeds, *fe[0].Feed)
-				for _, e := range fe {
+			if len(fe.Entries) > 0 {
+				feeds = append(feeds, *fe.Entries[0].Feed)
+				for _, e := range fe.Entries {
 					fmt.Println(e)
 					feedEntries = append(feedEntries, e)
 				}
