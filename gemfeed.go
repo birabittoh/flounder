@@ -47,7 +47,7 @@ func generateFeedFromUser(user string) []FeedEntry {
 	// NOTE: assumes sanitized input
 	u := urlFromPath(gemlogFolderPath)
 	feed := Gemfeed{
-		Title:   user + "'s Gemfeed",
+		Title:   user + "'s Gemlog",
 		Creator: user,
 		Url:     &u,
 	}
