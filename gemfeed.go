@@ -68,7 +68,6 @@ func generateFeedFromUser(user string) []FeedEntry {
 				line := scanner.Text()
 				if strings.HasPrefix(line, "#") {
 					entry.Title = strings.Trim(line, "# \t")
-					break
 				} else {
 					var title string
 					if len(line) > 50 {
@@ -78,8 +77,9 @@ func generateFeedFromUser(user string) []FeedEntry {
 					}
 					entry.Title = "[" + title + "...]"
 				}
+				break
 			}
-			entry.File = base
+			entry.File = getLocalPath(thepath)
 			feedEntries = append(feedEntries, entry)
 		}
 		return nil
