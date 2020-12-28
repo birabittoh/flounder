@@ -24,7 +24,7 @@ func generateGemfeedPage(user string) string {
 		Host        string
 		Title       string
 		FeedEntries []FeedEntry
-	}{c.Host, user + "'s Gemlog", feed.Entries}
+	}{c.Host, strings.ToTitle(user) + "'s Gemlog", feed.Entries}
 	var buff bytes.Buffer
 	gt.ExecuteTemplate(&buff, "gemfeed.gmi", data)
 	return buff.String()
