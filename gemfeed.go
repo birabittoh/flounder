@@ -1,9 +1,11 @@
-// Parses Gemfeed according to the companion spec: gemini://gemini.circumlunar.space/docs/companion/subscription.gmi
+// Parses Gemfeed according to the companion spec:
+// gemini://gemini.circumlunar.space/docs/companion/subscription.gmi
 package main
 
 import (
 	"bufio"
 	"fmt"
+	"github.com/gorilla/feeds"
 	"io"
 	"net/url"
 	"os"
@@ -15,11 +17,30 @@ import (
 	"time"
 )
 
+const gemlogFolder = "gemlog"
+
 type Gemfeed struct {
 	Title   string
 	Creator string
 	Url     *url.URL
 	Entries []FeedEntry
+}
+
+func (gf *Gemfeed) toGorillafeed() *feeds.Feed {
+	feed := feeds.Feed{
+		Title:  gf.Title,
+		Author: &feeds.Author{Name: gf.Creator},
+		Link:   &feeds.Link{Href: gf.Url.String()},
+	}
+	feed.Items = []*feeds.Item{}
+	for _, fe := range gf.Entries {
+		feed.Items = append(feed.Items, &feeds.Item{
+			Title:   fe.Title,
+			Link:    &feeds.Link{Href: fe.Url.String()}, // Rel=alternate?
+			Created: fe.Date,                            // Updated not created?
+		})
+	}
+	return &feed
 }
 
 type FeedEntry struct {
@@ -42,7 +63,6 @@ func urlFromPath(fullPath string) url.URL {
 // Non-standard extension
 // Requires yyyy-mm-dd formatted files
 func generateFeedFromUser(user string) *Gemfeed {
-	gemlogFolder := "gemlog" // TODO make configurable
 	gemlogFolderPath := path.Join(c.FilesDirectory, user, gemlogFolder)
 	// NOTE: assumes sanitized input
 	u := urlFromPath(gemlogFolderPath)
