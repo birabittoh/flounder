@@ -13,7 +13,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"mime"
 	"net/http"
 	"os"
 	"path"
@@ -104,8 +103,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
-	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fileName)), "text")
 	filePath := path.Join(c.FilesDirectory, user.Username, fileName)
+	isText := isTextFile(filePath)
 
 	if r.Method == "GET" {
 		err := checkIfValidFile(filePath, nil)

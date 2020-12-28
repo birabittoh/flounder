@@ -4,12 +4,48 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"mime"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
+
+// Check if it is a text file, first by checking mimetype, then by reading bytes
+// Stolen from https://github.com/golang/tools/blob/master/godoc/util/util.go
+func isTextFile(fullPath string) bool {
+	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fullPath)), "text")
+	if isText {
+		return true
+	}
+	const max = 1024 // at least utf8.UTFMax
+	s := make([]byte, 1024)
+	f, err := os.Open(fullPath)
+	if os.IsNotExist(err) {
+		return true // for the purposes of editing, we return true
+	}
+	n, err := f.Read(s)
+	s = s[0:n]
+	if err != nil {
+		return false
+	}
+	f.Close()
+
+	for i, c := range string(s) {
+		if i+utf8.UTFMax > len(s) {
+			// last char may be incomplete - ignore
+			break
+		}
+		if c == 0xFFFD || c < ' ' && c != '\n' && c != '\t' && c != '\f' {
+			fmt.Println("a")
+			// decoding error or control character - not a text file
+			return false
+		}
+	}
+	return true
+}
 
 func isGemini(filename string) bool {
 	extension := path.Ext(filename)

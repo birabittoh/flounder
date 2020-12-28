@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"log"
 	mathrand "math/rand"
-	"mime"
 	"os"
 	"path"
 	"path/filepath"
@@ -37,7 +36,7 @@ type File struct { // also folders
 func fileFromPath(fullPath string) File {
 	info, _ := os.Stat(fullPath)
 	creatorFolder := getCreator(fullPath)
-	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fullPath)), "text") // Not perfect
+	isText := isTextFile(fullPath)
 	updatedTime := info.ModTime()
 	return File{
 		Name:        getLocalPath(fullPath),
