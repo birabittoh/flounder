@@ -3,4 +3,5 @@
 {{ range .FeedEntries }}
 => /{{.File}} {{.DateString}} {{.Title}} {{end}}
 
-=> / Home
+=> atom.xml Subscribe via Atom
+=> /index.gmi Return home
