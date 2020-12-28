@@ -3,4 +3,4 @@
 {{ range .FeedEntries }}
 => ./{{.File}} {{.DateString}} {{.Title}} {{end}}
 
-=> //{{$host}} Home
+=> / Home
