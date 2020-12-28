@@ -19,7 +19,7 @@ type Gemfeed struct {
 	Title   string
 	Creator string
 	Url     *url.URL
-	Entries []*FeedEntry
+	Entries []FeedEntry
 }
 
 type FeedEntry struct {
@@ -31,16 +31,25 @@ type FeedEntry struct {
 	File       string // TODO refactor
 }
 
+func urlFromPath(fullPath string) url.URL {
+	creator := getCreator(fullPath)
+	baseUrl := url.URL{}
+	baseUrl.Host = creator + "." + c.Host
+	baseUrl.Path = getLocalPath(fullPath)
+	return baseUrl
+}
+
 // Non-standard extension
 // Requires yyyy-mm-dd formatted files
 func generateFeedFromUser(user string) []FeedEntry {
 	gemlogFolder := "gemlog" // TODO make configurable
 	gemlogFolderPath := path.Join(c.FilesDirectory, user, gemlogFolder)
 	// NOTE: assumes sanitized input
+	u := urlFromPath(gemlogFolderPath)
 	feed := Gemfeed{
 		Title:   user + "'s Gemfeed",
 		Creator: user,
-		// URL? etc?
+		Url:     &u,
 	}
 	var feedEntries []FeedEntry
 	err := filepath.Walk(gemlogFolderPath, func(thepath string, info os.FileInfo, err error) error {
@@ -80,6 +89,8 @@ func generateFeedFromUser(user string) []FeedEntry {
 				break
 			}
 			entry.File = getLocalPath(thepath)
+			u := urlFromPath(thepath)
+			entry.Url = &u
 			feedEntries = append(feedEntries, entry)
 		}
 		return nil
@@ -95,11 +106,11 @@ func generateFeedFromUser(user string) []FeedEntry {
 
 // TODO definitely cache this function
 // TODO include generateFeedFromFolder for "gemfeed" folders
-func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
+func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
 	maxUserItems := 25
 	maxItems := 50
-	var feedEntries []*FeedEntry
-	var feeds []*Gemfeed
+	var feedEntries []FeedEntry
+	var feeds []Gemfeed
 	users, err := getActiveUserNames()
 	if err != nil {
 		return nil, nil, err
@@ -107,9 +118,10 @@ func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 		for _, user := range users {
 			fe := generateFeedFromUser(user)
 			if len(fe) > 0 {
-				feeds = append(feeds, fe[0].Feed)
+				feeds = append(feeds, *fe[0].Feed)
 				for _, e := range fe {
-					feedEntries = append(feedEntries, &e)
+					fmt.Println(e)
+					feedEntries = append(feedEntries, e)
 				}
 			}
 		}
@@ -132,7 +144,7 @@ func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 				}
 				feed.Url = &baseUrl
 				feedEntries = append(feedEntries, feed.Entries...)
-				feeds = append(feeds, feed)
+				feeds = append(feeds, *feed)
 			}
 		}
 		return nil
@@ -189,7 +201,7 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 					if fe.Title == "" {
 						fe.Title = "(Untitled)"
 					}
-					gf.Entries = append(gf.Entries, &fe)
+					gf.Entries = append(gf.Entries, fe)
 				}
 			}
 		}

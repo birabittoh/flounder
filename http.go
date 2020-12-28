@@ -87,8 +87,8 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Host        string
 		PageTitle   string
-		FeedEntries []*FeedEntry
-		Feeds       []*Gemfeed
+		FeedEntries []FeedEntry
+		Feeds       []Gemfeed
 		AuthUser    AuthUser
 	}{c.Host, c.SiteTitle, feedEntries, feeds, user}
 	err = t.ExecuteTemplate(w, "feed.html", data)
