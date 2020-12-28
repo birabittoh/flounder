@@ -89,9 +89,12 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	log.Println("Request for gemini file", fileName, "for user", userName)
 
 	if fileName == "/gemlog" { // temp hack
-		w.SetMediaType("text/gemini")
-		io.Copy(w, strings.NewReader(generateGemfeedPage(userName)))
-		return
+		_, err := os.Stat(path.Join(c.FilesDirectory, userName, fileName, "index.gmi"))
+		if err != nil {
+			w.SetMediaType("text/gemini")
+			io.Copy(w, strings.NewReader(generateGemfeedPage(userName)))
+			return
+		}
 	}
 
 	gmi.ServeFile(w, gmi.Dir(path.Join(c.FilesDirectory, userName)), fileName)
