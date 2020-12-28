@@ -3,5 +3,5 @@
 {{ range .FeedEntries }}
 => /{{.File}} {{.DateString}} {{.Title}} {{end}}
 
-=> atom.xml Subscribe via Atom
+=> /gemlog/atom.xml Subscribe via Atom
 => /index.gmi Return home
