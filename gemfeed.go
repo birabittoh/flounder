@@ -28,19 +28,22 @@ type FeedEntry struct {
 	Date       time.Time
 	DateString string
 	Feed       *Gemfeed
+	File       string // TODO refactor
 }
 
 // Non-standard extension
 // Requires yyyy-mm-dd formatted files
-func generateFeedFromFolder(folder string) []*FeedEntry {
-	user := getCreator(folder)
+func generateFeedFromUser(user string) []FeedEntry {
+	gemlogFolder := "gemlog" // TODO make configurable
+	gemlogFolderPath := path.Join(c.FilesDirectory, user, gemlogFolder)
+	// NOTE: assumes sanitized input
 	feed := Gemfeed{
 		Title:   user + "'s Gemfeed",
 		Creator: user,
-		// URL?
+		// URL? etc?
 	}
-	var feedEntries []*FeedEntry
-	err := filepath.Walk(folder, func(thepath string, info os.FileInfo, err error) error {
+	var feedEntries []FeedEntry
+	err := filepath.Walk(gemlogFolderPath, func(thepath string, info os.FileInfo, err error) error {
 		base := path.Base(thepath)
 		if len(base) >= 10 {
 			entry := FeedEntry{}
@@ -57,25 +60,36 @@ func generateFeedFromFolder(folder string) []*FeedEntry {
 			}
 			defer f.Close()
 			scanner := bufio.NewScanner(f)
-			i := 0
 			for scanner.Scan() {
-				if i > 5 { // To be more efficient, only scan the top 5 lines
-					break
+				// skip blank lines
+				if scanner.Text() == "" {
+					continue
 				}
 				line := scanner.Text()
 				if strings.HasPrefix(line, "#") {
 					entry.Title = strings.Trim(line, "# \t")
 					break
+				} else {
+					var title string
+					if len(line) > 50 {
+						title = line[:50]
+					} else {
+						title = line
+					}
+					entry.Title = "[" + title + "...]"
 				}
-				i += 1
 			}
-			// get title from first header
+			entry.File = base
+			feedEntries = append(feedEntries, entry)
 		}
 		return nil
 	})
 	if err != nil {
 		return nil
 	}
+	sort.Slice(feedEntries, func(i, j int) bool {
+		return feedEntries[i].Date.After(feedEntries[j].Date)
+	})
 	return feedEntries
 }
 
@@ -156,7 +170,7 @@ func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) 
 				}
 				parsedUrl.Scheme = ""
 				if time.Now().After(date) {
-					fe := FeedEntry{title, parsedUrl, date, matches[2], &gf}
+					fe := FeedEntry{title, parsedUrl, date, matches[2], &gf, ""}
 					if fe.Title == "" {
 						fe.Title = "(Untitled)"
 					}

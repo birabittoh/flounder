@@ -553,8 +553,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
 		if os.IsNotExist(err) {
 			if p == "/gemlog" {
-				// geminiContent = generateGemfeedPage(fullPath)
-				geminiContent = generateFolderPage(fullPath)
+				geminiContent = generateGemfeedPage(userName)
 			} else {
 				geminiContent = generateFolderPage(fullPath)
 			}

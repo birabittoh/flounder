@@ -1,0 +1,6 @@
+{{$host := .Host }}
+# {{ .Title }}
+{{ range .FeedEntries }}
+=> {{.File}} {{.DateString}} {{.Title}} {{end}}
+
+=> //{{$host}} Home

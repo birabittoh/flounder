@@ -17,7 +17,15 @@ import (
 var gt *template.Template
 
 func generateGemfeedPage(user string) string {
-	return ""
+	feedItems := generateFeedFromUser(user)
+	data := struct {
+		Host        string
+		Title       string
+		FeedEntries []FeedEntry
+	}{c.Host, user + "'s Gemlog", feedItems}
+	var buff bytes.Buffer
+	gt.ExecuteTemplate(&buff, "gemfeed.gmi", data)
+	return buff.String()
 }
 
 func generateFolderPage(fullpath string) string {
