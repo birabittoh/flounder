@@ -8,7 +8,7 @@ For more information on how to format your site to show up here, see <a href="ht
 <h2>Feed:</h2>
 {{ range .FeedEntries}}
 <p>
-{{.DateString}} {{ if .Feed.Title }}<em><a href="{{.Feed.Url}}">{{.Feed.Title}}</a></em>{{end}} <b><a href="{{.Url}}">{{.Title}}</a></b>
+{{.DateString}} <b><a href="{{.Url}}">{{.Title}}</a></b> {{ if .Feed.Title }}<em><a href="{{.Feed.Url}}">{{.Feed.Title}}</a></em>{{end}}
 </p>
 {{end}}
 <h2>All Feeds:</h2>
