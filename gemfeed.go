@@ -100,7 +100,22 @@ func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 	maxItems := 50
 	var feedEntries []*FeedEntry
 	var feeds []*Gemfeed
-	err := filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
+	users, err := getActiveUserNames()
+	if err != nil {
+		return nil, nil, err
+	} else {
+		for _, user := range users {
+			fe := generateFeedFromUser(user)
+			if len(fe) > 0 {
+				feeds = append(feeds, fe[0].Feed)
+				for _, e := range fe {
+					feedEntries = append(feedEntries, &e)
+				}
+			}
+		}
+	}
+
+	err = filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
 		if isGemini(info.Name()) {
 			f, err := os.Open(thepath)
 			// TODO verify no path bugs here
