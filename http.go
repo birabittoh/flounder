@@ -549,8 +549,8 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var geminiContent string
+	_, err := os.Stat(path.Join(fullPath, "index.gmi"))
 	if p == "/" || isDir {
-		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
 		if os.IsNotExist(err) {
 			if p == "/gemlog" {
 				geminiContent = generateGemfeedPage(userName)
@@ -560,6 +560,10 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fullPath = path.Join(fullPath, "index.gmi")
 		}
+	}
+	if geminiContent == "" && os.IsNotExist(err) {
+		renderDefaultError(w, http.StatusNotFound)
+		return
 	}
 	// Dumb content negotiation
 	_, raw := r.URL.Query()["raw"]
