@@ -88,12 +88,21 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 		return
 	}
 	log.Println("Request for gemini file", fileName, "for user", userName)
-
+	fullPath := path.Join(c.FilesDirectory, userName, fileName)
 	if fileName == "/gemlog" { // temp hack
-		_, err := os.Stat(path.Join(c.FilesDirectory, userName, fileName, "index.gmi"))
+		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
 		if err != nil {
 			w.SetMediaType("text/gemini")
 			io.Copy(w, strings.NewReader(generateGemfeedPage(userName)))
+			return
+		}
+	} else if fileName == "/gemlog/atom.xml" {
+		_, err := os.Stat(fullPath)
+		if err != nil {
+			w.SetMediaType("application/atom+xml")
+			feed := generateFeedFromUser(userName)
+			atomString := feed.toAtomFeed()
+			io.Copy(w, strings.NewReader(atomString))
 			return
 		}
 	}

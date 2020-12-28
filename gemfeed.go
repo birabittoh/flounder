@@ -26,7 +26,7 @@ type Gemfeed struct {
 	Entries []FeedEntry
 }
 
-func (gf *Gemfeed) toGorillafeed() *feeds.Feed {
+func (gf *Gemfeed) toAtomFeed() string {
 	feed := feeds.Feed{
 		Title:  gf.Title,
 		Author: &feeds.Author{Name: gf.Creator},
@@ -40,7 +40,8 @@ func (gf *Gemfeed) toGorillafeed() *feeds.Feed {
 			Created: fe.Date,                            // Updated not created?
 		})
 	}
-	return &feed
+	res, _ := feed.ToAtom()
+	return res
 }
 
 type FeedEntry struct {

@@ -530,7 +530,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	p := filepath.Clean(r.URL.Path)
 	var isDir bool
 	fullPath := path.Join(c.FilesDirectory, userName, p) // TODO rename filepath
-	stat, _ := os.Stat(fullPath)
+	stat, err := os.Stat(fullPath)
 	if stat != nil {
 		isDir = stat.IsDir()
 	}
@@ -546,9 +546,17 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 		return
 	}
+	if r.URL.Path == "/gemlog/atom.xml" && os.IsNotExist(err) {
+		w.Header().Set("Content-Type", "application/atom+xml")
+		// TODO set always somehow
+		feed := generateFeedFromUser(userName)
+		atomString := feed.toAtomFeed()
+		io.Copy(w, strings.NewReader(atomString))
+		return
+	}
 
 	var geminiContent string
-	_, err := os.Stat(path.Join(fullPath, "index.gmi"))
+	_, err = os.Stat(path.Join(fullPath, "index.gmi"))
 	if p == "/" || isDir {
 		if os.IsNotExist(err) {
 			if p == "/gemlog" {
