@@ -1,8 +1,6 @@
 {{$host := .Host }}
-# {{ .Folder }}
-
+# {{ .Folder }}/
 {{ range .Files }}
-=> //{{.Creator}}.{{$host}}/{{.Name}} {{.Name}}
-{{ end }}
+=> //{{.Creator}}.{{$host}}/{{.Name}} {{.Name}}{{ end }}
 
 => //{{$host}} Home
