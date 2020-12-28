@@ -10,8 +10,6 @@ git.sr.ht/~adnano/go-gemini v0.1.6-0.20201105050458-53390dad6bb1 h1:WlUXNngKn9+K
 git.sr.ht/~adnano/go-gemini v0.1.6-0.20201105050458-53390dad6bb1/go.mod h1:If1VxEWcZDrRt5FeAFnGTcM2Ud1E3BXs3VJ5rnZWKq0=
 git.sr.ht/~adnano/go-gemini v0.1.8 h1:93DxDNXB0bjnfDhZewf+QsEopfuOMh/I4v7ujoJ6WIs=
 git.sr.ht/~adnano/go-gemini v0.1.8/go.mod h1:If1VxEWcZDrRt5FeAFnGTcM2Ud1E3BXs3VJ5rnZWKq0=
-git.sr.ht/~adnano/go-gemini v0.1.10 h1:enuYuY2pC+1BsP1GE73wLIyhXc4r+Ryx6TUubynmSgo=
-git.sr.ht/~adnano/go-gemini v0.1.10/go.mod h1:If1VxEWcZDrRt5FeAFnGTcM2Ud1E3BXs3VJ5rnZWKq0=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/andybalholm/brotli v1.0.0/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
