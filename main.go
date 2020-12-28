@@ -30,8 +30,24 @@ type File struct { // also folders
 	UpdatedTime time.Time
 	TimeAgo     string
 	IsText      bool
-	Children    []*File
+	Children    []File
 	Host        string
+}
+
+func fileFromPath(fullPath string) File {
+	info, _ := os.Stat(fullPath)
+	creatorFolder := getCreator(fullPath)
+	isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(fullPath)), "text") // Not perfect
+	updatedTime := info.ModTime()
+	return File{
+		Name:        getLocalPath(fullPath),
+		Creator:     path.Base(creatorFolder),
+		UpdatedTime: updatedTime,
+		IsText:      isText,
+		TimeAgo:     timeago(&updatedTime),
+		Host:        c.Host,
+	}
+
 }
 
 type User struct {
@@ -119,14 +135,8 @@ func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 		}
 		// make this do what it should
 		if !info.IsDir() {
-			creatorFolder := getCreator(thepath)
-			updatedTime := info.ModTime()
-			result = append(result, &File{
-				Name:        getLocalPath(thepath),
-				Creator:     path.Base(creatorFolder),
-				UpdatedTime: updatedTime,
-				TimeAgo:     timeago(&updatedTime),
-			})
+			res := fileFromPath(thepath)
+			result = append(result, &res)
 		}
 		return nil
 	})
@@ -142,23 +152,15 @@ func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 	return result, nil
 } // todo clean up paths
 
-func getMyFilesRecursive(p string, creator string) ([]*File, error) {
-	result := []*File{}
+func getMyFilesRecursive(p string, creator string) ([]File, error) {
+	result := []File{}
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		return nil, err
 	}
 	for _, file := range files {
-		isText := strings.HasPrefix(mime.TypeByExtension(path.Ext(file.Name())), "text")
 		fullPath := path.Join(p, file.Name())
-		localPath := getLocalPath(fullPath)
-		f := &File{
-			Name:        localPath,
-			Creator:     creator,
-			UpdatedTime: file.ModTime(),
-			IsText:      isText,
-			Host:        c.Host,
-		}
+		f := fileFromPath(fullPath)
 		if file.IsDir() {
 			f.Children, err = getMyFilesRecursive(path.Join(p, file.Name()), creator)
 		}

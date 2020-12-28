@@ -256,7 +256,7 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Host        string
 		PageTitle   string
-		Files       []*File
+		Files       []File
 		AuthUser    AuthUser
 		CurrentDate string
 	}{c.Host, c.SiteTitle, files, user, currentDate}
@@ -530,13 +530,13 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
 	p := filepath.Clean(r.URL.Path)
 	var isDir bool
-	fileName := path.Join(c.FilesDirectory, userName, p) // TODO rename filepath
-	stat, err := os.Stat(fileName)
+	fullPath := path.Join(c.FilesDirectory, userName, p) // TODO rename filepath
+	stat, _ := os.Stat(fullPath)
 	if stat != nil {
 		isDir = stat.IsDir()
 	}
-	if p == "/" || isDir {
-		fileName = path.Join(fileName, "index.gmi")
+	if strings.HasSuffix(p, "index.gmi") {
+		http.Redirect(w, r, path.Dir(p), http.StatusMovedPermanently)
 	}
 
 	if strings.HasPrefix(p, "/"+HIDDEN_FOLDER) {
@@ -548,47 +548,32 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = os.Stat(fileName)
-	if os.IsNotExist(err) {
-		if p == "/" || isDir {
-			fileName := path.Join(c.FilesDirectory, userName, p)
-			favicon := getFavicon(userName)
-			files, _ := ioutil.ReadDir(fileName)
-			renderedFiles := []File{}
-			for _, file := range files {
-				n := file.Name()
-				newFile := File{
-					Name:        path.Join(p, n), // SHOULD be safe
-					UpdatedTime: file.ModTime(),
-					Host:        c.Host,
-					Creator:     getCreator(fileName),
-				}
-				renderedFiles = append(renderedFiles, newFile)
+	var geminiContent string
+	if p == "/" || isDir {
+		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
+		if os.IsNotExist(err) {
+			if p == "/gemlog" {
+				// geminiContent = generateGemfeedPage(fullPath)
+				geminiContent = generateFolderPage(fullPath)
+			} else {
+				geminiContent = generateFolderPage(fullPath)
 			}
-			hostname := strings.Split(r.Host, ":")[0]
-			URI := hostname + r.URL.String()
-			data := struct {
-				Folder    string
-				Files     []File
-				Favicon   string
-				PageTitle string
-				URI       string
-			}{p, renderedFiles, favicon, userName + p, URI}
-			// TODO check if gemlog
-			t.ExecuteTemplate(w, "folder.html", data)
-			return
 		} else {
-			renderDefaultError(w, http.StatusNotFound)
-			return
+			fullPath = path.Join(fullPath, "index.gmi")
 		}
 	}
-
 	// Dumb content negotiation
 	_, raw := r.URL.Query()["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
-	if !raw && !acceptsGemini && isGemini(fileName) {
-		file, _ := os.Open(fileName)
-		htmlString := textToHTML(gmi.ParseText(file))
+	if !raw && !acceptsGemini && (isGemini(fullPath) || geminiContent != "") {
+		var htmlString string
+		if geminiContent == "" {
+			file, _ := os.Open(fullPath)
+			htmlString = textToHTML(gmi.ParseText(file))
+			defer file.Close()
+		} else {
+			htmlString = textToHTML(gmi.ParseText(strings.NewReader(geminiContent)))
+		}
 		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]
 		URI := hostname + r.URL.String()
@@ -599,9 +584,8 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			URI       string
 		}{template.HTML(htmlString), favicon, userName + p, URI}
 		t.ExecuteTemplate(w, "user_page.html", data)
-		file.Close()
 	} else {
-		http.ServeFile(w, r, fileName)
+		http.ServeFile(w, r, fullPath)
 	}
 }
 

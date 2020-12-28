@@ -30,7 +30,57 @@ type FeedEntry struct {
 	Feed       *Gemfeed
 }
 
-// TODO definitely cache this function -- it reads EVERY gemini file on flounder.
+// Non-standard extension
+// Requires yyyy-mm-dd formatted files
+func generateFeedFromFolder(folder string) []*FeedEntry {
+	user := getCreator(folder)
+	feed := Gemfeed{
+		Title:   user + "'s Gemfeed",
+		Creator: user,
+		// URL?
+	}
+	var feedEntries []*FeedEntry
+	err := filepath.Walk(folder, func(thepath string, info os.FileInfo, err error) error {
+		base := path.Base(thepath)
+		if len(base) >= 10 {
+			entry := FeedEntry{}
+			date, err := time.Parse("2006-01-02", base[:10])
+			if err != nil {
+				return nil
+			}
+			entry.Date = date
+			entry.DateString = base[:10]
+			entry.Feed = &feed
+			f, err := os.Open(thepath)
+			if err != nil {
+				return nil
+			}
+			defer f.Close()
+			scanner := bufio.NewScanner(f)
+			i := 0
+			for scanner.Scan() {
+				if i > 5 { // To be more efficient, only scan the top 5 lines
+					break
+				}
+				line := scanner.Text()
+				if strings.HasPrefix(line, "#") {
+					entry.Title = strings.Trim(line, "# \t")
+					break
+				}
+				i += 1
+			}
+			// get title from first header
+		}
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	return feedEntries
+}
+
+// TODO definitely cache this function
+// TODO include generateFeedFromFolder for "gemfeed" folders
 func getAllGemfeedEntries() ([]*FeedEntry, []*Gemfeed, error) {
 	maxUserItems := 25
 	maxItems := 50

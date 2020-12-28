@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509/pkix"
 	gmi "git.sr.ht/~adnano/go-gemini"
+	"io/ioutil"
 	"log"
 	"path"
 	"path/filepath"
@@ -11,6 +13,34 @@ import (
 	"text/template"
 	"time"
 )
+
+var gt *template.Template
+
+func generateGemfeedPage(user string) string {
+	return ""
+}
+
+func generateFolderPage(fullpath string) string {
+	files, _ := ioutil.ReadDir(fullpath)
+	var renderedFiles = []File{}
+	for _, file := range files {
+		// Very awkward
+		res := fileFromPath(path.Join(fullpath, file.Name()))
+		renderedFiles = append(renderedFiles, res)
+	}
+	var buff bytes.Buffer
+	data := struct {
+		Host   string
+		Folder string
+		Files  []File
+	}{c.Host, getLocalPath(fullpath), renderedFiles}
+	err := gt.ExecuteTemplate(&buff, "folder.gmi", data)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	return buff.String()
+}
 
 func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	log.Println("Index request")
@@ -54,13 +84,18 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 
 func runGeminiServer() {
 	log.Println("Starting gemini server")
+	var err error
+	gt, err = template.ParseGlob(path.Join(c.TemplatesDirectory, "*.gmi"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	var server gmi.Server
 	server.ReadTimeout = 1 * time.Minute
 	server.WriteTimeout = 2 * time.Minute
 
 	hostname := strings.SplitN(c.Host, ":", 2)[0]
 	// is this necc?
-	err := server.Certificates.Load(c.GeminiCertStore)
+	err = server.Certificates.Load(c.GeminiCertStore)
 	if err != nil {
 	}
 	server.CreateCertificate = func(h string) (tls.Certificate, error) {
