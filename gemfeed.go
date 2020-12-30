@@ -141,7 +141,6 @@ func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
 			if len(fe.Entries) > 0 {
 				feeds = append(feeds, *fe.Entries[0].Feed)
 				for _, e := range fe.Entries {
-					fmt.Println(e)
 					feedEntries = append(feedEntries, e)
 				}
 			}
