@@ -133,7 +133,7 @@ func runGeminiServer() {
 				CommonName: hostname,
 			},
 			DNSNames: []string{h},
-			Duration: time.Hour * 760, // one month
+			Duration: time.Hour * 8760 * 100, // 100 years
 		})
 	}
 
