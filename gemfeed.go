@@ -17,8 +17,6 @@ import (
 	"time"
 )
 
-const gemlogFolder = "gemlog"
-
 type Gemfeed struct {
 	Title   string
 	Creator string
@@ -64,7 +62,7 @@ func urlFromPath(fullPath string) url.URL {
 // Non-standard extension
 // Requires yyyy-mm-dd formatted files
 func generateFeedFromUser(user string) *Gemfeed {
-	gemlogFolderPath := path.Join(c.FilesDirectory, user, gemlogFolder)
+	gemlogFolderPath := path.Join(c.FilesDirectory, user, GemlogFolder)
 	// NOTE: assumes sanitized input
 	u := urlFromPath(gemlogFolderPath)
 	feed := Gemfeed{

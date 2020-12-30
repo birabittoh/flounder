@@ -118,7 +118,7 @@ func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 			log.Printf("Failure accessing a path %q: %v\n", thepath, err)
 			return err // think about
 		}
-		if !admin && info.IsDir() && info.Name() == HIDDEN_FOLDER {
+		if !admin && info.IsDir() && info.Name() == HiddenFolder {
 			return filepath.SkipDir
 		}
 		// make this do what it should

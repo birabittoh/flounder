@@ -539,7 +539,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, path.Dir(p), http.StatusMovedPermanently)
 	}
 
-	if strings.HasPrefix(p, "/"+HIDDEN_FOLDER) {
+	if strings.HasPrefix(p, "/"+HiddenFolder) {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}

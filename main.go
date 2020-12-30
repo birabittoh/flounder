@@ -12,8 +12,6 @@ import (
 
 var c Config // global var to hold static configuration
 
-const HIDDEN_FOLDER = ".hidden"
-
 func main() {
 	configPath := flag.String("c", "flounder.toml", "path to config file") // doesnt work atm
 	flag.Parse()

@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 )
 
+const HiddenFolder = ".hidden"
+const GemlogFolder = "gemlog"
+
 type Config struct {
 	FilesDirectory     string
 	TemplatesDirectory string
