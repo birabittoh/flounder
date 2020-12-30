@@ -4,7 +4,7 @@
 <form action="/me" method="post">
   <div>
     <label for="username">Username</label><br>
-    <em>Note: renaming your account will cause links to your pages to break</em>
+    <div class="footer">Note: renaming your account will cause links to your pages to break</div>
     <input
       id="username"
       name="username"
@@ -14,7 +14,7 @@
     />
   </div>
   <div>
-    <label for="email">Email</label>
+    <label for="email">Email</label><br>
     <input id="email" name="email" size="64" type="text" value="{{.Email}}" />
   </div>
   <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
