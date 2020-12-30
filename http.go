@@ -105,40 +105,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := filepath.Clean(r.URL.Path[len("/edit/"):])
 	filePath := path.Join(c.FilesDirectory, user.Username, fileName)
 	isText := isTextFile(filePath)
-
-	if r.Method == "GET" {
-		err := checkIfValidFile(filePath, nil)
-		if err != nil {
-			log.Println(err)
-			renderError(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		// Create directories if dne
-		f, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
-		var fileBytes []byte
-		if os.IsNotExist(err) || !isText {
-			fileBytes = []byte{}
-			err = nil
-		} else {
-			defer f.Close()
-			fileBytes, err = ioutil.ReadAll(f)
-		}
-		if err != nil {
-			panic(err)
-		}
-		data := struct {
-			FileName  string
-			FileText  string
-			PageTitle string
-			AuthUser  AuthUser
-			Host      string
-			IsText    bool
-		}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText}
-		err = t.ExecuteTemplate(w, "edit_file.html", data)
-		if err != nil {
-			panic(err)
-		}
-	} else if r.Method == "POST" {
+	alert := ""
+	if r.Method == "POST" {
 		// get post body
 		r.ParseForm()
 		fileText := r.Form.Get("file_text")
@@ -165,6 +133,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
+		alert = "saved"
 		newName := filepath.Clean(r.Form.Get("rename"))
 		err = checkIfValidFile(newName, fileBytes)
 		if err != nil {
@@ -177,8 +146,42 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			os.MkdirAll(path.Dir(newPath), os.ModePerm)
 			os.Rename(filePath, newPath)
 			fileName = newName
+			filePath = newPath
+			alert += " and renamed"
 		}
-		http.Redirect(w, r, path.Join("/edit", fileName), http.StatusSeeOther)
+	}
+
+	err := checkIfValidFile(filePath, nil)
+	if err != nil {
+		log.Println(err)
+		renderError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Create directories if dne
+	f, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+	var fileBytes []byte
+	if os.IsNotExist(err) || !isText {
+		fileBytes = []byte{}
+		err = nil
+	} else {
+		defer f.Close()
+		fileBytes, err = ioutil.ReadAll(f)
+	}
+	if err != nil {
+		panic(err)
+	}
+	data := struct {
+		FileName  string
+		FileText  string
+		PageTitle string
+		AuthUser  AuthUser
+		Host      string
+		IsText    bool
+		Alert     string
+	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, alert}
+	err = t.ExecuteTemplate(w, "edit_file.html", data)
+	if err != nil {
+		panic(err)
 	}
 }
 

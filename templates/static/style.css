@@ -105,6 +105,9 @@ resize: vertical;
 .error {
   color: red;
 }
+.alert {
+  color: green;
+}
 
 .nav {
   color: blue;
