@@ -10,20 +10,24 @@ Requires go >= 1.15 and sqlite3 development libraries.
 
 `go build`
 
-To run locally, you can use the example-config.toml to start a test server. Easy!
+To run locally, you can use the example-config.toml to start a test server. 
 
 `./flounder -c example-config.toml serve`
+
+After creating an account, you can activate it at the command line with:
+
+./flounder -c example-config.toml activate-user [your-username]
 
 ## Deploying
 
 For the Http(s) server, you have two options:
 
-1. Expose the flounder server to the internet directly
-
+1. Expose the flounder server to the internet directly (I have not tested this extensively and probably don't recommend it)
 2. Route the flounder server through a reverse proxy
 
-This will determine how you set the values in flounder.toml 
+For TLS, you'll need to configure a wildcard cert via, for example, LetsEncrypt, that matches [any-subdomain].[your-host]. Over gemini, self-signed certs are handled automatically.
 
+I have not extensively tested the self-hosting capabilities, but making it easy to self-host Flounder for either a single or multi-user instance is a goal of mine. Email me if you encounter issues or would like guidance.
 
 ## Admin
 
@@ -33,4 +37,10 @@ Backup your users' data regularly! The admin deletion commands are irreversible.
 
 Flounder comes with an admin panel accessible to users with the admin db flag set. Admins can also impersonate users if you need to take actions like moderating their content, deleting their account, changing their password, etc.
 
-You can also manage users directly through the sqlite database.
+## Development
+
+Patches are welcome!
+
+* [Ticket tracker](https://todo.sr.ht/~alexwennerberg/flounder)
+* [Mailing list](https://lists.sr.ht/~alexwennerberg/flounder-discuss)
+
