@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
 	"github.com/gorilla/handlers"
@@ -22,7 +21,6 @@ import (
 )
 
 var t *template.Template
-var DB *sql.DB
 var SessionStore *sessions.CookieStore
 
 func renderDefaultError(w http.ResponseWriter, statusCode int) {

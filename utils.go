@@ -46,6 +46,19 @@ func isTextFile(fullPath string) bool {
 	return true
 }
 
+// get the user-reltaive local path from the filespath
+// NOTE -- dont use on unsafe input ( I think )
+func getLocalPath(filesPath string) string {
+	l := len(strings.Split(c.FilesDirectory, "/"))
+	return strings.Join(strings.Split(filesPath, "/")[l+1:], "/")
+}
+
+func getCreator(filePath string) string {
+	l := len(strings.Split(c.FilesDirectory, "/"))
+	r := strings.Split(filePath, "/")[l]
+	return r
+}
+
 func isGemini(filename string) bool {
 	extension := path.Ext(filename)
 	return extension == ".gmi" || extension == ".gemini"
