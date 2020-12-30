@@ -119,8 +119,8 @@ text-decoration: none;
 }
 
 pre {
-    white-space: pre-wrap;
     line-height: 1.2;
+    overflow: auto;
 }
 
 a:hover {
