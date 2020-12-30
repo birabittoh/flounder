@@ -16,9 +16,17 @@ a:visited {
   body, main { background: #1b262c; color: white; }
   a { color: #21e6c1 }
   a:visited { color: #21e6c1 }
-  input[type="text"], textarea {
+  input[type="text"], input[type="password"], textarea {
     color: white;
     background-color: #121212;
+  }
+}
+@media only screen and (max-width: 600px) {
+  body {
+    font-size: 16px
+  }
+  input[type="text"], input[type="password"], textarea {
+    font-size: 1rem;
   }
 }
 
@@ -58,7 +66,6 @@ img {
   border: 1px solid #999999;
   margin: 5px 0;
   padding: 3px;
-  font-size: .9rem;
   resize: vertical;
 }
 
@@ -80,7 +87,9 @@ resize: vertical;
   padding: 2px 5px;
   display: inline-block;
   margin: 0px;
+  font-size: 1rem;
 }
+
 
 .button:hover {
   background-color: black;
