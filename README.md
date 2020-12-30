@@ -37,6 +37,10 @@ Backup your users' data regularly! The admin deletion commands are irreversible.
 
 Flounder comes with an admin panel accessible to users with the admin db flag set. Admins can also impersonate users if you need to take actions like moderating their content, deleting their account, changing their password, etc.
 
+## Metrics
+
+Flounder will export metrics via [prometheus](https://prometheus.io/) if PrometheusMetrics=True is set in the configuration. 
+
 ## Development
 
 Patches are welcome!

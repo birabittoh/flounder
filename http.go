@@ -7,6 +7,10 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
+	"github.com/slok/go-http-metrics/middleware"
+	"github.com/slok/go-http-metrics/middleware/std"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"io"
@@ -705,6 +709,14 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func runHTTPMetricsServer() {
+	metricsAddr := c.PrometheusMetricsPort
+	log.Printf("metrics listening at %s", metricsAddr)
+	if err := http.ListenAndServe(metricsAddr, promhttp.Handler()); err != nil {
+		log.Panicf("error while serving metrics: %s", err)
+	}
+}
+
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d. TLS enabled: %t", c.Host, c.HttpPort, c.HttpsEnabled)
 	var err error
@@ -738,7 +750,13 @@ func runHTTPServer() {
 	// TODO authentication
 	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler)
 
-	wrapped := (handlers.LoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux)))
+	wrapped := handlers.LoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux))
+	if c.PrometheusMetrics {
+		prom := middleware.New(middleware.Config{
+			Recorder: metrics.NewRecorder(metrics.Config{}),
+		})
+		wrapped = std.Handler("", prom, wrapped)
+	}
 
 	// handle user files based on subdomain
 	serveMux.HandleFunc("/", userFile)
@@ -756,4 +774,5 @@ func runHTTPServer() {
 	} else {
 		log.Fatal(srv.ListenAndServe())
 	}
+
 }

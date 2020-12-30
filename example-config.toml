@@ -20,6 +20,11 @@ GeminiCertStore="/tmp"
 # TLSCertFile="./server.crt"
 # TLSKeyFile="./server.key"
 
+# Should we capture prometheus metrics?
+PrometheusMetrics=false
+# TODO rename to addr
+PrometheusMetricsPort="8081"
+
 # Optional SMTP -- to send notification emails to users on acct activation
 # SMTPServer = mail.goodsite.com:587
 # SMTPUsername = myemail@coolplace.com

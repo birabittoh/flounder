@@ -49,7 +49,15 @@ func main() {
 	switch args[0] {
 	case "serve":
 		wg := new(sync.WaitGroup)
-		wg.Add(2)
+		if c.PrometheusMetrics {
+			wg.Add(3)
+			go func() {
+				runHTTPMetricsServer()
+				wg.Done()
+			}()
+		} else {
+			wg.Add(2)
+		}
 		go func() {
 			runHTTPServer()
 			wg.Done()
