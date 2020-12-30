@@ -39,7 +39,6 @@ func isTextFile(fullPath string) bool {
 			break
 		}
 		if c == 0xFFFD || c < ' ' && c != '\n' && c != '\t' && c != '\f' {
-			fmt.Println("a")
 			// decoding error or control character - not a text file
 			return false
 		}
