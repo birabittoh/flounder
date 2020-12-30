@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/BurntSushi/toml"
+	"path/filepath"
 )
 
 type Config struct {
@@ -34,5 +35,7 @@ func getConfig(filename string) (Config, error) {
 	if err != nil {
 		return config, err
 	}
+	// Workaround for how some of my path fns are written
+	config.FilesDirectory, _ = filepath.Abs(config.FilesDirectory)
 	return config, nil
 }

@@ -9,8 +9,7 @@ HttpPort=8165
 HttpsEnabled=false
 
 # Folder containing subfolders for each user's files
-# Must be absolute path due to bug
-FilesDirectory="/home/alex/dev/go-flounder/files"
+FilesDirectory="./files"
 LogFile="./flounder.log"
 
 # Gemini autogenerates self-signed certs

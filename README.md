@@ -43,4 +43,3 @@ Patches are welcome!
 
 * [Ticket tracker](https://todo.sr.ht/~alexwennerberg/flounder)
 * [Mailing list](https://lists.sr.ht/~alexwennerberg/flounder-discuss)
-
