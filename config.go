@@ -9,28 +9,26 @@ const HiddenFolder = ".hidden"
 const GemlogFolder = "gemlog"
 
 type Config struct {
-	FilesDirectory        string
-	TemplatesDirectory    string
-	Host                  string
-	HttpsEnabled          bool
-	HttpPort              int
-	SiteTitle             string
-	Debug                 bool
-	SecretKey             string
-	DBFile                string
-	LogFile               string
-	GeminiCertStore       string
-	CookieStoreKey        string
-	OkExtensions          []string
-	MaxFileBytes          int
-	MaxUserBytes          int64
-	TLSCertFile           string
-	TLSKeyFile            string
-	SMTPServer            string
-	SMTPUsername          string
-	SMTPPassword          string
-	PrometheusMetrics     bool
-	PrometheusMetricsPort string
+	FilesDirectory     string
+	TemplatesDirectory string
+	Host               string
+	HttpsEnabled       bool
+	HttpPort           int
+	SiteTitle          string
+	Debug              bool
+	SecretKey          string
+	DBFile             string
+	LogFile            string
+	GeminiCertStore    string
+	CookieStoreKey     string
+	OkExtensions       []string
+	MaxFileBytes       int
+	MaxUserBytes       int64
+	TLSCertFile        string
+	TLSKeyFile         string
+	SMTPServer         string
+	SMTPUsername       string
+	SMTPPassword       string
 }
 
 func getConfig(filename string) (Config, error) {
