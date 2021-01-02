@@ -54,13 +54,17 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 		uri = url.RequestURI()
 	}
 
-	buf := make([]byte, 0, 3*(len(host)+len(username)+len(req.Method)+len(uri)+len(req.Proto)+50)/2)
+	desthost := req.Host
+
+	buf := make([]byte, 0, 3*(len(host)+len(desthost)+len(username)+len(req.Method)+len(uri)+len(req.Proto)+50)/2)
 	buf = append(buf, host...)
 	buf = append(buf, " - "...)
 	buf = append(buf, username...)
 	buf = append(buf, " ["...)
 	buf = append(buf, ts.Format("02/Jan/2006:15:04:05 -0700")...)
-	buf = append(buf, `] "`...)
+	buf = append(buf, `] `...)
+	buf = append(buf, desthost...)
+	buf = append(buf, ` "`...)
 	buf = append(buf, req.Method...)
 	buf = append(buf, " "...)
 	buf = appendQuoted(buf, uri)
