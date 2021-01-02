@@ -18,6 +18,7 @@ type Config struct {
 	Debug              bool
 	SecretKey          string
 	DBFile             string
+	AnalyticsDBFile    string
 	LogFile            string
 	GeminiCertStore    string
 	CookieStoreKey     string

@@ -6,6 +6,7 @@ require (
 	git.sr.ht/~adnano/go-gemini v0.1.8
 	github.com/BurntSushi/toml v0.3.1
 	github.com/emersion/go-webdav v0.3.0
+	github.com/go-co-op/gocron v0.5.0
 	github.com/gorilla/feeds v1.1.1
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/sessions v1.2.1

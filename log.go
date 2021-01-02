@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"database/sql"
 	"fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
 	"github.com/gorilla/handlers"
@@ -9,7 +11,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -17,6 +22,8 @@ import (
 // Copy pasted from gorilla handler library, modified slightly
 
 const lowerhex = "0123456789abcdef"
+
+const apacheTS = "02/Jan/2006:15:04:05 -0700"
 
 func logFormatter(writer io.Writer, params handlers.LogFormatterParams) {
 	buf := buildCommonLogLine(params.Request, params.URL, params.TimeStamp, params.StatusCode, params.Size)
@@ -64,7 +71,7 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	buf = append(buf, " - "...)
 	buf = append(buf, username...)
 	buf = append(buf, " ["...)
-	buf = append(buf, ts.Format("02/Jan/2006:15:04:05 -0700")...)
+	buf = append(buf, ts.Format(apacheTS)...)
 	buf = append(buf, `] `...)
 	buf = append(buf, desthost...)
 	buf = append(buf, ` "`...)
@@ -155,9 +162,113 @@ func logGemini(r *gmi.Request) {
 		host = ipAddr
 	}
 	line := fmt.Sprintf("gemini %s - [%s] %s %s\n", host,
-		time.Now().Format("02/Jan/2006:15:04:05 -0700"),
+		time.Now().Format(apacheTS),
 		r.URL.Host,
 		r.URL.Path)
 	buf := []byte(line)
 	log.Writer().Write(buf)
+}
+
+// notall fields set for both protocols
+type LogLine struct {
+	Timestamp time.Time
+	Protocol  string // gemini or http
+	ReqIP     string // maybe rename here
+	ReqUser   string
+	Status    int
+	DestHost  string
+	Method    string
+	Path      string
+}
+
+func (ll *LogLine) insertInto(db *sql.DB) {
+	_, err := db.Exec(`insert into log (timestamp, protocol, request_ip, request_user, status, destination_host, path, method)
+values (?, ?, ?, ?, ?, ?, ?, ?)`, ll.Timestamp.Format(time.RFC3339), ll.Protocol, ll.ReqIP, ll.ReqUser, ll.Status, ll.DestHost, ll.Path, ll.Method)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+const httpLogRegex = `^(.*?) - (.*?) \[(.*?)\] (.*?) \"(.*) (.*) .*\" (\d*)`
+const geminiLogRegex = `^gemini (.*?) - \[(.*?)\] (.*?) (.*)`
+
+var rxHttp *regexp.Regexp = regexp.MustCompile(httpLogRegex)
+var rxGemini *regexp.Regexp = regexp.MustCompile(geminiLogRegex)
+
+func lineToLogLine(line string) (*LogLine, error) {
+	result := LogLine{}
+	var ts string
+	if strings.HasPrefix(line, "gemini") {
+		matches := rxGemini.FindStringSubmatch(line)
+		if len(matches) < 5 {
+			return nil, nil // TODO better error
+		} else {
+			result.ReqIP = matches[1]
+			ts = matches[2]
+			result.Timestamp, _ = time.Parse(apacheTS, ts)
+			result.DestHost = matches[3]
+			result.Path = matches[4]
+			result.Protocol = "gemini"
+			// etc
+		}
+	} else {
+		matches := rxHttp.FindStringSubmatch(line)
+		if len(matches) < 8 {
+			return nil, nil
+		} else {
+			result.ReqIP = matches[1]
+			result.ReqUser = matches[2]
+			ts = matches[3]
+			result.Timestamp, _ = time.Parse(apacheTS, ts)
+			result.DestHost = matches[4]
+			result.Method = matches[5]
+			result.Path = matches[6]
+			result.Status, _ = strconv.Atoi(matches[7])
+			result.Protocol = "http"
+		}
+	}
+	return &result, nil
+}
+
+func dumpLogs() {
+	fmt.Println("Writing missing logs to database")
+	db := getAnalyticsDB()
+	var maxTime string
+	row := db.QueryRow(`SELECT timestamp from log order by timestamp desc limit 1`)
+	err := row.Scan(&maxTime)
+	if err != nil {
+		// not perfect -- squashes errors
+	}
+
+	file, err := os.Open(c.LogFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	counter := 0
+	for scanner.Scan() {
+		text := scanner.Text()
+		ll, _ := lineToLogLine(text)
+		if ll == nil {
+			continue
+		}
+		if maxTime != "" {
+			max, err := time.Parse(time.RFC3339, maxTime) // ineff
+			if !ll.Timestamp.After(max) || err != nil {
+				// NOTE -- possible bug if two requests in the same second while we are reading -- skips 1 log
+				continue
+			}
+		}
+		ll.insertInto(db)
+		counter += 1
+	}
+	fmt.Printf("Wrote %d logs\n", counter)
+}
+
+func rotateLogs() {
+	// TODO write
+	// move log to log.1
+	// delete log.1
 }

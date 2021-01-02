@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/go-co-op/gocron"
 	"github.com/gorilla/sessions"
 	"io"
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 var c Config // global var to hold static configuration
@@ -46,8 +48,15 @@ func main() {
 	cookie := generateCookieKeyIfDNE()
 	SessionStore = sessions.NewCookieStore(cookie)
 
+	// handle background tasks
+	s1 := gocron.NewScheduler(time.UTC)
+	if c.AnalyticsDBFile != "" {
+		s1.Every(1).Day().Do(dumpLogs) // TODO Dont do on start?
+	}
+
 	switch args[0] {
 	case "serve":
+		s1.StartAsync()
 		wg := new(sync.WaitGroup)
 		wg.Add(2)
 		go func() {
@@ -61,5 +70,7 @@ func main() {
 		wg.Wait()
 	case "admin":
 		runAdminCommand()
+	case "dumplogs":
+		dumpLogs()
 	}
 }
