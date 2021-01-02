@@ -738,7 +738,7 @@ func runHTTPServer() {
 	// TODO authentication
 	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler)
 
-	wrapped := (handlers.LoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux)))
+	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
 
 	// handle user files based on subdomain
 	serveMux.HandleFunc("/", userFile)
