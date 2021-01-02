@@ -37,9 +37,9 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 		ipAddr = req.RemoteAddr
 	}
 
-	host, _, err := net.SplitHostPort(req.RemoteAddr)
+	host, _, err := net.SplitHostPort(ipAddr)
 	if err != nil {
-		host = req.RemoteAddr
+		host = ipAddr
 	}
 
 	uri := req.RequestURI
