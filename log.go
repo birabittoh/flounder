@@ -231,7 +231,7 @@ func lineToLogLine(line string) (*LogLine, error) {
 }
 
 func dumpLogs() {
-	fmt.Println("Writing missing logs to database")
+	log.Println("Writing missing logs to database")
 	db := getAnalyticsDB()
 	var maxTime string
 	row := db.QueryRow(`SELECT timestamp from log order by timestamp desc limit 1`)
@@ -264,7 +264,7 @@ func dumpLogs() {
 		ll.insertInto(db)
 		counter += 1
 	}
-	fmt.Printf("Wrote %d logs\n", counter)
+	log.Printf("Wrote %d logs\n", counter)
 }
 
 func rotateLogs() {
