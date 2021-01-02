@@ -149,7 +149,12 @@ func appendQuoted(buf []byte, s string) []byte {
 // Anonymize user and IP?
 
 func logGemini(r *gmi.Request) {
-	line := fmt.Sprintf("gemini %s - [%s] %s %s\n", r.RemoteAddr.String(),
+	ipAddr := r.RemoteAddr.String()
+	host, _, err := net.SplitHostPort(ipAddr)
+	if err != nil {
+		host = ipAddr
+	}
+	line := fmt.Sprintf("gemini %s - [%s] %s %s\n", host,
 		time.Now().Format("02/Jan/2006:15:04:05 -0700"),
 		r.URL.Host,
 		r.URL.Path)
