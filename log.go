@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
+	gmi "git.sr.ht/~adnano/go-gemini"
 	"github.com/gorilla/handlers"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -144,3 +147,12 @@ func appendQuoted(buf []byte, s string) []byte {
 // Parse logs and write to database
 
 // Anonymize user and IP?
+
+func logGemini(r *gmi.Request) {
+	line := fmt.Sprintf("gemini %s - [%s] %s %s\n", r.RemoteAddr.String(),
+		time.Now().Format("02/Jan/2006:15:04:05 -0700"),
+		r.URL.Host,
+		r.URL.Path)
+	buf := []byte(line)
+	log.Writer().Write(buf)
+}

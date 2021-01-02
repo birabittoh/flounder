@@ -53,7 +53,7 @@ func generateFolderPage(fullpath string) string {
 }
 
 func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
-	log.Println("Index request")
+	logGemini(r) // TODO move into wrapper
 	t, err := template.ParseFiles("templates/index.gmi")
 	if err != nil {
 		log.Fatal(err)
@@ -79,6 +79,7 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 }
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
+	logGemini(r)                                                  // TODO move into wrapper
 	userName := filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
 	fileName := filepath.Clean(r.URL.Path)
 	if fileName == "/" {
@@ -87,7 +88,6 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 		w.WriteStatus(gmi.StatusNotFound)
 		return
 	}
-	log.Println("Request for gemini file", fileName, "for user", userName)
 	fullPath := path.Join(c.FilesDirectory, userName, fileName)
 	if fileName == "/gemlog" { // temp hack
 		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
