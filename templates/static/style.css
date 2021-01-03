@@ -130,3 +130,7 @@ pre {
 a:hover {
   text-decoration: underline;
 }
+
+blockquote {
+  font-style: italic;
+}
