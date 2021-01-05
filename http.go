@@ -104,6 +104,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	filePath := path.Join(c.FilesDirectory, user.Username, fileName)
 	isText := isTextFile(filePath)
 	alert := ""
+	var warnings []string
 	if r.Method == "POST" {
 		// get post body
 		r.ParseForm()
@@ -117,6 +118,13 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			renderError(w, err.Error(), http.StatusBadRequest)
 			return
+		}
+		sfl := getSchemedFlounderLinkLines(strings.NewReader(fileText))
+		if len(sfl) > 0 {
+			warnings = append(warnings, "Warning! Some of your links to flounder pages use schemas. This means that they may break when viewed in Gemini or over HTTPS. Plase remove gemini: or https: from the start of these links:\n")
+			for _, l := range sfl {
+				warnings = append(warnings, l)
+			}
 		}
 		// create directories if dne
 		os.MkdirAll(path.Dir(filePath), os.ModePerm)
@@ -176,7 +184,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		Host      string
 		IsText    bool
 		Alert     string
-	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, alert}
+		Warnings  []string
+	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, alert, warnings}
 	err = t.ExecuteTemplate(w, "edit_file.html", data)
 	if err != nil {
 		panic(err)

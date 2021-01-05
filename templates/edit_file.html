@@ -3,6 +3,13 @@
 <form id="edit-form" action="/edit/{{.FileName}}" method="POST">
  <label for="rename">Rename:</label>
    <input type="text" value="{{.FileName}}" id="rename" name="rename">
+  <div class="warning">
+    <p>
+   {{ range .Warnings }}
+    </p>
+    {{ . }}
+  {{ end }}
+  </div>
    {{ if .IsText }}
   <textarea rows="27" name="file_text" id="editor">{{.FileText}}</textarea>
   {{ end }}

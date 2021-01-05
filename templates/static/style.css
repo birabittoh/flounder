@@ -105,6 +105,11 @@ resize: vertical;
 .error {
   color: red;
 }
+
+.warning {
+  color: #ffcc00 ;
+}
+
 .alert {
   color: green;
 }

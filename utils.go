@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bufio"
 	"fmt"
 	"io"
 	"mime"
@@ -12,6 +13,19 @@ import (
 	"time"
 	"unicode/utf8"
 )
+
+func getSchemedFlounderLinkLines(r io.Reader) []string {
+	scanner := bufio.NewScanner(r)
+	result := []string{}
+	for scanner.Scan() {
+		text := scanner.Text()
+		// TODO use actual parser. this could be a little wonky
+		if strings.HasPrefix(text, "=>") && strings.Contains(text, c.Host) && (strings.Contains(text, "gemini://") || strings.Contains(text, "https://")) {
+			result = append(result, text)
+		}
+	}
+	return result
+}
 
 // Check if it is a text file, first by checking mimetype, then by reading bytes
 // Stolen from https://github.com/golang/tools/blob/master/godoc/util/util.go
