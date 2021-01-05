@@ -20,6 +20,10 @@ a:visited {
     color: white;
     background-color: #121212;
   }
+  blockquote {
+    background-color: #121212;
+    border-left: .5em solid black;
+  }
 }
 @media only screen and (max-width: 600px) {
   body {
@@ -138,4 +142,9 @@ a:hover {
 
 blockquote {
   font-style: italic;
+  background: #f9f9f9;
+  border-left: .5em solid #ccc;
+  margin-bottom: 0px; 
+  margin-top: 0px; 
+  padding: .5em 10px;
 }
