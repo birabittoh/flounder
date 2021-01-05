@@ -133,6 +133,7 @@ text-decoration: none;
 
 pre {
     line-height: 1.2;
+    font-size: 1rem;
     overflow: auto;
 }
 
