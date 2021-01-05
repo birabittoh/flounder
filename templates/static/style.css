@@ -142,6 +142,7 @@ a:hover {
 }
 
 blockquote {
+  margin-left: 1.5em;
   font-style: italic;
   background: #f9f9f9;
   border-left: .5em solid #ccc;
