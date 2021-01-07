@@ -12,28 +12,6 @@ a:visited {
   color:blue
 }
 
-@media (prefers-color-scheme: dark) {
-  body, main { background: #1b262c; color: white; }
-  a { color: #21e6c1 }
-  a:visited { color: #21e6c1 }
-  input[type="text"], input[type="password"], textarea {
-    color: white;
-    background-color: #121212;
-  }
-  blockquote {
-    background-color: #121212;
-    border-left: .5em solid black;
-  }
-}
-@media only screen and (max-width: 600px) {
-  body {
-    font-size: 16px
-  }
-  input[type="text"], input[type="password"], textarea {
-    font-size: 1rem;
-  }
-}
-
 h1, h2, h3, h4, h5, h6{
     margin-top:0;
     margin-bottom:.2em;
@@ -153,4 +131,27 @@ blockquote {
   margin-bottom: 0px; 
   margin-top: 0px; 
   padding: .5em 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body, main { background: #1b262c; color: white; }
+  a { color: #21e6c1 }
+  a:visited { color: #21e6c1 }
+  input[type="text"], input[type="password"], textarea {
+    color: white;
+    background-color: #121212;
+  }
+  blockquote {
+    background-color: #121212;
+    border-left: .5em solid black;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  body {
+    font-size: 16px
+  }
+  input[type="text"], input[type="password"], textarea {
+    font-size: 1rem;
+  }
 }
