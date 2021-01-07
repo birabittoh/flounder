@@ -33,10 +33,15 @@ func textToHTML(text gemini.Text) string {
 				continue
 			}
 			if u.Scheme == "gemini" {
-				u.Path = fmt.Sprintf("/%s%s", u.Host, u.Path)
-				u.Scheme = ""
-				u.Host = "proxy." + c.Host
-				urlstring = html.EscapeString(u.String())
+				if strings.HasSuffix(u.Host, c.Host) {
+					u.Scheme = ""
+					urlstring = html.EscapeString(u.String())
+				} else {
+					u.Path = fmt.Sprintf("/%s%s", u.Host, u.Path)
+					u.Scheme = ""
+					u.Host = "proxy." + c.Host
+					urlstring = html.EscapeString(u.String())
+				}
 			}
 			name := html.EscapeString(link.Name)
 			if name == "" {
