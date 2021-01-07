@@ -27,7 +27,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	if len(path) > 2 {
 		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/%s", path[1], path[2]))
 	} else {
-		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s", path[1]))
+		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/", path[1]))
 	}
 	client := gemini.Client{
 		Timeout:           60 * time.Second,
