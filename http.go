@@ -552,10 +552,6 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		renderDefaultError(w, http.StatusForbidden)
 		return
 	}
-	if r.URL.Path == "/style.css" {
-		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
-		return
-	}
 	if r.URL.Path == "/gemlog/atom.xml" && os.IsNotExist(err) {
 		w.Header().Set("Content-Type", "application/atom+xml")
 		// TODO set always somehow
