@@ -183,9 +183,10 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		AuthUser  AuthUser
 		Host      string
 		IsText    bool
+		IsGemini  bool
 		Alert     string
 		Warnings  []string
-	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, alert, warnings}
+	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, isGemini(fileName), alert, warnings}
 	err = t.ExecuteTemplate(w, "edit_file.html", data)
 	if err != nil {
 		panic(err)
@@ -550,10 +551,6 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 
 	if strings.HasPrefix(p, "/"+HiddenFolder) {
 		renderDefaultError(w, http.StatusForbidden)
-		return
-	}
-	if r.URL.Path == "/style.css" {
-		http.ServeFile(w, r, path.Join(c.TemplatesDirectory, "static/style.css"))
 		return
 	}
 	if r.URL.Path == "/gemlog/atom.xml" && os.IsNotExist(err) {
