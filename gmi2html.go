@@ -33,17 +33,17 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) string {
 				continue
 			}
 			if reqUrl != nil {
-				// proxy
-				if u.Scheme == "gemini" || u.Scheme == "" {
-					if strings.HasSuffix(u.Host, c.Host) {
-						u.Scheme = ""
-						urlstring = html.EscapeString(u.String())
-					} else {
-						u.Path = fmt.Sprintf("/%s%s", u.Host, u.Path)
-						u.Scheme = ""
-						u.Host = "proxy." + c.Host
-						urlstring = html.EscapeString(u.String())
-					}
+				u = reqUrl.ResolveReference(u)
+			}
+			if u.Scheme == "gemini" || (reqUrl != nil && u.Scheme == "") {
+				if strings.HasSuffix(u.Host, c.Host) {
+					u.Scheme = ""
+					urlstring = html.EscapeString(u.String())
+				} else {
+					u.Path = fmt.Sprintf("/%s%s", u.Host, u.Path)
+					u.Scheme = ""
+					u.Host = "proxy." + c.Host
+					urlstring = html.EscapeString(u.String())
 				}
 			}
 			name := html.EscapeString(link.Name)
