@@ -586,14 +586,14 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		var htmlString string
 		if geminiContent == "" {
 			file, _ := os.Open(fullPath)
-			htmlString = textToHTML(gmi.ParseText(file))
+			htmlString = textToHTML(nil, gmi.ParseText(file))
 			defer file.Close()
 		} else {
-			htmlString = textToHTML(gmi.ParseText(strings.NewReader(geminiContent)))
+			htmlString = textToHTML(nil, gmi.ParseText(strings.NewReader(geminiContent)))
 		}
 		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]
-		URI := hostname + r.URL.String()
+		URI := "gemini://" + hostname + r.URL.String()
 		data := struct {
 			SiteBody  template.HTML
 			Favicon   string

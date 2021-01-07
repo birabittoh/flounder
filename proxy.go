@@ -33,7 +33,6 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		Timeout:           60 * time.Second,
 		InsecureSkipTrust: true,
 	}
-	fmt.Println(req)
 
 	if h := (url.URL{Host: req.Host}); h.Port() == "" {
 		req.Host += ":1965"
@@ -106,7 +105,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "text/html")
 
-	htmlString := textToHTML(gemini.ParseText(resp.Body))
+	htmlString := textToHTML(req.URL, gemini.ParseText(resp.Body))
 	data := struct {
 		SiteBody  template.HTML
 		Favicon   string

@@ -9,7 +9,7 @@ import (
 	"git.sr.ht/~adnano/go-gemini"
 )
 
-func textToHTML(text gemini.Text) string {
+func textToHTML(reqUrl *url.URL, text gemini.Text) string {
 	var b strings.Builder
 	var pre bool
 	var list bool
@@ -32,7 +32,8 @@ func textToHTML(text gemini.Text) string {
 			if err != nil {
 				continue
 			}
-			if u.Scheme == "gemini" {
+			u = reqUrl.ResolveReference(u)
+			if u.Scheme == "gemini" || u.Scheme == "" {
 				if strings.HasSuffix(u.Host, c.Host) {
 					u.Scheme = ""
 					urlstring = html.EscapeString(u.String())
