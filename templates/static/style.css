@@ -141,6 +141,10 @@ a:hover {
   text-decoration: underline;
 }
 
+ul {
+  padding-left: 1.5rem;
+}
+
 blockquote {
   margin-left: 1.5em;
   font-style: italic;
