@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html"
+	"net/url"
 	"strings"
 
 	"git.sr.ht/~adnano/go-gemini"
@@ -25,12 +26,23 @@ func textToHTML(text gemini.Text) string {
 		switch l.(type) {
 		case gemini.LineLink:
 			link := l.(gemini.LineLink)
-			url := html.EscapeString(link.URL)
+			urlstring := html.EscapeString(link.URL)
+			// u = ctx.URL.ResolveReference(u) ?
+			u, err := url.Parse(urlstring)
+			if err != nil {
+				continue
+			}
+			if u.Scheme == "gemini" {
+				u.Path = fmt.Sprintf("/%s%s", u.Host, u.Path)
+				u.Scheme = ""
+				u.Host = "proxy." + c.Host
+				urlstring = html.EscapeString(u.String())
+			}
 			name := html.EscapeString(link.Name)
 			if name == "" {
-				name = url
+				name = urlstring
 			}
-			fmt.Fprintf(&b, "<p><a href='%s'>%s</a></p>\n", url, name)
+			fmt.Fprintf(&b, "<p><a href='%s'>%s</a></p>\n", urlstring, name)
 		case gemini.LinePreformattingToggle:
 			pre = !pre
 			if pre {
@@ -78,4 +90,8 @@ func textToHTML(text gemini.Text) string {
 		fmt.Fprint(&b, "</ul>\n")
 	}
 	return b.String()
+}
+
+// Convert a Gemini link to a proxy link
+func proxyLink() {
 }

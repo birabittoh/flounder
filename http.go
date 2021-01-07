@@ -750,6 +750,8 @@ func runHTTPServer() {
 	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
 
 	// handle user files based on subdomain
+	// also routes to proxy
+	serveMux.HandleFunc("proxy."+hostname+"/", proxyGemini) // eg. proxy.flounder.online
 	serveMux.HandleFunc("/", userFile)
 	// login+register functions
 	srv := &http.Server{
