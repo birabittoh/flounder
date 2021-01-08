@@ -11,11 +11,13 @@
 <main>
 {{.SiteBody}}
 <br>
-<a href=".." title="Go to the parent directory">./..</a>
+{{ if ne .URI.Path "/"}}
+<a href=".." title="Go to the parent directory">{{parent .URI.Path}}</a>
+{{ end }}
 <br>
 <br>
 <div class="footer">
-  Proxied from the original at <a href="{{.URI}}">{{.URI}}</a>  (<a href="https://admin.flounder.online/gemini.gmi">about Gemini</a>) <a href="?raw=1">raw</a></div> 
+  Proxied from the original at <a href="{{.URI.String}}">{{.URI.String}}</a>  (<a href="https://admin.flounder.online/gemini.gmi">about Gemini</a>) <a href="?raw=1">raw</a></div> 
 </main>
 </body>
 </html>

@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -536,6 +537,7 @@ func getFavicon(user string) string {
 }
 
 // Server a user's file
+// TODO replace with gemini proxy
 // Here be dragons
 func userFile(w http.ResponseWriter, r *http.Request) {
 	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
@@ -594,14 +596,21 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}
 		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]
-		URI := "gemini://" + hostname + r.URL.String()
+		uri := url.URL{
+			Scheme: "gemini",
+			Host:   hostname,
+			Path:   p,
+		}
 		data := struct {
 			SiteBody  template.HTML
 			Favicon   string
 			PageTitle string
-			URI       string
-		}{template.HTML(htmlString), favicon, userName + p, URI}
-		t.ExecuteTemplate(w, "user_page.html", data)
+			URI       *url.URL
+		}{template.HTML(htmlString), favicon, userName + p, &uri}
+		err = t.ExecuteTemplate(w, "user_page.html", data)
+		if err != nil {
+			panic(err)
+		}
 	} else {
 		http.ServeFile(w, r, fullPath)
 	}
@@ -715,7 +724,8 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d. TLS enabled: %t", c.Host, c.HttpPort, c.HttpsEnabled)
 	var err error
-	t, err = template.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
+	t = template.New("main").Funcs(template.FuncMap{"parent": path.Dir})
+	t, err = t.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
 	if err != nil {
 		log.Fatal(err)
 	}
