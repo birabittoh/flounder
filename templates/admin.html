@@ -1,13 +1,12 @@
-{{$domain := .Host}}
 {{template "header" .}}
-<h1>{{.PageTitle}}</h1>
+<h1>Admin</h1>
 {{template "nav.html" .}}
 <br>
 {{ range .Users }}
 <details>
   <summary><b>{{.Username}}</b> {{if not .Active}}<em>(inactive)</em>{{end}}</summary>
   <div class="user-admin-details">
-    <p>Home: <a href="//{{.Username}}.{{$domain}}">{{.Username}}</a>  </p>
+    <p>Home: <a href="//{{.Username}}.{{$.Config.Host}}">{{.Username}}</a>  </p>
     <p>Email: <a href=mailto:{{.Email}}>{{.Email}}</a></p>
     <p>Reference: {{.Reference}}</p>
 {{ if not .Active }}

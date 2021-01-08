@@ -1,5 +1,5 @@
 {{template "header" .}}
-<h1>{{.PageTitle}}</h1>
+<h1>{{.Title}}</h1>
 {{ .Message }}
-<a href="//{{.Host}}">Go home</a>
+<a href="//{{.Config.Host}}">Go home</a>
 {{template "footer" .}}

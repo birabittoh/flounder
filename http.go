@@ -31,10 +31,9 @@ func renderDefaultError(w http.ResponseWriter, statusCode int) {
 
 func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 	data := struct {
-		PageTitle  string
 		StatusCode int
 		ErrorMsg   string
-	}{"Error!", statusCode, errorMsg}
+	}{statusCode, errorMsg}
 	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // Shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
@@ -64,12 +63,11 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	data := struct {
-		Host      string
-		PageTitle string
-		Files     []*File
-		Users     []string
-		AuthUser  AuthUser
-	}{c.Host, c.SiteTitle, indexFiles, allUsers, user}
+		Config   Config
+		AuthUser AuthUser
+		Files    []*File
+		Users    []string
+	}{c, user, indexFiles, allUsers}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
 		panic(err)
@@ -83,12 +81,11 @@ func feedHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	data := struct {
-		Host        string
-		PageTitle   string
+		Config      Config
 		FeedEntries []FeedEntry
 		Feeds       []Gemfeed
 		AuthUser    AuthUser
-	}{c.Host, c.SiteTitle, feedEntries, feeds, user}
+	}{c, feedEntries, feeds, user}
 	err = t.ExecuteTemplate(w, "feed.html", data)
 	if err != nil {
 		panic(err)
@@ -178,17 +175,17 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	data := struct {
-		FileName  string
-		FileText  string
-		PageTitle string
-		AuthUser  AuthUser
-		Host      string
-		IsText    bool
-		IsGemini  bool
-		IsGemlog  bool
-		Alert     string
-		Warnings  []string
-	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, isGemini(fileName), strings.HasPrefix(fileName, "gemlog"), alert, warnings}
+		FileName string
+		FileText string
+		Config   Config
+		AuthUser AuthUser
+		Host     string
+		IsText   bool
+		IsGemini bool
+		IsGemlog bool
+		Alert    string
+		Warnings []string
+	}{fileName, string(fileBytes), c, user, c.Host, isText, isGemini(fileName), strings.HasPrefix(fileName, "gemlog"), alert, warnings}
 	err = t.ExecuteTemplate(w, "edit_file.html", data)
 	if err != nil {
 		panic(err)
@@ -266,12 +263,11 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 	files, _ := getMyFilesRecursive(userFolder, user.Username)
 	currentDate := time.Now().Format("2006-01-02")
 	data := struct {
-		Host        string
-		PageTitle   string
+		Config      Config
 		Files       []File
 		AuthUser    AuthUser
 		CurrentDate string
-	}{c.Host, c.SiteTitle, files, user, currentDate}
+	}{c, files, user, currentDate}
 	_ = t.ExecuteTemplate(w, "my_site.html", data)
 }
 
@@ -284,12 +280,12 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	me, _ := getUserByName(user.Username)
 	type pageData struct {
-		PageTitle string
-		AuthUser  AuthUser
-		Email     string
-		Errors    []string
+		Config   Config
+		AuthUser AuthUser
+		Email    string
+		Errors   []string
 	}
-	data := pageData{"My Account", user, me.Email, nil}
+	data := pageData{c, user, me.Email, nil}
 
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "me.html", data)
@@ -352,9 +348,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		// show page
 		data := struct {
-			Error     string
-			PageTitle string
-		}{"", "Login"}
+			Error  string
+			Config Config
+		}{"", c}
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
 			panic(err)
@@ -374,9 +370,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if db_password != nil && !active {
 			data := struct {
-				Error     string
-				PageTitle string
-			}{"Your account is not active yet. Pending admin approval", c.SiteTitle}
+				Error  string
+				Config Config
+			}{"Your account is not active yet. Pending admin approval", c}
 			t.ExecuteTemplate(w, "login.html", data)
 			return
 		}
@@ -389,9 +385,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 		} else {
 			data := struct {
-				Error     string
-				PageTitle string
-			}{"Invalid login or password", c.SiteTitle}
+				Error  string
+				Config Config
+			}{"Invalid login or password", c}
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
 				panic(err)
@@ -433,10 +429,9 @@ func isOkUsername(s string) error {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := struct {
-			Host      string
-			Errors    []string
-			PageTitle string
-		}{c.Host, nil, "Register"}
+			Errors []string
+			Config Config
+		}{nil, c}
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
 			panic(err)
@@ -470,17 +465,16 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(errors) > 0 {
 			data := struct {
-				Host      string
-				Errors    []string
-				PageTitle string
-			}{c.Host, errors, "Register"}
+				Config Config
+				Errors []string
+			}{c, errors}
 			t.ExecuteTemplate(w, "register.html", data)
 		} else {
 			data := struct {
-				Host      string
-				Message   string
-				PageTitle string
-			}{c.Host, "Registration complete! The server admin will approve your request before you can log in.", "Registration Complete"}
+				Config  Config
+				Message string
+				Title   string
+			}{c, "Registration complete! The server admin will approve your request before you can log in.", "Registration Complete"}
 			t.ExecuteTemplate(w, "message.html", data)
 		}
 	}
@@ -512,11 +506,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		Users     []User
-		AuthUser  AuthUser
-		PageTitle string
-		Host      string
-	}{allUsers, user, "Admin", c.Host}
+		Users    []User
+		AuthUser AuthUser
+		Config   Config
+	}{allUsers, user, c}
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
 		panic(err)
@@ -638,10 +631,10 @@ func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	user := newGetAuthUser(r)
 	data := struct {
-		PageTitle string
-		AuthUser  AuthUser
-		Error     string
-	}{"Reset Password", user, ""}
+		Config   Config
+		AuthUser AuthUser
+		Error    string
+	}{c, user, ""}
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "reset_pass.html", data)
 		if err != nil {

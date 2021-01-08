@@ -1,17 +1,16 @@
-{{$domain := .Host}}
 {{template "header" .}}
-<h1>🐟{{.PageTitle}}!</h1>
+<h1>🐟{{.Config.SiteTitle}}!</h1>
 {{template "nav.html" .}}
 <br>
 <p>
-Welcome to flounder! For more information and site updates, check out the <a href="//admin.{{$domain}}">admin page</a></p>
+Welcome to flounder! For more information and site updates, check out the <a href="//admin.{{$.Config.Host}}">admin page</a></p>
 <h2>Recently updated files:</h2>
 {{ range .Files }}
 <div>
-  <a href="//{{.Creator}}.{{$domain}}" class='person-link'>
+  <a href="//{{.Creator}}.{{$.Config.Host}}" class='person-link'>
    {{ .Creator }}</a>
   <em>{{.TimeAgo}}</em>
-  <a href="//{{.Creator}}.{{$domain}}/{{.Name}}">
+  <a href="//{{.Creator}}.{{$.Config.Host}}/{{.Name}}">
    {{ .Name}}
   </a>
 </div>
@@ -19,6 +18,6 @@ Welcome to flounder! For more information and site updates, check out the <a hre
 <br>
 <h2>All users:</h2>
 {{ range .Users}}
-<a href="//{{.}}.{{$domain}}" class='person-link'>{{.}}</a>
+<a href="//{{.}}.{{$.Config.Host}}" class='person-link'>{{.}}</a>
 {{end}}
 {{template "footer" .}}
