@@ -33,8 +33,9 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 	data := struct {
 		StatusCode int
 		ErrorMsg   string
-	}{statusCode, errorMsg}
-	err := t.ExecuteTemplate(w, "error.html", data)
+		Config     Config
+	}{statusCode, errorMsg, c}
+	err := t.ExecuteTemplate(w, "error.html", c)
 	if err != nil { // Shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
 	}
