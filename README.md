@@ -4,6 +4,8 @@ A lightweight server to help users build simple Gemini sites over http(s) and se
 
 Flounder is in ALPHA -- development and features are changing frequently, especially as the Gemini spec and ecosystem remains relatively unstable.
 
+See the flagship instance at https://flounder.online and gemini://flounder.online
+
 ## Building
 
 Requires go >= 1.15 and sqlite3 development libraries.
