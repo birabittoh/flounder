@@ -51,7 +51,7 @@ func main() {
 	// handle background tasks
 	s1 := gocron.NewScheduler(time.UTC)
 	if c.AnalyticsDBFile != "" {
-		s1.Every(1).Hour().Do(dumpLogs) // TODO Dont do on start?
+		s1.Every(5).Minute().Do(dumpLogs)
 	}
 
 	switch args[0] {
