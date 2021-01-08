@@ -4,4 +4,3 @@
 => /{{.File}} {{.DateString}} {{.Title}} {{end}}
 
 => /gemlog/atom.xml Subscribe via Atom
-=> /index.gmi Return home
