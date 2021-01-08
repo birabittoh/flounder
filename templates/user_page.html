@@ -12,7 +12,7 @@
 {{.SiteBody}}
 <br>
 {{ if ne .URI.Path "/"}}
-<a href=".." title="Go to the parent directory">{{parent .URI.Path}}</a>
+<a href="{{parent .URI.Path}}" title="Go to the parent directory">{{parent .URI.Path}}</a>
 <br>
 <br>
 {{ end }}
