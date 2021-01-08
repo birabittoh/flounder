@@ -184,9 +184,10 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		Host      string
 		IsText    bool
 		IsGemini  bool
+		IsGemlog  bool
 		Alert     string
 		Warnings  []string
-	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, isGemini(fileName), alert, warnings}
+	}{fileName, string(fileBytes), c.SiteTitle, user, c.Host, isText, isGemini(fileName), strings.HasPrefix(fileName, "gemlog"), alert, warnings}
 	err = t.ExecuteTemplate(w, "edit_file.html", data)
 	if err != nil {
 		panic(err)
