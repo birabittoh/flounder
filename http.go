@@ -35,7 +35,7 @@ func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 		ErrorMsg   string
 		Config     Config
 	}{statusCode, errorMsg, c}
-	err := t.ExecuteTemplate(w, "error.html", c)
+	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // Shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
 	}
