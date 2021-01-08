@@ -46,6 +46,7 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	if ipAddr == "" {
 		ipAddr = req.RemoteAddr
 	}
+	referer := req.Header.Get("Referer")
 
 	host, _, err := net.SplitHostPort(ipAddr)
 	if err != nil {
@@ -66,7 +67,7 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 
 	desthost := req.Host
 
-	buf := make([]byte, 0, 3*(len(host)+len(desthost)+len(username)+len(req.Method)+len(uri)+len(req.Proto)+50)/2)
+	buf := make([]byte, 0, 3*(len(host)+len(desthost)+len(username)+len(req.Method)+len(uri)+len(req.Proto)+len(referer)+50)/2)
 	buf = append(buf, host...)
 	buf = append(buf, " - "...)
 	buf = append(buf, username...)
@@ -80,7 +81,9 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	buf = appendQuoted(buf, uri)
 	buf = append(buf, " "...)
 	buf = append(buf, req.Proto...)
-	buf = append(buf, `" `...)
+	buf = append(buf, `" - `...)
+	buf = append(buf, referer...)
+	buf = append(buf, " - "...)
 	buf = append(buf, strconv.Itoa(status)...)
 	buf = append(buf, " "...)
 	buf = append(buf, strconv.Itoa(size)...)
@@ -178,18 +181,19 @@ type LogLine struct {
 	Status    int
 	DestHost  string
 	Method    string
+	Referer   string
 	Path      string
 }
 
 func (ll *LogLine) insertInto(db *sql.DB) {
-	_, err := db.Exec(`insert into log (timestamp, protocol, request_ip, request_user, status, destination_host, path, method)
-values (?, ?, ?, ?, ?, ?, ?, ?)`, ll.Timestamp.Format(time.RFC3339), ll.Protocol, ll.ReqIP, ll.ReqUser, ll.Status, ll.DestHost, ll.Path, ll.Method)
+	_, err := db.Exec(`insert into log (timestamp, protocol, request_ip, request_user, status, destination_host, path, method, referer)
+values (?, ?, ?, ?, ?, ?, ?, ?, ?)`, ll.Timestamp.Format(time.RFC3339), ll.Protocol, ll.ReqIP, ll.ReqUser, ll.Status, ll.DestHost, ll.Path, ll.Method, ll.Referer)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-const httpLogRegex = `^(.*?) - (.*?) \[(.*?)\] (.*?) \"(.*) (.*) .*\" (\d*)`
+const httpLogRegex = `^(.*?) - (.*?) \[(.*?)\] (.*?) \"(.*) (.*) .*\" - (.*) - (\d*)`
 const geminiLogRegex = `^gemini (.*?) - \[(.*?)\] (.*?) (.*)`
 
 var rxHttp *regexp.Regexp = regexp.MustCompile(httpLogRegex)
@@ -223,7 +227,8 @@ func lineToLogLine(line string) (*LogLine, error) {
 			result.DestHost = matches[4]
 			result.Method = matches[5]
 			result.Path = matches[6]
-			result.Status, _ = strconv.Atoi(matches[7])
+			result.Referer = matches[7]
+			result.Status, _ = strconv.Atoi(matches[8])
 			result.Protocol = "http"
 		}
 	}

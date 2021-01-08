@@ -35,7 +35,8 @@ func getAnalyticsDB() *sql.DB {
   status INTEGER,
   destination_host TEXT,
   path TEXT,
-  method TEXT
+  method TEXT,
+  referer TEXT
 );`)
 	if err != nil {
 		log.Fatal(err)
