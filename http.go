@@ -726,7 +726,7 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func runHTTPServer() {
-	log.Printf("Running http server with hostname %s on port %d. TLS enabled: %t", c.Host, c.HttpPort, c.HttpsEnabled)
+	log.Printf("Running http server with hostname %s on port %d.", c.Host, c.HttpPort)
 	var err error
 	t = template.New("main").Funcs(template.FuncMap{"parent": path.Dir})
 	t, err = t.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
@@ -774,9 +774,5 @@ func runHTTPServer() {
 		// TLSConfig:    tlsConfig,
 		Handler: wrapped,
 	}
-	if c.HttpsEnabled {
-		log.Fatal(srv.ListenAndServeTLS(c.TLSCertFile, c.TLSKeyFile))
-	} else {
-		log.Fatal(srv.ListenAndServe())
-	}
+	log.Fatal(srv.ListenAndServe())
 }

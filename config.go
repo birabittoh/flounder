@@ -12,7 +12,6 @@ type Config struct {
 	FilesDirectory     string
 	TemplatesDirectory string
 	Host               string
-	HttpsEnabled       bool
 	HttpPort           int
 	SiteTitle          string
 	Debug              bool
