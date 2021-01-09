@@ -71,12 +71,14 @@ func fileFromPath(fullPath string) File {
 }
 
 type User struct {
-	Username  string
-	Email     string
-	Active    bool
-	Admin     bool
-	CreatedAt int // timestamp
-	Reference string
+	Username      string
+	Email         string
+	Active        bool
+	Admin         bool
+	CreatedAt     int // timestamp
+	Reference     string
+	Domain        string
+	DomainEnabled bool
 }
 
 func getActiveUserNames() ([]string, error) {
@@ -99,8 +101,8 @@ func getActiveUserNames() ([]string, error) {
 
 func getUserByName(username string) (*User, error) {
 	var user User
-	row := DB.QueryRow(`SELECT username, email, active, admin, created_at, reference from user WHERE username = ?`, username)
-	err := row.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference)
+	row := DB.QueryRow(`SELECT username, email, active, admin, created_at, reference, domain, domain_enabled from user WHERE username = ?`, username)
+	err := row.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference, &user.Domain, &user.DomainEnabled)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +182,7 @@ func createTablesIfDNE() {
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
-  domain TEXT,
+  domain TEXT NOT NULL default "",
   domain_enabled BOOLEAN NOT NULL DEFAULT false
 );
 

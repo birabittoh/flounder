@@ -283,10 +283,10 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 	type pageData struct {
 		Config   Config
 		AuthUser AuthUser
-		Email    string
+		MyUser   *User
 		Errors   []string
 	}
-	data := pageData{c, user, me.Email, nil}
+	data := pageData{c, user, me, nil}
 
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "me.html", data)
@@ -298,10 +298,19 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 		newUsername := r.Form.Get("username")
 		errors := []string{}
 		newEmail := r.Form.Get("email")
+		newDomain := r.Form.Get("domain")
 		newUsername = strings.ToLower(newUsername)
 		var err error
+		if newDomain != me.Domain {
+			_, err = DB.Exec("update user set domain = ? where username = ?", newDomain, me.Username) // TODO use transaction
+			if err != nil {
+				errors = append(errors, err.Error())
+			} else {
+				log.Printf("Changed domain for %s from %s to %s", authUser, me.Domain, newDomain)
+			}
+		}
 		if newEmail != me.Email {
-			_, err = DB.Exec("update user set email = ? where username = ?", newEmail, me.Email)
+			_, err = DB.Exec("update user set email = ? where username = ?", newEmail, me.Username)
 			if err != nil {
 				// TODO better error not sql
 				errors = append(errors, err.Error())
@@ -325,7 +334,8 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 		user = newGetAuthUser(r)
 		data.Errors = errors
 		data.AuthUser = user
-		data.Email = newEmail
+		data.MyUser.Email = newEmail
+		data.MyUser.Domain = newDomain
 		_ = t.ExecuteTemplate(w, "me.html", data)
 	}
 }

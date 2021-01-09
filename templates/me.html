@@ -16,13 +16,13 @@
   </div>
   <div>
     <label for="email">Email</label><br>
-    <input id="email" name="email" size="32" type="text" value="{{.Email}}" />
+    <input id="email" name="email" size="32" type="text" value="{{.MyUser.Email}}" />
   </div>
   <div>
     <details>
       <summary><label for="domain">Custom domain</label></summary>
     <em>For more information on setting up a custom domain, see <a href="https://admin.flounder.online/custom-domains.gmi">Custom Domains</a></em>
-    <input id="domain" name="domain" size="32" type="text" /> enabled/disabled
+    <input id="domain" name="domain" size="32" type="text" value="{{.MyUser.Domain}}"/> {{if ne .MyUser.Domain ""}}{{if .MyUser.DomainEnabled}}✅{{else}} ❌{{end}}{{end}}
     </details>
   </div>
   <div class="error">{{ range .Errors}}{{.}}<br>{{end}} </div>
