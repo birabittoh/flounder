@@ -179,7 +179,9 @@ func createTablesIfDNE() {
   reference TEXT NOT NULL default "",
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
-  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+  created_at INTEGER DEFAULT (strftime('%s', 'now')),
+  domain TEXT,
+  domain_enabled BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS cookie_key (
