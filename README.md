@@ -22,9 +22,12 @@ After creating an account, you can activate it at the command line with:
 
 ## Deploying
 
-For production, in order to handle TLS and custom domains, I use Caddy with On Demand TLS certs.
+Gemini TLS certs are handled for you. For HTTP, you'll need a reverse proxy that does the following for you:
 
-(TODO -- rewrite)
+1. Wildcard for \*.yourdomain.whatever
+2. On Demand cert for custom user domains
+
+I'm using Caddy. I haven't tested any other servers.
 
 I have not extensively tested the self-hosting capabilities, but making it easy to self-host Flounder for either a single or multi-user instance is a goal of mine. Email me if you encounter issues or would like guidance.
 
