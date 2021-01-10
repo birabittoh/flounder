@@ -151,6 +151,9 @@ func runGeminiServer() {
 	wildcardMux.HandleFunc("/", gmiPage)
 	server.Register(hostname, &mux)
 	server.Register("*."+hostname, &wildcardMux)
+	for k, _ := range domains { // TODO fix
+		server.Register(k, &mux)
+	}
 
 	err = server.ListenAndServe()
 	if err != nil {
