@@ -732,6 +732,14 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func checkDomainHandler(w http.ResponseWriter, r *http.Request) {
+	domain := r.URL.Query().Get("domain")
+	if domain != "" && domains[domain] != "" {
+		w.Write([]byte(domain))
+		return
+	}
+	http.Error(w, "Not Found", 404)
+}
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d.", c.Host, c.HttpPort)
 	var err error
@@ -760,6 +768,9 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/delete/", deleteFileHandler)
 	serveMux.HandleFunc(hostname+"/delete-account", deleteAccountHandler)
 	serveMux.HandleFunc(hostname+"/reset-password", resetPasswordHandler)
+
+	// Check domain -- used by caddy
+	serveMux.HandleFunc(hostname+"/check-domain", checkDomainHandler)
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
