@@ -200,7 +200,7 @@ func createTablesIfDNE() {
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
-  domain TEXT NOT NULL default "" UNIQUE,
+  domain TEXT NOT NULL default "",
   domain_enabled BOOLEAN NOT NULL DEFAULT false
 );
 
