@@ -79,8 +79,14 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 }
 
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
-	logGemini(r)                                                  // TODO move into wrapper
-	userName := filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
+	logGemini(r) // TODO move into wrapper
+	var userName string
+	custom := domains[r.Host]
+	if custom != "" {
+		userName = custom
+	} else {
+		userName := filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
+	}
 	fileName := filepath.Clean(r.URL.Path)
 	if fileName == "/" {
 		fileName = "index.gmi"
