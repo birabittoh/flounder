@@ -83,6 +83,7 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	var userName string
 	host, _, _ := net.SplitHostPort(r.Host)
 	custom := domains[host]
+	log.Println(custom)
 	if custom != "" {
 		userName = custom
 	} else {
