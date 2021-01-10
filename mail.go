@@ -9,7 +9,6 @@ func SendEmail(email string, subject string, body string) {
 	auth := smtp.PlainAuth("", c.SMTPUsername, c.SMTPPassword, "smtp.migadu.com")
 	msg := "From: " + c.SMTPUsername + "\n" +
 		"To: " + email + "\n" +
-		"Cc: " + c.SMTPUsername + "\n" +
 		"Subject:" + subject + "\n" +
 		body
 	err := smtp.SendMail(c.SMTPServer, auth, c.SMTPUsername, []string{email}, []byte(msg))
