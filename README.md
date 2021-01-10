@@ -27,9 +27,11 @@ Gemini TLS certs are handled for you. For HTTP, you'll need a reverse proxy that
 1. Wildcard for \*.yourdomain.whatever
 2. On Demand cert for custom user domains
 
+If you have a very small deployment <20 users, for example, you can use on demand cert for all domains, and don't have to setup a wildcard cert, for simplicity.
+
 I'm using Caddy. I haven't tested any other servers.
 
-I have not extensively tested the self-hosting capabilities, but making it easy to self-host Flounder for either a single or multi-user instance is a goal of mine. Email me if you encounter issues or would like guidance.
+I have not extensively tested the self-hosting capabilities, but making it easy to self-host Flounder for either a single or multi-user instance is a goal of mine. There may be minor issues where "flounder.online" is hardcoded, but I'm trying to fix them. Email me if you encounter issues or would like guidance.
 
 ## Admin
 
