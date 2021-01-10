@@ -152,7 +152,7 @@ func runGeminiServer() {
 	server.Register(hostname, &mux)
 	server.Register("*."+hostname, &wildcardMux)
 	for k, _ := range domains { // TODO fix
-		server.Register(k, &mux)
+		server.Register(k, &wildcardMux)
 	}
 
 	err = server.ListenAndServe()
