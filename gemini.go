@@ -81,7 +81,8 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	logGemini(r) // TODO move into wrapper
 	var userName string
-	custom := domains[r.Host]
+	host, _, _ := net.SplitHostPort(r.Host)
+	custom := domains[host]
 	if custom != "" {
 		userName = custom
 	} else {
