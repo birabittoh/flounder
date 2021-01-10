@@ -170,8 +170,8 @@ func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].UpdatedTime.After(result[j].UpdatedTime)
 	})
-	if len(result) > 35 {
-		result = result[:35]
+	if len(result) > 50 {
+		result = result[:50]
 	}
 	return result, nil
 } // todo clean up paths
