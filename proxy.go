@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -20,14 +21,20 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("404 Not found"))
 		return
 	}
-	path := strings.SplitN(r.URL.Path, "/", 3)
+	var spath []string
+	if r.URL.Path == "/" {
+		http.Redirect(w, r, "gemini.circumlunar.space", http.StatusSeeOther)
+		return
+	} else {
+		spath = strings.SplitN(r.URL.Path, "/", 3)
+	}
 	req := gemini.Request{}
 	var err error
-	req.Host = path[1]
-	if len(path) > 2 {
-		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/%s", path[1], path[2]))
+	req.Host = spath[1]
+	if len(spath) > 2 {
+		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/%s", spath[1], spath[2]))
 	} else {
-		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/", path[1]))
+		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/", spath[1]))
 	}
 	client := gemini.Client{
 		Timeout:           60 * time.Second,
@@ -104,14 +111,16 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "text/html")
-
 	htmlString := textToHTML(req.URL, gemini.ParseText(resp.Body))
+	if strings.HasSuffix(r.URL.Path, "/") {
+		r.URL.Path = path.Dir(r.URL.Path)
+	}
 	data := struct {
 		SiteBody  template.HTML
 		Favicon   string
 		PageTitle string
 		URI       *url.URL
-	}{template.HTML(htmlString), "", req.URL.String(), req.URL}
+	}{template.HTML(htmlString), "", r.URL.String(), r.URL}
 
 	err = t.ExecuteTemplate(w, "user_page.html", data)
 	if err != nil {

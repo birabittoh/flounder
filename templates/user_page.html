@@ -11,8 +11,13 @@
 <main>
 {{.SiteBody}}
 <br>
+{{$parent := parent .URI.Path}}
 {{ if ne .URI.Path "/"}}
+{{ if ne $parent "/"}}
+<a href="{{parent .URI.Path}}/" title="Go to the parent directory">{{parent .URI.Path}}/</a>
+{{ else }}
 <a href="{{parent .URI.Path}}" title="Go to the parent directory">{{parent .URI.Path}}</a>
+{{ end }}
 <br>
 <br>
 {{ end }}
