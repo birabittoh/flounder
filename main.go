@@ -46,6 +46,9 @@ func main() {
 		s1.Every(5).Minute().Do(dumpLogs)
 	}
 
+	// load domains in memory
+	refreshDomainMap()
+
 	switch args[0] {
 	case "serve":
 		s1.StartAsync()

@@ -99,6 +99,24 @@ func getActiveUserNames() ([]string, error) {
 	return users, nil
 }
 
+var domains map[string]string
+
+func refreshDomainMap() error {
+	rows, err := DB.Query(`SELECT domain, username from user WHERE domain != nil`)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var domain string
+		var username string
+		err = rows.Scan(&domain, &username)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func getUserByName(username string) (*User, error) {
 	var user User
 	row := DB.QueryRow(`SELECT username, email, active, admin, created_at, reference, domain, domain_enabled from user WHERE username = ?`, username)
@@ -182,7 +200,7 @@ func createTablesIfDNE() {
   active boolean NOT NULL DEFAULT false,
   admin boolean NOT NULL DEFAULT false,
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
-  domain TEXT NOT NULL default "",
+  domain TEXT NOT NULL default "" UNIQUE,
   domain_enabled BOOLEAN NOT NULL DEFAULT false
 );
 

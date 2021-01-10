@@ -306,6 +306,7 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				errors = append(errors, err.Error())
 			} else {
+				refreshDomainMap()
 				log.Printf("Changed domain for %s from %s to %s", authUser, me.Domain, newDomain)
 			}
 		}
@@ -544,7 +545,13 @@ func getFavicon(user string) string {
 // TODO replace with gemini proxy
 // Here be dragons
 func userFile(w http.ResponseWriter, r *http.Request) {
-	userName := filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
+	var userName string
+	custom := domains[r.Host]
+	if custom != "" {
+		userName = custom
+	} else {
+		userName = filepath.Clean(strings.Split(r.Host, ".")[0]) // Clean probably unnecessary
+	}
 	p := filepath.Clean(r.URL.Path)
 	var isDir bool
 	fullPath := path.Join(c.FilesDirectory, userName, p) // TODO rename filepath
