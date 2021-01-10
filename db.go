@@ -102,8 +102,10 @@ func getActiveUserNames() ([]string, error) {
 var domains map[string]string
 
 func refreshDomainMap() error {
-	rows, err := DB.Query(`SELECT domain, username from user WHERE domain != nil`)
+	domains = make(map[string]string)
+	rows, err := DB.Query(`SELECT domain, username from user WHERE domain != ""`)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	for rows.Next() {
