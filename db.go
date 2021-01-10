@@ -113,6 +113,7 @@ func refreshDomainMap() error {
 		if err != nil {
 			return err
 		}
+		domains[domain] = username
 	}
 	return nil
 }
