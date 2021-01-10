@@ -580,6 +580,10 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	var geminiContent string
 	_, err = os.Stat(path.Join(fullPath, "index.gmi"))
 	if isDir {
+		// redirect slash
+		if !strings.HasSuffix(r.URL.Path, "/") {
+			http.Redirect(w, r, p+"/", http.StatusSeeOther)
+		}
 		if os.IsNotExist(err) {
 			if p == "/gemlog" {
 				geminiContent = generateGemfeedPage(userName)
