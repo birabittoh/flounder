@@ -301,7 +301,7 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 		newDomain := r.Form.Get("domain")
 		newUsername = strings.ToLower(newUsername)
 		var err error
-		_, exists := dict[newDomain]
+		_, exists := domains[newDomain]
 		if newDomain != me.Domain && !exists {
 			_, err = DB.Exec("update user set domain = ? where username = ?", newDomain, me.Username) // TODO use transaction
 			if err != nil {

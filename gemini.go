@@ -85,7 +85,7 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	if custom != "" {
 		userName = custom
 	} else {
-		userName := filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
+		userName = filepath.Clean(strings.Split(r.URL.Host, ".")[0]) // clean probably unnecessary
 	}
 	fileName := filepath.Clean(r.URL.Path)
 	if fileName == "/" {
