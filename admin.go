@@ -9,6 +9,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"log"
@@ -46,8 +47,9 @@ func runAdminCommand() {
 		fmt.Print("Enter New Password: ")
 		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			setPassword(username, bytePassword)
+			log.Fatal(err)
 		}
+		err = setPassword(username, bytePassword)
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -65,7 +67,15 @@ func makeAdmin(username string) error {
 	return nil
 }
 
-func setPassword(username string, newPass []byte) error {
+func setPassword(username string, newPass []byte) error { // TODO rm code dup
+	hashedPassword, err := bcrypt.GenerateFromPassword(newPass, 8)
+	if err != nil {
+		return err
+	}
+	_, err = DB.Exec("UPDATE user SET password_hash = ? WHERE username = ?", hashedPassword, username)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

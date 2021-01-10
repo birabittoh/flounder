@@ -48,7 +48,6 @@ func main() {
 
 	// load domains in memory
 	refreshDomainMap()
-	fmt.Println(domains)
 
 	switch args[0] {
 	case "serve":
