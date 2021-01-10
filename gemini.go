@@ -136,7 +136,7 @@ func runGeminiServer() {
 		log.Println("Generating certificate for", h)
 		return gmi.CreateCertificate(gmi.CertificateOptions{
 			Subject: pkix.Name{
-				CommonName: hostname,
+				CommonName: h,
 			},
 			DNSNames: []string{h},
 			Duration: time.Hour * 8760 * 100, // 100 years
