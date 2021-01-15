@@ -243,11 +243,13 @@ func dumpLogs() {
 	err := row.Scan(&maxTime)
 	if err != nil {
 		// not perfect -- squashes errors
+		return
 	}
 
 	file, err := os.Open(c.LogFile)
 	if err != nil {
-		log.Fatal(err)
+		// not perfect -- squashes errors
+		return
 	}
 	defer file.Close()
 
