@@ -370,7 +370,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
-		name := r.Form.Get("username")
+		name := strings.ToLower(r.Form.Get("username"))
 		password := r.Form.Get("password")
 		row := DB.QueryRow("SELECT username, password_hash, active, admin FROM user where username = $1 OR email = $1", name)
 		var db_password []byte
@@ -451,7 +451,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
-		email := r.Form.Get("email")
+		email := strings.ToLower(r.Form.Get("email"))
 		password := r.Form.Get("password")
 		errors := []string{}
 		if r.Form.Get("password") != r.Form.Get("password2") {
@@ -779,7 +779,7 @@ func runHTTPServer() {
 
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
-	// TODO authentication
+
 	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler)
 
 	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
