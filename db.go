@@ -131,14 +131,14 @@ func getUserByName(username string) (*User, error) {
 }
 
 func getUsers() ([]User, error) {
-	rows, err := DB.Query(`SELECT username, email, active, admin, created_at, reference from user ORDER BY created_at DESC`)
+	rows, err := DB.Query(`SELECT username, email, active, admin, created_at, reference, domain from user ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
 	var users []User
 	for rows.Next() {
 		var user User
-		err = rows.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference)
+		err = rows.Scan(&user.Username, &user.Email, &user.Active, &user.Admin, &user.CreatedAt, &user.Reference, &user.Domain)
 		if err != nil {
 			return nil, err
 		}

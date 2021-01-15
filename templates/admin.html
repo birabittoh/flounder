@@ -9,6 +9,7 @@
     <p>Home: <a href="//{{.Username}}.{{$.Config.Host}}">{{.Username}}</a>  </p>
     <p>Email: <a href=mailto:{{.Email}}>{{.Email}}</a></p>
     <p>Reference: {{.Reference}}</p>
+    <p>Domain: {{.Domain}}</p>
 {{ if not .Active }}
 <p>
 <form action="/admin/user/{{.Username}}/activate" method="POST" class="inline">
