@@ -379,7 +379,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var isAdmin bool
 		err := row.Scan(&username, &db_password, &active, &isAdmin)
 		if err != nil {
-			panic(err)
+			if strings.Contains(err.Error(), "no rows") {
+				data := struct {
+					Error  string
+					Config Config
+				}{"Username or email '" + name + "' does not exist", c}
+				t.ExecuteTemplate(w, "login.html", data)
+				return
+			} else {
+				panic(err)
+			}
 		}
 		if db_password != nil && !active {
 			data := struct {
