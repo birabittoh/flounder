@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/go-co-op/gocron"
+	// "github.com/go-co-op/gocron"
 	"github.com/gorilla/sessions"
 	"io"
 	"log"
 	"os"
 	"sync"
-	"time"
+	// "time"
 )
 
 var c Config // global var to hold static configuration
