@@ -24,7 +24,7 @@ func initializeDB() {
 	createTablesIfDNE()
 }
 
-func getAnalyticsDB() *sql.DB {
+func getAnalyticsDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", c.AnalyticsDBFile)
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS log (
   id INTEGER PRIMARY KEY NOT NULL,
@@ -38,10 +38,7 @@ func getAnalyticsDB() *sql.DB {
   method TEXT,
   referer TEXT
 );`)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
+	return db, err
 }
 
 type File struct { // also folders

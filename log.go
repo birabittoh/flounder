@@ -237,10 +237,14 @@ func lineToLogLine(line string) (*LogLine, error) {
 
 func dumpLogs() {
 	log.Println("Writing missing logs to database")
-	db := getAnalyticsDB()
+	db, err := getAnalyticsDB()
+	if err != nil {
+		// not perfect -- squashes errors
+		return
+	}
 	var maxTime string
 	row := db.QueryRow(`SELECT timestamp from log order by timestamp desc limit 1`)
-	err := row.Scan(&maxTime)
+	err = row.Scan(&maxTime)
 	if err != nil {
 		// not perfect -- squashes errors
 		return
