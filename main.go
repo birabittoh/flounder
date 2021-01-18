@@ -41,9 +41,9 @@ func main() {
 	SessionStore = sessions.NewCookieStore(cookie)
 
 	// handle background tasks
-	s1 := gocron.NewScheduler(time.UTC)
+	// s1 := gocron.NewScheduler(time.UTC)
 	if c.AnalyticsDBFile != "" {
-		s1.Every(5).Minute().Do(dumpLogs)
+		// s1.Every(5).Minute().Do(dumpLogs)
 	}
 
 	// load domains in memory
@@ -51,7 +51,7 @@ func main() {
 
 	switch args[0] {
 	case "serve":
-		s1.StartAsync()
+		// s1.StartAsync()
 		wg := new(sync.WaitGroup)
 		wg.Add(2)
 		go func() {
