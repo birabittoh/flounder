@@ -42,7 +42,7 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	}
 
 	// Get forwarded IP address
-	ipAddr := req.Header.Get("X-Real-IP")
+	ipAddr := req.Header.Get("X-Forwarded-For") // TODO make so it works with many servers
 	if ipAddr == "" {
 		ipAddr = req.RemoteAddr
 	}

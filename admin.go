@@ -42,7 +42,7 @@ func runAdminCommand() {
 		username := args[2]
 		newUsername := args[3]
 		err = renameUser(username, newUsername)
-	case "set-password": // TODO FIX -- broken atm
+	case "set-password":
 		username := args[2]
 		fmt.Print("Enter New Password: ")
 		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
