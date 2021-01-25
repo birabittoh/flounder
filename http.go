@@ -434,6 +434,8 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
 
+var bannedUsernames = []string{"www", "proxy", "grafana"}
+
 func isOkUsername(s string) error {
 	if len(s) < 1 {
 		return fmt.Errorf("Username is too short")
@@ -446,8 +448,14 @@ func isOkUsername(s string) error {
 			return fmt.Errorf("Username contains invalid characters. Valid characters include lowercase letters, numbers, and hyphens.")
 		}
 	}
+	for _, username := range bannedUsernames {
+		if username == s {
+			return fmt.Errorf("Username is not allowed.")
+		}
+	}
 	return nil
 }
+
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := struct {
