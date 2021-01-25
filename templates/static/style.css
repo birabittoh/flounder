@@ -153,4 +153,9 @@ blockquote {
   input[type="text"], input[type="password"], textarea {
     font-size: 1rem;
   }
+
+  blockquote {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }

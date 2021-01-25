@@ -619,7 +619,8 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			Favicon   string
 			PageTitle string
 			URI       *url.URL
-		}{template.HTML(htmlString), favicon, userName + p, &uri}
+			Config    Config
+		}{template.HTML(htmlString), favicon, userName + p, &uri, c}
 		err = t.ExecuteTemplate(w, "user_page.html", data)
 		if err != nil {
 			panic(err)
