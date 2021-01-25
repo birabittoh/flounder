@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	gmi "git.sr.ht/~adnano/go-gemini"
+	"github.com/LukeEmmet/html2gemini"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
@@ -735,6 +736,29 @@ func adminUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func convertTextHandler(w http.ResponseWriter, r *http.Request) {
+	text := ""
+	var err error
+	if r.Method == "GET" {
+		text = ""
+	} else if r.Method == "POST" {
+		r.ParseForm()
+		fmt.Println(r.Form.Get("file_text"))
+		ctx := html2gemini.NewTraverseContext(html2gemini.Options{})
+		text, err = html2gemini.FromString(r.Form.Get("file_text"), *ctx)
+		fmt.Println(text)
+		if err != nil {
+			panic(err)
+		}
+		// TODO handle error?
+	}
+	data := struct {
+		Config Config
+		Text   string
+	}{c, text}
+	t.ExecuteTemplate(w, "convert.html", data)
+}
+
 func checkDomainHandler(w http.ResponseWriter, r *http.Request) {
 	domain := r.URL.Query().Get("domain")
 	if domain != "" && domains[domain] != "" {
@@ -764,6 +788,7 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
+	serveMux.HandleFunc(hostname+"/convert", convertTextHandler)
 	serveMux.HandleFunc(hostname+"/upload", uploadFilesHandler)
 	serveMux.Handle(hostname+"/login", limit(http.HandlerFunc(loginHandler)))
 	serveMux.Handle(hostname+"/register", limit(http.HandlerFunc(registerHandler)))

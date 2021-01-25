@@ -5,6 +5,7 @@ go 1.15
 require (
 	git.sr.ht/~adnano/go-gemini v0.1.8
 	github.com/BurntSushi/toml v0.3.1
+	github.com/LukeEmmet/html2gemini v0.0.0-20201115162526-e63bbe688236
 	github.com/emersion/go-webdav v0.3.0
 	github.com/go-co-op/gocron v0.5.0
 	github.com/gorilla/feeds v1.1.1
