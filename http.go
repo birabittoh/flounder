@@ -436,26 +436,6 @@ const ok = "-0123456789abcdefghijklmnopqrstuvwxyz"
 
 var bannedUsernames = []string{"www", "proxy", "grafana"}
 
-func isOkUsername(s string) error {
-	if len(s) < 1 {
-		return fmt.Errorf("Username is too short")
-	}
-	if len(s) > 32 {
-		return fmt.Errorf("Username is too long. 32 char max.")
-	}
-	for _, char := range s {
-		if !strings.Contains(ok, strings.ToLower(string(char))) {
-			return fmt.Errorf("Username contains invalid characters. Valid characters include lowercase letters, numbers, and hyphens.")
-		}
-	}
-	for _, username := range bannedUsernames {
-		if username == s {
-			return fmt.Errorf("Username is not allowed.")
-		}
-	}
-	return nil
-}
-
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := struct {
@@ -765,7 +745,7 @@ func checkDomainHandler(w http.ResponseWriter, r *http.Request) {
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d.", c.Host, c.HttpPort)
 	var err error
-	t = template.New("main").Funcs(template.FuncMap{"parent": path.Dir})
+	t = template.New("main").Funcs(template.FuncMap{"parent": path.Dir, "hasSuffix": strings.HasSuffix})
 	t, err = t.ParseGlob(path.Join(c.TemplatesDirectory, "*.html"))
 	if err != nil {
 		log.Fatal(err)

@@ -27,6 +27,26 @@ func getSchemedFlounderLinkLines(r io.Reader) []string {
 	return result
 }
 
+func isOkUsername(s string) error {
+	if len(s) < 1 {
+		return fmt.Errorf("Username is too short")
+	}
+	if len(s) > 32 {
+		return fmt.Errorf("Username is too long. 32 char max.")
+	}
+	for _, char := range s {
+		if !strings.Contains(ok, strings.ToLower(string(char))) {
+			return fmt.Errorf("Username contains invalid characters. Valid characters include lowercase letters, numbers, and hyphens.")
+		}
+	}
+	for _, username := range bannedUsernames {
+		if username == s {
+			return fmt.Errorf("Username is not allowed.")
+		}
+	}
+	return nil
+}
+
 // Check if it is a text file, first by checking mimetype, then by reading bytes
 // Stolen from https://github.com/golang/tools/blob/master/godoc/util/util.go
 func isTextFile(fullPath string) bool {
