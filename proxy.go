@@ -120,7 +120,8 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		Favicon   string
 		PageTitle string
 		URI       *url.URL
-	}{template.HTML(htmlString), "", r.URL.String(), r.URL}
+		Config    Config
+	}{template.HTML(htmlString), "", r.URL.String(), r.URL, c}
 
 	err = t.ExecuteTemplate(w, "user_page.html", data)
 	if err != nil {
