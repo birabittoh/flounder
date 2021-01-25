@@ -20,6 +20,7 @@
   <input type="submit" value="Save file" class="button">
   <a href="/my_site">Back</a>
   <script type="text/javascript">window.setTimeout("document.getElementById('save-message').style.display='none';", 2000); </script>
+  <div id="save-message" class="alert">{{.Alert}}</div>
   <div class="warning">
     <p>
    {{ range .Warnings }}
@@ -27,6 +28,5 @@
     {{ . }}
   {{ end }}
   </div>
-  <div id="save-message" class="alert">{{.Alert}}</div>
 </form>
 {{template "footer" .}}
