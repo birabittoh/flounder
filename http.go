@@ -603,10 +603,12 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		var htmlString string
 		if geminiContent == "" {
 			file, _ := os.Open(fullPath)
-			htmlString = textToHTML(nil, gmi.ParseText(file))
+			parse, _ := gmi.ParseText(file)
+			htmlString = textToHTML(nil, parse)
 			defer file.Close()
 		} else {
-			htmlString = textToHTML(nil, gmi.ParseText(strings.NewReader(geminiContent)))
+			parse, _ := gmi.ParseText(strings.NewReader(geminiContent))
+			htmlString = textToHTML(nil, parse)
 		}
 		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]

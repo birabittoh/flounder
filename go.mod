@@ -3,7 +3,7 @@ module git.sr.ht/flounder
 go 1.15
 
 require (
-	git.sr.ht/~adnano/go-gemini v0.1.8
+	git.sr.ht/~adnano/go-gemini v0.1.14-0.20210125155540-9e89b93bab84
 	github.com/BurntSushi/toml v0.3.1
 	github.com/LukeEmmet/html2gemini v0.0.0-20201115162526-e63bbe688236
 	github.com/emersion/go-webdav v0.3.0

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509/pkix"
 	gmi "git.sr.ht/~adnano/go-gemini"
+	"git.sr.ht/~adnano/go-gemini/certificate"
 	"io"
 	"io/ioutil"
 	"log"
@@ -62,7 +63,7 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	users, err := getActiveUserNames()
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(40, "Internal server error")
+		w.Status(gmi.StatusTemporaryFailure)
 	}
 	data := struct {
 		Host      string
@@ -91,21 +92,21 @@ func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
 	if fileName == "/" {
 		fileName = "index.gmi"
 	} else if strings.HasPrefix(fileName, "/"+HiddenFolder) {
-		w.WriteStatus(gmi.StatusNotFound)
+		w.Status(gmi.StatusNotFound)
 		return
 	}
 	fullPath := path.Join(c.FilesDirectory, userName, fileName)
 	if fileName == "/gemlog" { // temp hack
 		_, err := os.Stat(path.Join(fullPath, "index.gmi"))
 		if err != nil {
-			w.SetMediaType("text/gemini")
+			w.Meta("text/gemini")
 			io.Copy(w, strings.NewReader(generateGemfeedPage(userName)))
 			return
 		}
 	} else if fileName == "/gemlog/atom.xml" {
 		_, err := os.Stat(fullPath)
 		if err != nil {
-			w.SetMediaType("application/atom+xml")
+			w.Meta("application/atom+xml")
 			feed := generateFeedFromUser(userName)
 			atomString := feed.toAtomFeed()
 			io.Copy(w, strings.NewReader(atomString))
@@ -132,9 +133,9 @@ func runGeminiServer() {
 	err = server.Certificates.Load(c.GeminiCertStore)
 	if err != nil {
 	}
-	server.CreateCertificate = func(h string) (tls.Certificate, error) {
+	server.GetCertificate = func(h string) (tls.Certificate, error) {
 		log.Println("Generating certificate for", h)
-		return gmi.CreateCertificate(gmi.CertificateOptions{
+		return certificate.Create(certificate.CreateOptions{
 			Subject: pkix.Name{
 				CommonName: h,
 			},
@@ -149,11 +150,8 @@ func runGeminiServer() {
 
 	var wildcardMux gmi.ServeMux
 	wildcardMux.HandleFunc("/", gmiPage)
-	server.Register(hostname, &mux)
-	server.Register("*."+hostname, &wildcardMux)
-	for k, _ := range domains { // TODO fix
-		server.Register(k, &wildcardMux)
-	}
+	server.Handle(hostname, &mux)
+	server.Handle("*", &wildcardMux)
 
 	err = server.ListenAndServe()
 	if err != nil {

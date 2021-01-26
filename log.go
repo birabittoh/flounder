@@ -159,7 +159,12 @@ func appendQuoted(buf []byte, s string) []byte {
 // Anonymize user and IP?
 
 func logGemini(r *gmi.Request) {
-	ipAddr := r.RemoteAddr.String()
+	var ipAddr string
+	if r.RemoteAddr != nil {
+		ipAddr = r.RemoteAddr.String()
+	} else {
+		ipAddr = ""
+	}
 	host, _, err := net.SplitHostPort(ipAddr)
 	if err != nil {
 		host = ipAddr

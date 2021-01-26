@@ -37,8 +37,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/", spath[1]))
 	}
 	client := gemini.Client{
-		Timeout:           60 * time.Second,
-		InsecureSkipTrust: true,
+		Timeout: 60 * time.Second,
 	}
 
 	if h := (url.URL{Host: req.Host}); h.Port() == "" {
@@ -111,7 +110,8 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "text/html")
-	htmlString := textToHTML(req.URL, gemini.ParseText(resp.Body))
+	parse, _ := gemini.ParseText(resp.Body)
+	htmlString := textToHTML(req.URL, parse)
 	if strings.HasSuffix(r.URL.Path, "/") {
 		r.URL.Path = path.Dir(r.URL.Path)
 	}
