@@ -73,6 +73,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		}
 		next.Host = r.URL.Host
 		next.Scheme = r.URL.Scheme
+		next.Path = fmt.Sprintf("/%s/%s", req.URL.Host, next)
 		w.Header().Add("Location", next.String())
 		w.WriteHeader(http.StatusFound)
 		w.Write([]byte("Redirecting to " + next.String()))
