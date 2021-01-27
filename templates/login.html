@@ -2,11 +2,11 @@
 <h1>🐟Login</h1>
 <form action="/login" method="post">
   <p>
-    <label for="username">Username or Email</label>
+    <label for="username" required>Username or Email</label>
     <input id="username" name="username" size="27" type="text" value="" />
   </p>
   <p>
-    <label for="password">Password</label>
+    <label for="password" required>Password</label>
     <input id="password" name="password" size="27" type="password" value="" />
   </p>
   {{ if .Error }}
