@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/sessions v1.2.1
 	github.com/mattn/go-sqlite3 v1.14.4
+	github.com/mmcdole/gofeed v1.1.0
 	github.com/ulule/limiter/v3 v3.7.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
