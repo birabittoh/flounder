@@ -68,19 +68,26 @@ func writeAllFeeds(user string) error {
 	type feedPlusItem struct {
 		Feed     *gofeed.Feed
 		FeedItem *gofeed.Item
+		Date     string
 	}
 	data := struct {
+		User      string
 		FeedItems []feedPlusItem
 	}{}
+	data.User = user
 	for _, feed := range feedData {
 		for _, item := range feed.Items {
-			if item.PublishedParsed != nil {
-				data.FeedItems = append(data.FeedItems, feedPlusItem{feed, item})
+			if item.UpdatedParsed == nil {
+				item.UpdatedParsed = item.PublishedParsed
+			}
+			if item.UpdatedParsed != nil {
+				date := item.UpdatedParsed.Format("2006-01-02")
+				data.FeedItems = append(data.FeedItems, feedPlusItem{feed, item, date})
 			}
 		}
 	}
 	sort.Slice(data.FeedItems, func(i, j int) bool {
-		return data.FeedItems[i].FeedItem.PublishedParsed.After(*data.FeedItems[j].FeedItem.PublishedParsed)
+		return data.FeedItems[i].FeedItem.UpdatedParsed.After(*data.FeedItems[j].FeedItem.UpdatedParsed)
 	})
 
 	outputf, err := os.OpenFile(path.Join(getUserDirectory(user), followingFile), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)

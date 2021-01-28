@@ -1,3 +1,4 @@
+# {{.User}}'s Following
 {{ range .FeedItems }}
-=> {{.FeedItem.Link}} {{.FeedItem.Published}} {{.Feed.Title}} -- {{.FeedItem.Title}}{{ end }}
+=> {{.FeedItem.Link}} {{.Date}} {{.Feed.Title}} -- {{.FeedItem.Title}}{{ end }}
 
