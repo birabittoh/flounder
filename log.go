@@ -288,7 +288,6 @@ func dumpLogs() {
 		counter += 1
 	}
 	log.Printf("Wrote %d logs\n", counter)
-	panic(nil)
 }
 
 func rotateLogs() {
