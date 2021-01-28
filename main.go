@@ -40,10 +40,8 @@ func main() {
 	cookie := generateCookieKeyIfDNE()
 	SessionStore = sessions.NewCookieStore(cookie)
 
-	// handle background tasks
-	// s1 := gocron.NewScheduler(time.UTC)
 	if c.AnalyticsDBFile != "" {
-		// s1.Every(5).Minute().Do(dumpLogs)
+		go dumpLogsWorker()
 	}
 
 	// load domains in memory

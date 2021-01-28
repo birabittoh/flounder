@@ -240,6 +240,13 @@ func lineToLogLine(line string) (*LogLine, error) {
 	return &result, nil
 }
 
+func dumpLogsWorker() {
+	log.Println("Starting analytics log writing worker")
+	for {
+		dumpLogs()
+		time.Sleep(time.Minute * 5)
+	}
+}
 func dumpLogs() {
 	log.Println("Writing missing logs to database")
 	db, err := getAnalyticsDB()
@@ -281,6 +288,7 @@ func dumpLogs() {
 		counter += 1
 	}
 	log.Printf("Wrote %d logs\n", counter)
+	panic(nil)
 }
 
 func rotateLogs() {
