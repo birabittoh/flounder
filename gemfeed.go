@@ -126,7 +126,6 @@ func generateFeedFromUser(user string) *Gemfeed {
 // TODO definitely cache this function
 // TODO include generateFeedFromFolder for "gemfeed" folders
 func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
-	maxUserItems := 25
 	maxItems := 50
 	var feedEntries []FeedEntry
 	var feeds []Gemfeed
@@ -144,40 +143,13 @@ func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
 			}
 		}
 	}
-
-	err = filepath.Walk(c.FilesDirectory, func(thepath string, info os.FileInfo, err error) error {
-		if isGemini(info.Name()) {
-			f, err := os.Open(thepath)
-			// TODO verify no path bugs here
-			creator := getCreator(thepath)
-			baseUrl := url.URL{}
-			baseUrl.Host = creator + "." + c.Host
-			baseUrl.Path = getLocalPath(thepath)
-			feed, err := ParseGemfeed(f, baseUrl, maxUserItems) // TODO make configurable
-			f.Close()
-			if err == nil {
-				feed.Creator = creator
-				if feed.Title == "" {
-					feed.Title = "(Untitled Feed)"
-				}
-				feed.Url = &baseUrl
-				feedEntries = append(feedEntries, feed.Entries...)
-				feeds = append(feeds, *feed)
-			}
-		}
-		return nil
+	sort.Slice(feedEntries, func(i, j int) bool {
+		return feedEntries[i].Date.After(feedEntries[j].Date)
 	})
-	if err != nil {
-		return nil, nil, err
-	} else {
-		sort.Slice(feedEntries, func(i, j int) bool {
-			return feedEntries[i].Date.After(feedEntries[j].Date)
-		})
-		if len(feedEntries) > maxItems {
-			return feedEntries[:maxItems], feeds, nil
-		}
-		return feedEntries, feeds, nil
+	if len(feedEntries) > maxItems {
+		return feedEntries[:maxItems], feeds, nil
 	}
+	return feedEntries, feeds, nil
 }
 
 var GemfeedRegex = regexp.MustCompile(`=>\s*(\S+)\s([0-9]{4}-[0-9]{2}-[0-9]{2})\s?-?\s?(.*)`)
