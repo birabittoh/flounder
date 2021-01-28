@@ -19,6 +19,7 @@ const followingFile = "following.gmi"
 func feedsWorker() {
 	log.Println("Starting feeds worker")
 	for {
+		time.Sleep(time.Hour * 1)
 		users, err := getActiveUserNames()
 		if err != nil {
 			// Handle error somehow
@@ -28,7 +29,6 @@ func feedsWorker() {
 		for _, user := range users {
 			writeAllFeeds(user)
 		}
-		time.Sleep(time.Hour * 1)
 	}
 }
 
