@@ -28,7 +28,7 @@ func feedsWorker() {
 		for _, user := range users {
 			writeAllFeeds(user)
 		}
-		time.Sleep(time.Hour * 24)
+		time.Sleep(time.Hour * 1)
 	}
 }
 

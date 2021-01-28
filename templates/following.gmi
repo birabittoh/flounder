@@ -1,4 +1,7 @@
 # {{.User}}'s Following
+A collection of feeds that {{.User}} is following
+=> following.txt All feeds
+
 {{ range .FeedItems }}
 => {{.FeedItem.Link}} {{.Date}} {{.Feed.Title}} -- {{.FeedItem.Title}}{{ end }}
 
