@@ -17,7 +17,7 @@
 {{ if ne $parent "/"}}
 <a href="{{parent .URI.Path}}/" title="Go to the parent directory">{{parent .URI.Path}}/</a>
 {{ else }}
-<a href="{{parent .URI.Path}}" title="Go to the parent directory">{{parent .URI.Path}}</a>
+<a href="{{parent .URI.Path}}" title="Go to the parent directory">{{.URI.Host}}/</a>
 {{ end }}
 <br>
 <br>
