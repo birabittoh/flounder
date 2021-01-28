@@ -108,6 +108,7 @@ Have fun!`
 	ioutil.WriteFile(path.Join(c.FilesDirectory, username, "index.gmi"), []byte(baseIndex), 0644)
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	if c.SMTPUsername != "" {
+		// TODO move into work queue
 		SendEmail(email, "Welcome to Flounder!", fmt.Sprintf(`
 Hi %s, Welcome to Flounder! You can now log into your account at
 https://flounder.online/login -- For more information about

@@ -39,13 +39,14 @@ func main() {
 
 	cookie := generateCookieKeyIfDNE()
 	SessionStore = sessions.NewCookieStore(cookie)
+	// load domains in memory
+	refreshDomainMap()
 
+	// Background workers
 	if c.AnalyticsDBFile != "" {
 		go dumpLogsWorker()
 	}
-
-	// load domains in memory
-	refreshDomainMap()
+	go feedsWorker()
 
 	switch args[0] {
 	case "serve":
