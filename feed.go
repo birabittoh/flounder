@@ -126,6 +126,7 @@ func writeAllFeeds(user string) error {
 	}
 
 	outputf, err := os.OpenFile(path.Join(getUserDirectory(user), followingFile), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	defer outputf.Close()
 	if err != nil {
 		return err
 	}
@@ -133,7 +134,6 @@ func writeAllFeeds(user string) error {
 	if err != nil {
 		return err
 	}
-	defer outputf.Close()
 	// convert to gemini template
 	// write template to file
 	return nil
