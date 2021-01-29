@@ -792,8 +792,6 @@ func runHTTPServer() {
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
 
-	serveMux.HandleFunc(hostname+"/webdav/", webdavHandler)
-
 	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
 
 	// handle user files based on subdomain
