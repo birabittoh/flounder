@@ -12,6 +12,7 @@ For some help building your site, check out the <a href="https://admin.flounder.
 <br>
 <h3>Your files:</h3>
 {{ define "file" }}
+{{ if ne .Name "following.gmi" }}
 <tr>
 <div>
   {{ if gt (len .Children) 0 }}
@@ -52,6 +53,7 @@ For some help building your site, check out the <a href="https://admin.flounder.
   </td>
 </div>
 </tr>
+{{ end }}
 {{ end }}
 <table>
 {{ range .Files }}

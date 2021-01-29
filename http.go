@@ -55,7 +55,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	indexFiles, err := getIndexFiles(user.IsAdmin)
 	if err != nil {
 		panic(err)
@@ -76,26 +76,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func feedHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
-	feedEntries, feeds, err := getAllGemfeedEntries()
-	if err != nil {
-		panic(err)
-	}
-	data := struct {
-		Config      Config
-		FeedEntries []FeedEntry
-		Feeds       []Gemfeed
-		AuthUser    AuthUser
-	}{c, feedEntries, feeds, user}
-	err = t.ExecuteTemplate(w, "feed.html", data)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func editFileHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
@@ -196,7 +178,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 
 func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		user := newGetAuthUser(r)
+		user := getAuthUser(r)
 		if !user.LoggedIn {
 			renderDefaultError(w, http.StatusForbidden)
 			return
@@ -241,7 +223,7 @@ type AuthUser struct {
 	ImpersonatingUser string // used if impersonating
 }
 
-func newGetAuthUser(r *http.Request) AuthUser {
+func getAuthUser(r *http.Request) AuthUser {
 	session, _ := SessionStore.Get(r, "cookie-session")
 	user, ok := session.Values["auth_user"].(string)
 	impers, _ := session.Values["impersonating_user"].(string)
@@ -255,7 +237,7 @@ func newGetAuthUser(r *http.Request) AuthUser {
 }
 
 func mySiteHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
@@ -274,7 +256,7 @@ func mySiteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func myAccountHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	authUser := user.Username
 	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
@@ -334,7 +316,7 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		// reset auth
-		user = newGetAuthUser(r)
+		user = getAuthUser(r)
 		data.Errors = errors
 		data.AuthUser = user
 		data.MyUser.Email = newEmail
@@ -344,7 +326,7 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func archiveHandler(w http.ResponseWriter, r *http.Request) {
-	authUser := newGetAuthUser(r)
+	authUser := getAuthUser(r)
 	if !authUser.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
@@ -492,7 +474,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if !user.LoggedIn {
 		renderDefaultError(w, http.StatusForbidden)
 		return
@@ -505,7 +487,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if !user.IsAdmin {
 		renderDefaultError(w, http.StatusForbidden)
 		return
@@ -634,7 +616,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if r.Method == "POST" {
 		r.ParseForm()
 		validate := r.Form.Get("validate-delete")
@@ -653,7 +635,7 @@ func deleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	data := struct {
 		Config   Config
 		AuthUser AuthUser
@@ -699,7 +681,7 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := newGetAuthUser(r)
+	user := getAuthUser(r)
 	if r.Method == "POST" {
 		if !user.IsAdmin {
 			renderDefaultError(w, http.StatusForbidden)
@@ -790,7 +772,6 @@ func runHTTPServer() {
 	port := c.HttpPort
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
-	serveMux.HandleFunc(hostname+"/feed", feedHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
 	serveMux.HandleFunc(hostname+"/me", myAccountHandler)
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)

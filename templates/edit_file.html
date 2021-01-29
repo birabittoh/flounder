@@ -4,6 +4,9 @@
  <label for="rename">Rename:</label>
    <input type="text" value="{{.FileName}}" id="rename" name="rename">
    {{ if .IsText }}
+   {{ if eq .FileName "following.txt" }}
+   <p><em>Add URLs here of feeds you would like to follow. They will be available at <a href="//{{.AuthUser.Username}}.{{.Host}}/following.gmi">following.gmi</a>. For more information, see <a href="https://admin.flounder.online/following-pages.gmi">Following Feeds</a></em></p> 
+   {{ end}}
    {{ if .IsGemini }}
    <p>
    <em>For help with the Gemini markup format, see the <a href="https://admin.flounder.online/gemini_text_guide.gmi">Gemtext Guide</a></em>

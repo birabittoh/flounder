@@ -1,7 +1,9 @@
 # {{.User}}'s Following
 A collection of feeds that {{.User}} is following
-=> following.txt All feeds
+=> following.txt
 
 {{ range .FeedItems }}
 => {{.FeedItem.Link}} {{.Date}} {{.Feed.Title}} -- {{.FeedItem.Title}}{{ end }}
 
+For more information about setting up this page, see:
+=> //admin.flounder.online/following-feeds.gmi

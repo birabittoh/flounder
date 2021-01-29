@@ -123,35 +123,6 @@ func generateFeedFromUser(user string) *Gemfeed {
 	return &feed
 }
 
-// TODO definitely cache this function
-// TODO include generateFeedFromFolder for "gemfeed" folders
-func getAllGemfeedEntries() ([]FeedEntry, []Gemfeed, error) {
-	maxItems := 50
-	var feedEntries []FeedEntry
-	var feeds []Gemfeed
-	users, err := getActiveUserNames()
-	if err != nil {
-		return nil, nil, err
-	} else {
-		for _, user := range users {
-			fe := generateFeedFromUser(user)
-			if len(fe.Entries) > 0 {
-				feeds = append(feeds, *fe.Entries[0].Feed)
-				for _, e := range fe.Entries {
-					feedEntries = append(feedEntries, e)
-				}
-			}
-		}
-	}
-	sort.Slice(feedEntries, func(i, j int) bool {
-		return feedEntries[i].Date.After(feedEntries[j].Date)
-	})
-	if len(feedEntries) > maxItems {
-		return feedEntries[:maxItems], feeds, nil
-	}
-	return feedEntries, feeds, nil
-}
-
 var GemfeedRegex = regexp.MustCompile(`=>\s*(\S+)\s([0-9]{4}-[0-9]{2}-[0-9]{2})\s?-?\s?(.*)`)
 
 // Parsed Gemfeed text Returns error if not a gemfeed

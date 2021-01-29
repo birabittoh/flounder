@@ -35,7 +35,7 @@ func logFormatter(writer io.Writer, params handlers.LogFormatterParams) {
 // ts is the timestamp with which the entry should be logged.
 // status and size are used to provide the response HTTP status and size.
 func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int, size int) []byte {
-	user := newGetAuthUser(req)
+	user := getAuthUser(req)
 	username := "-"
 	if user.Username != "" {
 		username = user.Username
