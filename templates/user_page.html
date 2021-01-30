@@ -23,7 +23,14 @@
 <br>
 {{ end }}
 <div class="footer">
-  Proxied from the original at <a href="{{safeGeminiURL .URI.String}}">{{.URI.String}}</a>  (<a href="https://admin.flounder.online/gemini.gmi">about Gemini</a>) <a href="?raw=1">raw</a></div> 
+  <details>
+    <summary>Proxy</summary>
+  Proxied from the original at <a href="{{safeGeminiURL .URI.String}}">{{.URI.String}}</a>  
+    <br>
+  <a href="https://admin.flounder.online/gemini.gmi">About Gemini</a> 
+  <br>
+  <a href="?raw=1">Original page</a></div> 
+  </details>
 </main>
 </body>
 </html>
