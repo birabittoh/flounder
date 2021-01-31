@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"database/sql"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -191,7 +192,7 @@ func getMyFilesRecursive(p string, creator string) ([]File, error) {
 }
 
 func createTablesIfDNE() {
-	_, err := DB.Exec(`CREATE TABLE IF NOT EXISTS user (
+	_, err := DB.Exec(`CREATE TABLE user (
   id INTEGER PRIMARY KEY NOT NULL,
   username TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
@@ -202,9 +203,21 @@ func createTablesIfDNE() {
   created_at INTEGER DEFAULT (strftime('%s', 'now')),
   domain TEXT NOT NULL default "",
   domain_enabled BOOLEAN NOT NULL DEFAULT false
-);
+);`)
+	if err == nil {
+		// on first creation, create admin user with pw admin
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin"), 8) // TODO handle error
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = DB.Exec(`INSERT OR IGNORE INTO user (username, email, password_hash, admin) values ('admin', 'default@flounder.local', ?, true)`, hashedPassword)
+		activateUser("admin")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
-CREATE TABLE IF NOT EXISTS cookie_key (
+	_, err = DB.Exec(`CREATE TABLE IF NOT EXISTS cookie_key (
   value TEXT NOT NULL
 );`)
 	if err != nil {
