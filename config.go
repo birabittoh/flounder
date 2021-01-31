@@ -23,6 +23,7 @@ type Config struct {
 	CookieStoreKey     string
 	OkExtensions       []string
 	MaxFileBytes       int
+	MaxFilesPerUser    int
 	MaxUserBytes       int64
 	SMTPServer         string
 	SMTPUsername       string

@@ -142,16 +142,6 @@ func safeGetFilePath(username string, filename string) string {
 	return path.Join(getUserDirectory(username), filepath.Clean(filename))
 }
 
-// TODO move into checkIfValidFile. rename it
-func userHasSpace(user string, newBytes int) bool {
-	userPath := path.Join(c.FilesDirectory, user)
-	size, err := dirSize(userPath)
-	if err != nil || size+int64(newBytes) > c.MaxUserBytes {
-		return false
-	}
-	return true
-}
-
 func dirSize(path string) (int64, error) {
 	var size int64
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
@@ -166,8 +156,8 @@ func dirSize(path string) (int64, error) {
 	return size, err
 }
 
-/// Perform some checks to make sure the file is OK
-func checkIfValidFile(filename string, fileBytes []byte) error {
+/// Perform some checks to make sure the file is OK to upload
+func checkIfValidFile(username string, filename string, fileBytes []byte) error {
 	if len(filename) == 0 {
 		return fmt.Errorf("Please enter a filename")
 	}
@@ -187,7 +177,18 @@ func checkIfValidFile(filename string, fileBytes []byte) error {
 	if len(fileBytes) > c.MaxFileBytes {
 		return fmt.Errorf("File too large. File was %d bytes, Max file size is %d", len(fileBytes), c.MaxFileBytes)
 	}
-	//
+	userFolder := getUserDirectory(username)
+	myFiles, err := getMyFilesRecursive(userFolder, username)
+	if err != nil {
+		return err
+	}
+	if len(myFiles) >= c.MaxFilesPerUser {
+		return fmt.Errorf("You have reached the max number of files. Delete some before uploading")
+	}
+	size, err := dirSize(userFolder)
+	if err != nil || size+int64(len(fileBytes)) > c.MaxUserBytes {
+		return fmt.Errorf("You are out of storage space. Delete some files before continuing.")
+	}
 	return nil
 }
 

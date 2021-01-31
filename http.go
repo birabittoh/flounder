@@ -94,7 +94,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		// Unix files use just LF
 		fileText = strings.ReplaceAll(fileText, "\r\n", "\n")
 		fileBytes := []byte(fileText)
-		err := checkIfValidFile(filePath, fileBytes)
+		err := checkIfValidFile(user.Username, filePath, fileBytes)
 		if err != nil {
 			log.Println(err)
 			renderError(w, err.Error(), http.StatusBadRequest)
@@ -109,24 +109,19 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// create directories if dne
 		os.MkdirAll(path.Dir(filePath), os.ModePerm)
-		if userHasSpace(user.Username, len(fileBytes)) {
-			if isText { // Cant edit binary files here
-				err = ioutil.WriteFile(filePath, fileBytes, 0644)
-			}
-		} else {
-			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
-			return
-		}
-		if err != nil {
-			panic(err)
-		}
-		alert = "saved"
 		newName := filepath.Clean(r.Form.Get("rename"))
-		err = checkIfValidFile(newName, fileBytes)
+		err = checkIfValidFile(user.Username, newName, fileBytes)
 		if err != nil {
 			log.Println(err)
 			renderError(w, err.Error(), http.StatusBadRequest)
 			return
+		}
+		if isText { // Cant edit binary files here
+			err = ioutil.WriteFile(filePath, fileBytes, 0644)
+			if err != nil {
+				log.Println(err)
+				renderError(w, err.Error(), http.StatusBadRequest)
+			}
 		}
 		if newName != fileName {
 			newPath := path.Join(c.FilesDirectory, user.Username, newName)
@@ -138,7 +133,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := checkIfValidFile(filePath, nil)
+	err := checkIfValidFile(user.Username, filePath, nil)
 	if err != nil {
 		log.Println(err)
 		renderError(w, err.Error(), http.StatusBadRequest)
@@ -192,7 +187,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		dest, _ := ioutil.ReadAll(file)
-		err = checkIfValidFile(fileName, dest)
+		err = checkIfValidFile(user.Username, fileName, dest)
 		if err != nil {
 			log.Println(err)
 			renderError(w, err.Error(), http.StatusBadRequest)
@@ -205,12 +200,7 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		defer f.Close()
-		if userHasSpace(user.Username, c.MaxFileBytes) { // Not quite right
-			io.Copy(f, bytes.NewReader(dest))
-		} else {
-			renderError(w, fmt.Sprintf("Bad Request: Out of file space. Max space: %d.", c.MaxUserBytes), http.StatusBadRequest)
-			return
-		}
+		io.Copy(f, bytes.NewReader(dest))
 	}
 	http.Redirect(w, r, "/my_site", http.StatusSeeOther)
 }
@@ -764,7 +754,7 @@ func runHTTPServer() {
 	serveMux.HandleFunc(hostname+"/delete-account", deleteAccountHandler)
 	serveMux.HandleFunc(hostname+"/reset-password", resetPasswordHandler)
 
-	// Check domain -- used by caddy
+	// Used by Caddy
 	serveMux.HandleFunc(hostname+"/check-domain", checkDomainHandler)
 
 	// admin commands
