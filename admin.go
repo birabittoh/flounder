@@ -114,7 +114,7 @@ Hi %s, Welcome to %s! You can now log into your account at
 https://%s/login -- For more information about
 using this site, check out https://admin.flounder.online/
 
-Let me know if you have any questions, and have fun!`, c.SiteTitle, c.Host, username))
+Let me know if you have any questions, and have fun!`, username, c.SiteTitle, c.Host))
 	}
 	return nil
 }
