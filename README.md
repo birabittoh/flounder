@@ -41,6 +41,10 @@ An example simple Caddyfile using on-demand certs is available in Caddyfile.exam
 
 If you want to host using a server other than Caddy, there's no reason you can't, but it may be more cumbersome to setup the http certs.
 
+## Administration
+
+Flounder is designed to be small, easy to host, and easy to administer. Signups require manual admin approval.
+
 ## Development
 
 Patches are welcome!

@@ -30,4 +30,3 @@ MaxFileBytes=128000 # 128 KB
 MaxUserBytes=10000000 # 10 MB
 
 OkExtensions=[".gmi", ".txt", ".jpg", ".jpeg", ".gif", ".png", ".svg", ".webp", ".midi", ".json", ".csv", ".gemini", ".mp3", ".css", ".ttf", ".otf", ".woff", ".woff2"]
-BannedNames=["

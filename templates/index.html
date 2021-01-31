@@ -6,7 +6,7 @@
 Welcome to {{.Config.SiteTitle}}! For more information and site updates, check out the <a href="//admin.{{$.Config.Host}}">admin page</a></p>
 <h2>Recently updated files:</h2>
 {{ range .Files }}
-<div>
+<div class="indent-wrap">
   <a href="//{{.Creator}}.{{$.Config.Host}}" class='person-link'>
    {{ .Creator }}</a>
   <em>{{.TimeAgo}}</em>
