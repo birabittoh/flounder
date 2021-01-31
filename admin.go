@@ -93,12 +93,12 @@ func activateUser(username string) error {
 		return err
 	}
 	log.Println("Activated user", username)
-	baseIndex := `# Welcome to Flounder!
-## About
-Welcome to an ultra-lightweight platform for making and sharing small websites. You can get started by editing this page -- remove this content and replace it with whatever you like! It will be live at <your-name>.flounder.online. You can go there right now to see what this page currently looks like. Here is a link to a page which will give you more information about using Flounder:
+	baseIndex := fmt.Sprintf("# Welcome to %s!\n\n", c.SiteTitle) +
+		`## About
+Welcome to an ultra-lightweight platform for making and sharing small websites. You can get started by editing this page -- remove this content and replace it with whatever you like! It will be live at <your-name>.` + c.Host + ` -- You can go there right now to see what this page currently looks like. Here is a link to a page which will give you more information about using this site:
 => //admin.flounder.online
 
-And here's a guide to the text format that Flounder uses to create pages. These pages are converted into HTML so they can be displayed in a web browser.
+And here's a guide to the text format that this site uses to create pages. These pages are converted into HTML so they can be displayed in a web browser.
 => //admin.flounder.online/gemini_text_guide.gmi
 
 Have fun!`
@@ -109,12 +109,12 @@ Have fun!`
 	os.Mkdir(path.Join(c.FilesDirectory, username), os.ModePerm)
 	if c.SMTPUsername != "" {
 		// TODO move into work queue
-		SendEmail(email, "Welcome to Flounder!", fmt.Sprintf(`
-Hi %s, Welcome to Flounder! You can now log into your account at
-https://flounder.online/login -- For more information about
-Flounder, check out https://admin.flounder.online/
+		SendEmail(email, fmt.Sprintf("Welcome to %s!", c.SiteTitle), fmt.Sprintf(`
+Hi %s, Welcome to %s! You can now log into your account at
+https://%s/login -- For more information about
+using this site, check out https://admin.flounder.online/
 
-Let me know if you have any questions, and have fun!`, username))
+Let me know if you have any questions, and have fun!`, c.SiteTitle, c.Host, username))
 	}
 	return nil
 }

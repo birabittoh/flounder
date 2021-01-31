@@ -1,7 +1,7 @@
 {{$host := .Host}}
 # {{.SiteTitle}}!
 
-Welcome to flounder, a home for Gemini sites. Flounder hosts small Gemini web pages over https and Gemini. Right now, the only way to make an account is via the https portal, but I'm working on adding alternatives. Feel free to make an account and join if you'd like!
+Welcome to {{.SiteTitle}}, a home for Gemini sites. {{.SiteTitle}} hosts small Gemini web pages over https and Gemini. Right now, the only way to make an account is via the https portal. Feel free to make an account and join if you'd like!
 
 => gemini://admin.{{$host}} Admin page
 => https://{{$host}} View on HTTPS

@@ -102,7 +102,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		sfl := getSchemedFlounderLinkLines(strings.NewReader(fileText))
 		if len(sfl) > 0 {
-			warnings = append(warnings, "Warning! Some of your links to flounder pages use schemas. This means that they may break when viewed in Gemini or over HTTPS. Plase remove gemini: or https: from the start of these links:\n")
+			warnings = append(warnings, "Warning! Some of your links to pages use schemas. This means that they may break when viewed in Gemini or over HTTPS. Plase remove gemini: or https: from the start of these links:\n")
 			for _, l := range sfl {
 				warnings = append(warnings, l)
 			}
