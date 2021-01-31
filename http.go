@@ -725,8 +725,12 @@ func checkDomainHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(domain))
 		return
 	}
+	if domain == c.Host || strings.HasSuffix(domain, "."+c.Host) {
+		w.Write([]byte(domain))
+	}
 	http.Error(w, "Not Found", 404)
 }
+
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d.", c.Host, c.HttpPort)
 	var err error
@@ -745,7 +749,6 @@ func runHTTPServer() {
 
 	s := strings.SplitN(c.Host, ":", 2)
 	hostname := s[0]
-	port := c.HttpPort
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
@@ -769,18 +772,17 @@ func runHTTPServer() {
 
 	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
 
-	// handle user files based on subdomain
+	// handle user files based on subdomain or custom domains
 	// also routes to proxy
-	serveMux.HandleFunc("proxy."+hostname+"/", proxyGemini) // eg. proxy.flounder.online
+	serveMux.HandleFunc("proxy."+hostname+"/", proxyGemini)
 	serveMux.HandleFunc("/", userFile)
 	// login+register functions
 	srv := &http.Server{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		Addr:         fmt.Sprintf(":%d", port),
-		// TLSConfig:    tlsConfig,
-		Handler: wrapped,
+		Addr:         fmt.Sprintf(":%d", c.HttpPort),
+		Handler:      wrapped,
 	}
 	log.Fatal(srv.ListenAndServe())
 }

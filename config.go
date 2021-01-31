@@ -24,8 +24,6 @@ type Config struct {
 	OkExtensions       []string
 	MaxFileBytes       int
 	MaxUserBytes       int64
-	TLSCertFile        string
-	TLSKeyFile         string
 	SMTPServer         string
 	SMTPUsername       string
 	SMTPPassword       string

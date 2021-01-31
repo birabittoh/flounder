@@ -7,39 +7,39 @@ Flounder is in ALPHA -- development and features are changing frequently, especi
 See the flagship instance at https://flounder.online and gemini://flounder.online
 
 ## Building
+Requirements:
+go >= 1.15
+sqlite dev libraries
 
-Requires go >= 1.15 and sqlite3 development libraries.
+To run locally, copy example-config.toml to flounder.toml, then run:
 
-`go build`
+`go run . serve`
 
-To run locally, you can use the example-config.toml to start a test server. 
+Add the following to `/etc/hosts` (include any other users you want to create):
 
-`./flounder -c example-config.toml serve`
+```
+127.0.0.1 flounder.local admin.flounder.local proxy.flounder.local
+```
 
-After creating an account, you can activate it at the command line with:
-
-./flounder -c example-config.toml activate-user [your-username]
-
-## Deploying
+## TLS Certs and Reverse Proxy
 
 Gemini TLS certs are handled for you. For HTTP, you'll need a reverse proxy that does the following for you:
 
-1. Wildcard for \*.yourdomain.whatever
+1. Cert for yourdomain.whatever
+1. Wildcard cert for \*.yourdomain.whatever
 2. On Demand cert for custom user domains
 
-If you have a very small deployment <20 users, for example, you can use on demand cert for all domains, and don't have to setup a wildcard cert, for simplicity.
+If you have a very small deployment of say, <100 users, for example, you can use on demand cert for all domains, and you can skip step 2.
 
-I'm using Caddy. I haven't tested any other servers.
+However, for a larger deployment, you'll have to set up a wildcard cert. Wildcard certs are a bit of a pain and difficult to do automatically, depending on your DNS provider. For information on doing this via Caddy, you can follow this guide: https://caddy.community/t/how-to-use-dns-provider-modules-in-caddy-2/8148. 
 
-I have not extensively tested the self-hosting capabilities, but making it easy to self-host Flounder for either a single or multi-user instance is a goal of mine. There may be minor issues where "flounder.online" is hardcoded, but I'm trying to fix them. Email me if you encounter issues or would like guidance.
+For information on using certbot to manage wildcard certs, see this guide: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge
 
-## Admin
+An example simple Caddyfile using on-demand certs is available in Caddyfile.example
 
-To make yourself an admin, create a user through the web browser, then run `./flounder -c [config_path] make-admin [your user]` -- this gives you access to admin tools to manage users.
+If you want to host using a server other than Caddy, there's no reason you can't, but it may be more cumbersome to setup the http certs.
 
-Backup your users' data regularly! The admin deletion commands are irreversible.
-
-Flounder comes with an admin panel accessible to users with the admin db flag set. Admins can also impersonate users if you need to take actions like moderating their content, deleting their account, changing their password, etc.
+You can run this locally by removing the port from the Host config
 
 ## Development
 

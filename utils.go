@@ -14,6 +14,9 @@ import (
 	"unicode/utf8"
 )
 
+func buildbaseURL(user string) {
+}
+
 func getSchemedFlounderLinkLines(r io.Reader) []string {
 	scanner := bufio.NewScanner(r)
 	result := []string{}

@@ -2,9 +2,11 @@
 SiteTitle="demoflounder"
 
 # Include port if running locally
-Host="localhost:8165"
+Host="flounder.local:8165"
+# Running through reverse proxy
+# Host="flounder.local" 
 
-# Set this depending on whether you want to run this service standalone or through a reverse proxy server
+# Port to run on
 HttpPort=8165
 
 # Folder containing subfolders for each user's files
@@ -13,11 +15,6 @@ LogFile="./flounder.log"
 
 # Gemini autogenerates self-signed certs
 GeminiCertStore="/tmp"
-
-# A wildcard TLS cert for HTTPS.
-# Only required if HttpsEnabled=true
-# TLSCertFile="./server.crt"
-# TLSKeyFile="./server.key"
 
 # Optional SMTP -- to send notification emails to users on acct activation
 # SMTPServer = mail.goodsite.com:587

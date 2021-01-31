@@ -99,7 +99,3 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) string {
 	}
 	return b.String()
 }
-
-// Convert a Gemini link to a proxy link
-func proxyLink() {
-}
