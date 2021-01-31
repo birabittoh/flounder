@@ -1,0 +1,12 @@
+image: alpine/edge
+packages:
+  - go
+  - sqlite-libs
+sources:
+  - https://git.sr.ht/~alexwennerberg/flounder
+tasks:
+  - build: |
+        cd flounder
+  - test: |
+        cd flounder
+        go test .
