@@ -88,6 +88,7 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	var warnings []string
 	if r.Method == "POST" {
 		// get post body
+		alert = "saved"
 		r.ParseForm()
 		fileText := r.Form.Get("file_text")
 		// Web form by default gives us CR LF newlines.
@@ -766,7 +767,6 @@ func runHTTPServer() {
 	// also routes to proxy
 	serveMux.HandleFunc("proxy."+hostname+"/", proxyGemini)
 	serveMux.HandleFunc("/", userFile)
-	// login+register functions
 	srv := &http.Server{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
