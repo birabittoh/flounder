@@ -726,7 +726,9 @@ func checkDomainHandler(w http.ResponseWriter, r *http.Request) {
 func runHTTPServer() {
 	log.Printf("Running http server with hostname %s on port %d.", c.Host, c.HttpPort)
 	var err error
-	t = template.New("main").Funcs(template.FuncMap{"parent": path.Dir, "hasSuffix": strings.HasSuffix,
+	t = template.New("main").Funcs(template.FuncMap{
+		"unixTime": time.Unix,
+		"parent":   path.Dir, "hasSuffix": strings.HasSuffix,
 		"safeGeminiURL": func(u string) template.URL {
 			if strings.HasPrefix(u, "gemini://") {
 				return template.URL(u)

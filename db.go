@@ -73,7 +73,7 @@ type User struct {
 	Email         string
 	Active        bool
 	Admin         bool
-	CreatedAt     int // timestamp
+	CreatedAt     int64 // timestamp
 	Reference     string
 	Domain        string
 	DomainEnabled bool
