@@ -180,13 +180,13 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r.ParseMultipartForm(10 << 6) // why does this not work
 		file, fileHeader, err := r.FormFile("file")
-		fileName := filepath.Clean(fileHeader.Filename)
-		defer file.Close()
 		if err != nil {
 			log.Println(err)
-			renderError(w, err.Error(), http.StatusBadRequest)
+			renderError(w, "No file selected. Please go back and select a file.", http.StatusBadRequest)
 			return
 		}
+		fileName := filepath.Clean(fileHeader.Filename)
+		defer file.Close()
 		dest, _ := ioutil.ReadAll(file)
 		err = checkIfValidFile(user.Username, fileName, dest)
 		if err != nil {
