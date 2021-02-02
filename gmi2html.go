@@ -9,10 +9,16 @@ import (
 	"git.sr.ht/~adnano/go-gemini"
 )
 
-func textToHTML(reqUrl *url.URL, text gemini.Text) string {
+type ConvertedGmiDoc struct {
+	Content string
+	Title   string
+}
+
+func textToHTML(reqUrl *url.URL, text gemini.Text) ConvertedGmiDoc {
 	var b strings.Builder
 	var pre bool
 	var list bool
+	var title string
 	for _, l := range text {
 		if _, ok := l.(gemini.LineListItem); ok {
 			if !list {
@@ -70,12 +76,21 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) string {
 		case gemini.LineHeading1:
 			text := string(l.(gemini.LineHeading1))
 			fmt.Fprintf(&b, "<h1>%s</h1>\n", html.EscapeString(text))
+			if title == "" {
+				title = text
+			} // TODO deal with repetition
 		case gemini.LineHeading2:
 			text := string(l.(gemini.LineHeading2))
 			fmt.Fprintf(&b, "<h2>%s</h2>\n", html.EscapeString(text))
+			if title == "" {
+				title = text
+			}
 		case gemini.LineHeading3:
 			text := string(l.(gemini.LineHeading3))
 			fmt.Fprintf(&b, "<h3>%s</h3>\n", html.EscapeString(text))
+			if title == "" {
+				title = text
+			}
 		case gemini.LineListItem:
 			text := string(l.(gemini.LineListItem))
 			fmt.Fprintf(&b, "<li>%s</li>\n", html.EscapeString(text))
@@ -97,5 +112,8 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) string {
 	if list {
 		fmt.Fprint(&b, "</ul>\n")
 	}
-	return b.String()
+	return ConvertedGmiDoc{
+		b.String(),
+		title,
+	}
 }

@@ -116,7 +116,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "text/html")
 	parse, _ := gemini.ParseText(resp.Body)
-	htmlString := textToHTML(req.URL, parse)
+	htmlDoc := textToHTML(req.URL, parse)
 	if strings.HasSuffix(r.URL.Path, "/") {
 		r.URL.Path = path.Dir(r.URL.Path)
 	}
@@ -127,7 +127,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		GeminiURI *url.URL
 		URI       *url.URL
 		Config    Config
-	}{template.HTML(htmlString), "", r.URL.String(), req.URL, r.URL, c}
+	}{template.HTML(htmlDoc.Content), "", r.URL.String(), req.URL, r.URL, c}
 
 	err = t.ExecuteTemplate(w, "user_page.html", data)
 	if err != nil {

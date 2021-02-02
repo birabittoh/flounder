@@ -572,15 +572,15 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	_, raw := r.URL.Query()["raw"]
 	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
 	if !raw && !acceptsGemini && (isGemini(fullPath) || geminiContent != "") {
-		var htmlString string
+		var htmlDoc ConvertedGmiDoc
 		if geminiContent == "" {
 			file, _ := os.Open(fullPath)
 			parse, _ := gmi.ParseText(file)
-			htmlString = textToHTML(nil, parse)
+			htmlDoc = textToHTML(nil, parse)
 			defer file.Close()
 		} else {
 			parse, _ := gmi.ParseText(strings.NewReader(geminiContent))
-			htmlString = textToHTML(nil, parse)
+			htmlDoc = textToHTML(nil, parse)
 		}
 		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]
@@ -589,6 +589,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			Host:   hostname,
 			Path:   p,
 		}
+		if htmlDoc.Title == "" {
+			htmlDoc.Title = userName + p
+		}
 		data := struct {
 			SiteBody  template.HTML
 			Favicon   string
@@ -596,7 +599,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			URI       *url.URL
 			GeminiURI *url.URL
 			Config    Config
-		}{template.HTML(htmlString), favicon, userName + p, &uri, &uri, c}
+		}{template.HTML(htmlDoc.Content), favicon, htmlDoc.Title, &uri, &uri, c}
 		err = t.ExecuteTemplate(w, "user_page.html", data)
 		if err != nil {
 			panic(err)
