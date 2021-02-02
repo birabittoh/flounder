@@ -25,6 +25,10 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "gemini.circumlunar.space", http.StatusSeeOther)
 		return
+	} else if r.URL.Path == "/robots.txt" {
+		temp := c.TemplatesDirectory
+		http.ServeFile(w, r, path.Join(temp, "proxy-robots.txt"))
+		return
 	} else {
 		spath = strings.SplitN(r.URL.Path, "/", 3)
 	}
