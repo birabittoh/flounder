@@ -22,8 +22,8 @@ func getSchemedFlounderLinkLines(r io.Reader) []string {
 	result := []string{}
 	for scanner.Scan() {
 		text := scanner.Text()
-		// TODO use actual parser. this could be a little wonky
-		if strings.HasPrefix(text, "=>") && strings.Contains(text, c.Host) && (strings.Contains(text, "gemini://") || strings.Contains(text, "https://")) {
+		// TODO use actual parser
+		if strings.HasPrefix(text, "=>") && strings.Contains(text, "."+c.Host) && (strings.Contains(text, "gemini://") || strings.Contains(text, "https://")) {
 			result = append(result, text)
 		}
 	}
