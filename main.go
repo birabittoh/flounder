@@ -46,7 +46,6 @@ func main() {
 	if c.AnalyticsDBFile != "" {
 		go dumpLogsWorker()
 	}
-	go feedsWorker()
 
 	switch args[0] {
 	case "serve":

@@ -156,7 +156,7 @@ func getIndexFiles(admin bool) ([]*File, error) { // cache this function
 			return filepath.SkipDir
 		}
 		// make this do what it should
-		if !info.IsDir() && info.Name() != followingFile {
+		if !info.IsDir() {
 			res := fileFromPath(thepath)
 			result = append(result, &res)
 		}
