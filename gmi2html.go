@@ -17,9 +17,19 @@ type ConvertedGmiDoc struct {
 func textToHTML(reqUrl *url.URL, text gemini.Text) ConvertedGmiDoc {
 	var b strings.Builder
 	var pre bool
+	var blockquote bool
 	var list bool
 	var title string
 	for _, l := range text {
+		if _, ok := l.(gemini.LineQuote); ok {
+			if !blockquote {
+				blockquote = true
+				fmt.Fprintf(&b, "<blockquote>\n")
+			}
+		} else if blockquote {
+			blockquote = false
+			fmt.Fprintf(&b, "</blockquote>\n")
+		}
 		if _, ok := l.(gemini.LineListItem); ok {
 			if !list {
 				list = true
@@ -96,7 +106,7 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) ConvertedGmiDoc {
 			fmt.Fprintf(&b, "<li>%s</li>\n", html.EscapeString(text))
 		case gemini.LineQuote:
 			text := string(l.(gemini.LineQuote))
-			fmt.Fprintf(&b, "<blockquote>%s</blockquote>\n", html.EscapeString(text))
+			fmt.Fprintf(&b, "<p>%s</p>\n", html.EscapeString(text))
 		case gemini.LineText:
 			text := string(l.(gemini.LineText))
 			if text == "" {
