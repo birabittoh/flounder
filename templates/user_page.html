@@ -25,11 +25,10 @@
 <div class="footer">
   <details>
     <summary>Proxy</summary>
-  Proxied from the original at <a href="{{safeGeminiURL .GeminiURI.String}}">{{.GeminiURI.String}}</a>  
+    Proxied from the <a href="?raw=1">original</a> at <a href="{{safeGeminiURL .GeminiURI.String}}">{{.GeminiURI.String}}</a>  
     <br>
-  <a href="https://admin.flounder.online/gemini.gmi">About Gemini</a> 
-  <br>
-  <a href="?raw=1">Original page</a></div> 
+    <a href="https://admin.flounder.online/gemini.gmi">About Gemini</a><br>
+  <a href="https://{{.Config.Host}}">Hosted on {{.Config.SiteTitle}}</a></div> 
   </details>
 </main>
 </body>
