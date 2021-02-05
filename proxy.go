@@ -40,6 +40,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	} else {
 		req.URL, err = url.Parse(fmt.Sprintf("gemini://%s/", spath[1]))
 	}
+	req.URL.RawQuery = r.URL.RawQuery
 	client := gemini.Client{
 		Timeout: 60 * time.Second,
 	}
