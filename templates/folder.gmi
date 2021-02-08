@@ -1,4 +1,4 @@
-{{$host := .Host }}
+Index of {{$host := .Host }}
 # {{ .Folder }}/
 {{ range .Files }}
 => //{{.Creator}}.{{$host}}/{{.Name}} {{.Name}}{{ end }}
