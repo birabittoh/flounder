@@ -2,5 +2,3 @@
 # {{ .Folder }}/
 {{ range .Files }}
 => //{{.Creator}}.{{$host}}/{{.Name}} {{.Name}}{{ end }}
-
-=> //{{$host}} Home
