@@ -1,4 +1,4 @@
-module git.sr.ht/flounder
+module git.sr.ht/~aw/flounder
 
 go 1.15
 
