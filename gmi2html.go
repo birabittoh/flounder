@@ -122,6 +122,9 @@ func textToHTML(reqUrl *url.URL, text gemini.Text) ConvertedGmiDoc {
 	if list {
 		fmt.Fprint(&b, "</ul>\n")
 	}
+	if quote {
+		fmt.Fprint(&b, "</blockquote>\n")
+	}
 	return ConvertedGmiDoc{
 		b.String(),
 		title,
