@@ -1,5 +1,5 @@
 # Flounder: a portal into the small web 
-[![builds.sr.ht status](https://builds.sr.ht/~alexwennerberg/flounder/commits/.build.yml.svg)](https://builds.sr.ht/~alexwennerberg/flounder/commits/.build.yml?)
+[![builds.sr.ht status](https://builds.sr.ht/~aw/flounder/commits/.build.yml.svg)](https://builds.sr.ht/~aw/flounder/commits/.build.yml?)
 
 A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
 
@@ -50,5 +50,5 @@ Flounder is designed to be small, easy to host, and easy to administer. Signups 
 
 Patches are welcome!
 
-* [Ticket tracker](https://todo.sr.ht/~alexwennerberg/flounder)
-* [Mailing list](https://lists.sr.ht/~alexwennerberg/flounder-discuss)
+* [Ticket tracker](https://todo.sr.ht/~aw/flounder)
+* [Mailing list](https://lists.sr.ht/~aw/flounder)
