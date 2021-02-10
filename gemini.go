@@ -53,7 +53,7 @@ func generateFolderPage(fullpath string) string {
 	return buff.String()
 }
 
-func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
+func gmiIndex(w gmi.ResponseWriter, r *gmi.Request) {
 	logGemini(r) // TODO move into wrapper
 	t, err := template.ParseFiles("templates/index.gmi")
 	if err != nil {
@@ -79,7 +79,7 @@ func gmiIndex(w *gmi.ResponseWriter, r *gmi.Request) {
 	t.Execute(w, data)
 }
 
-func gmiPage(w *gmi.ResponseWriter, r *gmi.Request) {
+func gmiPage(w gmi.ResponseWriter, r *gmi.Request) {
 	logGemini(r) // TODO move into wrapper
 	var userName string
 	custom := domains[r.URL.Host]
