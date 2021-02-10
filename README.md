@@ -48,7 +48,6 @@ Flounder is designed to be small, easy to host, and easy to administer. Signups 
 
 ## Development
 
-Patches are welcome!
+Open a PR!
 
-* [Ticket tracker](https://todo.sr.ht/~aw/flounder)
-* [Mailing list](https://lists.sr.ht/~aw/flounder)
+If don't have a GitHub account and/or you'd rather not use GitHub, you can email me a patch with `git-send-email`.
