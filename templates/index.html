@@ -20,4 +20,6 @@ Welcome to {{.Config.SiteTitle}}! For more information and site updates, check o
 {{ range .Users}}
 <a href="//{{.}}.{{$.Config.Host}}" class='person-link'>{{.}}</a>
 {{end}}
+<hr class="thin">
+Made with <a href="https://github.com/alexwennerberg/flounder">Flounder</a>
 {{template "footer" .}}

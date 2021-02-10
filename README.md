@@ -1,11 +1,11 @@
-# Flounder: a portal into the small web 
+# 🐟 Flounder: a portal into the small web 
 [![builds.sr.ht status](https://builds.sr.ht/~aw/flounder/commits/.build.yml.svg)](https://builds.sr.ht/~aw/flounder/commits/.build.yml?)
 
 A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
 
 Flounder is in ALPHA -- development and features are changing frequently, especially as the Gemini spec and ecosystem remains relatively unstable.
 
-See the flagship instance at https://flounder.online and gemini://flounder.online
+See the flagship instance at https://flounder.online and [gemini://flounder.online](gemini://flounder.online)
 
 ## Building and running locally
 Requirements:
@@ -48,6 +48,4 @@ Flounder is designed to be small, easy to host, and easy to administer. Signups 
 
 ## Development
 
-Open a PR!
-
-If don't have a GitHub account and/or you'd rather not use GitHub, you can email me a patch with `git-send-email`.
+Open a PR, or use one of the mailing lists on https://github.com/alexwennerberg
