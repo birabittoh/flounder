@@ -1,5 +1,4 @@
 # 🐟 Flounder: a portal into the small web 
-[![builds.sr.ht status](https://builds.sr.ht/~aw/flounder/commits/.build.yml.svg)](https://builds.sr.ht/~aw/flounder/commits/.build.yml?)
 
 A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
 
