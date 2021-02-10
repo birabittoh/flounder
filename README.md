@@ -1,6 +1,6 @@
-# 🐟 Flounder: a portal into the small web 
+# 🐟 Flounder
 
-A lightweight server to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
+A lightweight platform to help users build simple Gemini sites over http(s) and serve those sites over http(s) and Gemini
 
 Flounder is in ALPHA -- development and features are changing frequently, especially as the Gemini spec and ecosystem remains relatively unstable.
 
