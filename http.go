@@ -629,11 +629,14 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			GeminiURI *url.URL
 			Config    Config
 		}{template.HTML(htmlDoc.Content), favicon, htmlDoc.Title, &uri, &uri, c}
-		err = t.ExecuteTemplate(w, "user_page.html", data)
+		buff := bytes.NewBuffer([]byte{})
+		err = t.ExecuteTemplate(buff, "user_page.html", data)
 		if err != nil {
 			serverError(w, err)
 			return
 		}
+		breader := bytes.NewReader(buff.Bytes())
+		http.ServeContent(w, r, "", stat.ModTime(), breader)
 	} else {
 		http.ServeFile(w, r, fullPath)
 	}
@@ -783,7 +786,7 @@ func runHTTPServer() {
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
-	serveMux.HandleFunc(hostname+"/me", limit(myAccountHandler))
+	serveMux.HandleFunc(hostname+"/me", myAccountHandler)
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
