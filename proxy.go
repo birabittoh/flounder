@@ -109,7 +109,9 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if m != "text/gemini" {
+	_, raw := r.URL.Query()["raw"]
+	acceptsGemini := strings.Contains(r.Header.Get("Accept"), "text/gemini")
+	if m != "text/gemini" || raw || acceptsGemini {
 		w.Header().Add("Content-Type", resp.Meta)
 		io.Copy(w, resp.Body)
 		return
@@ -128,7 +130,7 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 		GeminiURI *url.URL
 		URI       *url.URL
 		Config    Config
-	}{template.HTML(htmlDoc.Content), "", r.URL.String(), req.URL, r.URL, c}
+	}{template.HTML(htmlDoc.Content), "", htmlDoc.Title, req.URL, r.URL, c}
 
 	err = t.ExecuteTemplate(w, "user_page.html", data)
 	if err != nil {
