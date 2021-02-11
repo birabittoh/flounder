@@ -29,12 +29,18 @@ func renderDefaultError(w http.ResponseWriter, statusCode int) {
 	renderError(w, errorMsg, statusCode)
 }
 
+func serverError(w http.ResponseWriter, err error) {
+	log.Print(err)
+	renderDefaultError(w, 500)
+}
+
 func renderError(w http.ResponseWriter, errorMsg string, statusCode int) {
 	data := struct {
 		StatusCode int
 		ErrorMsg   string
 		Config     Config
 	}{statusCode, errorMsg, c}
+	w.WriteHeader(statusCode)
 	err := t.ExecuteTemplate(w, "error.html", data)
 	if err != nil { // Shouldn't happen probably
 		http.Error(w, errorMsg, statusCode)
@@ -57,11 +63,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	user := getAuthUser(r)
 	indexFiles, err := getIndexFiles(user.IsAdmin)
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 	allUsers, err := getActiveUserNames()
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 	data := struct {
 		Config   Config
@@ -71,7 +79,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}{c, user, indexFiles, allUsers}
 	err = t.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 }
 
@@ -151,7 +160,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 		fileBytes, err = ioutil.ReadAll(f)
 	}
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 	data := struct {
 		FileName string
@@ -167,7 +177,8 @@ func editFileHandler(w http.ResponseWriter, r *http.Request) {
 	}{fileName, string(fileBytes), c, user, c.Host, isText, isGemini(fileName), strings.HasPrefix(fileName, "gemlog"), alert, warnings}
 	err = t.ExecuteTemplate(w, "edit_file.html", data)
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 }
 
@@ -198,7 +209,8 @@ func uploadFilesHandler(w http.ResponseWriter, r *http.Request) {
 
 		f, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 		defer f.Close()
 		io.Copy(f, bytes.NewReader(dest))
@@ -264,7 +276,8 @@ func myAccountHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "me.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -325,7 +338,8 @@ func archiveHandler(w http.ResponseWriter, r *http.Request) {
 		userFolder := getUserDirectory(authUser.Username)
 		err := zipit(userFolder, w)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 
 	}
@@ -339,7 +353,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}{"", c}
 		err := t.ExecuteTemplate(w, "login.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -360,7 +375,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				t.ExecuteTemplate(w, "login.html", data)
 				return
 			} else {
-				panic(err)
+				serverError(w, err)
+				return
 			}
 		}
 		if db_password != nil && !active {
@@ -385,7 +401,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}{"Invalid login or password", c}
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
-				panic(err)
+				serverError(w, err)
+				return
 			}
 		}
 	}
@@ -417,7 +434,8 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}{nil, c}
 		err := t.ExecuteTemplate(w, "register.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -437,7 +455,8 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 		reference := r.Form.Get("reference")
 		if len(errors) == 0 {
@@ -495,7 +514,8 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}{allUsers, user, c}
 	err = t.ExecuteTemplate(w, "admin.html", data)
 	if err != nil {
-		panic(err)
+		serverError(w, err)
+		return
 	}
 }
 
@@ -602,7 +622,8 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}{template.HTML(htmlDoc.Content), favicon, htmlDoc.Title, &uri, &uri, c}
 		err = t.ExecuteTemplate(w, "user_page.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	} else {
 		http.ServeFile(w, r, fullPath)
@@ -638,7 +659,8 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		err := t.ExecuteTemplate(w, "reset_pass.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -654,11 +676,13 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password1), 8)
 				if err != nil {
-					panic(err)
+					serverError(w, err)
+					return
 				}
 				_, err = DB.Exec("update user set password_hash = ? where username = ?", hashedPassword, user.Username)
 				if err != nil {
-					panic(err)
+					serverError(w, err)
+					return
 				}
 				log.Printf("User %s reset password", user.Username)
 				http.Redirect(w, r, "/me", http.StatusSeeOther)
@@ -669,7 +693,8 @@ func resetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := t.ExecuteTemplate(w, "reset_pass.html", data)
 		if err != nil {
-			panic(err)
+			serverError(w, err)
+			return
 		}
 	}
 }
@@ -767,7 +792,7 @@ func runHTTPServer() {
 	// admin commands
 	serveMux.HandleFunc(hostname+"/admin/user/", adminUserHandler)
 
-	wrapped := handlers.CustomLoggingHandler(log.Writer(), handlers.RecoveryHandler()(serveMux), logFormatter)
+	wrapped := handlers.CustomLoggingHandler(log.Writer(), serveMux, logFormatter)
 
 	// handle user files based on subdomain or custom domains
 	// also routes to proxy
