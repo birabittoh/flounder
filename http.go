@@ -372,6 +372,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 					Error  string
 					Config Config
 				}{"Username or email '" + name + "' does not exist", c}
+				w.WriteHeader(401)
 				t.ExecuteTemplate(w, "login.html", data)
 				return
 			} else {
@@ -384,6 +385,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				Error  string
 				Config Config
 			}{"Your account is not active yet. Pending admin approval", c}
+			w.WriteHeader(401)
 			t.ExecuteTemplate(w, "login.html", data)
 			return
 		}
@@ -399,6 +401,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				Error  string
 				Config Config
 			}{"Invalid login or password", c}
+			w.WriteHeader(401)
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {
 				serverError(w, err)
@@ -470,6 +473,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 				Config Config
 				Errors []string
 			}{c, errors}
+			w.WriteHeader(400)
 			t.ExecuteTemplate(w, "register.html", data)
 		} else {
 			data := struct {
