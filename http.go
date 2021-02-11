@@ -783,7 +783,7 @@ func runHTTPServer() {
 
 	serveMux.HandleFunc(hostname+"/", rootHandler)
 	serveMux.HandleFunc(hostname+"/my_site", mySiteHandler)
-	serveMux.HandleFunc(hostname+"/me", myAccountHandler)
+	serveMux.HandleFunc(hostname+"/me", limit(myAccountHandler))
 	serveMux.HandleFunc(hostname+"/my_site/flounder-archive.zip", archiveHandler)
 	serveMux.HandleFunc(hostname+"/admin", adminHandler)
 	serveMux.HandleFunc(hostname+"/edit/", editFileHandler)
