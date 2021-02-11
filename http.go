@@ -456,6 +456,11 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
+		_, err = os.Stat(getUserDirectory(username))
+		if !os.IsNotExist(err) {
+			// Don't allow user to create account if folder dne
+			errors = append(errors, "Invalid username")
+		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8) // TODO handle error
 		if err != nil {
 			serverError(w, err)
