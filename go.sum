@@ -2,6 +2,8 @@ git.sr.ht/~adnano/go-gemini v0.1.14-0.20210125155540-9e89b93bab84 h1:TEt97hCPo34
 git.sr.ht/~adnano/go-gemini v0.1.14-0.20210125155540-9e89b93bab84/go.mod h1:If1VxEWcZDrRt5FeAFnGTcM2Ud1E3BXs3VJ5rnZWKq0=
 git.sr.ht/~adnano/go-gemini v0.1.14-0.20210209215514-d2c70a33d5b1 h1:BOdWBwlEgOCBXtMOLDDjSP1orG/jMiTiTeQnJi7wqag=
 git.sr.ht/~adnano/go-gemini v0.1.14-0.20210209215514-d2c70a33d5b1/go.mod h1:hQ75Y0i5jSFL+FQ7AzWVAYr5LQsaFC7v3ZviNyj46dY=
+git.sr.ht/~adnano/go-gemini v0.1.14-0.20210214021019-595b0d049034 h1:duv1TxH0cWtX8IVffgOKIjO0qaRAaDce2MlTCoqk6V4=
+git.sr.ht/~adnano/go-gemini v0.1.14-0.20210214021019-595b0d049034/go.mod h1:hQ75Y0i5jSFL+FQ7AzWVAYr5LQsaFC7v3ZviNyj46dY=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/felixge/httpsnoop v1.0.1 h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=
