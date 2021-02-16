@@ -561,6 +561,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 	if strings.HasSuffix(p, "index.gmi") {
 		http.Redirect(w, r, path.Dir(p), http.StatusMovedPermanently)
+		return
 	}
 
 	if strings.HasPrefix(p, "/"+HiddenFolder) {
