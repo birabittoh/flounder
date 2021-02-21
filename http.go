@@ -625,7 +625,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		breader := bytes.NewReader(buff.Bytes())
-		http.ServeContent(w, r, "", modTime, breader)
+		http.ServeContent(w, r, "", stat.ModTime(), breader)
 	} else {
 		http.ServeFile(w, r, fullPath)
 	}
