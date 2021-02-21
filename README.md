@@ -13,6 +13,7 @@ Requirements:
 
 To run locally, copy example-config.toml to flounder.toml, then run:
 
+`mkdir files`
 `go run . serve`
 
 Add the following to `/etc/hosts` (include any other users you want to create):
@@ -21,7 +22,7 @@ Add the following to `/etc/hosts` (include any other users you want to create):
 127.0.0.1 flounder.local admin.flounder.local proxy.flounder.local
 ```
 
-Then open `flounder.local:8165` in your browser.
+Then open `flounder.local:8165` in your browser. The default login/password is admin/admin
 
 ## TLS Certs and Reverse Proxy
 
