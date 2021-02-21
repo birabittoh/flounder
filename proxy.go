@@ -125,12 +125,11 @@ func proxyGemini(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		SiteBody  template.HTML
-		Favicon   string
 		PageTitle string
 		GeminiURI *url.URL
 		URI       *url.URL
 		Config    Config
-	}{template.HTML(htmlDoc.Content), "", htmlDoc.Title, req.URL, r.URL, c}
+	}{template.HTML(htmlDoc.Content), htmlDoc.Title, req.URL, r.URL, c}
 
 	err = t.ExecuteTemplate(w, "user_page.html", data)
 	if err != nil {

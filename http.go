@@ -528,19 +528,6 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getFavicon(user string) string {
-	faviconPath := path.Join(c.FilesDirectory, filepath.Clean(user), "favicon.txt")
-	content, err := ioutil.ReadFile(faviconPath)
-	if err != nil {
-		return ""
-	}
-	strcontent := []rune(string(content))
-	if len(strcontent) > 0 {
-		return string(strcontent[0])
-	}
-	return ""
-}
-
 // Server a user's file
 // TODO replace with gemini proxy
 // Here be dragons
@@ -612,7 +599,6 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			parse, _ := gmi.ParseText(strings.NewReader(geminiContent))
 			htmlDoc = textToHTML(nil, parse)
 		}
-		favicon := getFavicon(userName)
 		hostname := strings.Split(r.Host, ":")[0]
 		uri := url.URL{
 			Scheme: "gemini",
@@ -624,12 +610,11 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 		}
 		data := struct {
 			SiteBody  template.HTML
-			Favicon   string
 			PageTitle string
 			URI       *url.URL
 			GeminiURI *url.URL
 			Config    Config
-		}{template.HTML(htmlDoc.Content), favicon, htmlDoc.Title, &uri, &uri, c}
+		}{template.HTML(htmlDoc.Content), htmlDoc.Title, &uri, &uri, c}
 		buff := bytes.NewBuffer([]byte{})
 		err = t.ExecuteTemplate(buff, "user_page.html", data)
 		if err != nil {
