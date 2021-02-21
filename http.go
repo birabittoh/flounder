@@ -565,7 +565,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var geminiContent string
-	_, err = os.Stat(path.Join(fullPath, "index.gmi"))
+	fullStat, err := os.Stat(path.Join(fullPath, "index.gmi"))
 	if isDir {
 		// redirect slash
 		if !strings.HasSuffix(r.URL.Path, "/") {
@@ -579,6 +579,9 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			fullPath = path.Join(fullPath, "index.gmi")
+		}
+		if fullStat != nil {
+			stat = fullStat // wonky
 		}
 	}
 	if geminiContent == "" && os.IsNotExist(err) {
@@ -622,7 +625,7 @@ func userFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		breader := bytes.NewReader(buff.Bytes())
-		http.ServeContent(w, r, "", stat.ModTime(), breader)
+		http.ServeContent(w, r, "", modTime, breader)
 	} else {
 		http.ServeFile(w, r, fullPath)
 	}
