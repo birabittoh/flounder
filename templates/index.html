@@ -12,7 +12,7 @@ Welcome to {{.Config.SiteTitle}}! For more information and site updates, check o
   <em>{{.TimeAgo}}</em>
   <a href="//{{.Creator}}.{{$.Config.Host}}/{{.Name}}">
    {{ .Name}}
-  </a>
+  </a> {{ if eq .Creator $.AuthUser.Username }} (<a href="//{{$.Config.Host}}/edit/{{.Name}}">edit</a>){{ end}}
 </div>
 {{end}}
 <br>
