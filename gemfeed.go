@@ -4,14 +4,12 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/gorilla/feeds"
-	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -36,6 +34,7 @@ func (gf *Gemfeed) toAtomFeed() string {
 			Title:   fe.Title,
 			Link:    &feeds.Link{Href: fe.Url.String()}, // Rel=alternate?
 			Created: fe.Date,                            // Updated not created?
+			Content: fe.Content,
 		})
 	}
 	res, _ := feed.ToAtom()
@@ -49,6 +48,7 @@ type FeedEntry struct {
 	DateString string
 	Feed       *Gemfeed
 	File       string // TODO refactor
+	Content    string
 }
 
 func urlFromPath(fullPath string) url.URL {
@@ -106,6 +106,11 @@ func generateFeedFromUser(user string) *Gemfeed {
 				}
 				break
 			}
+			content, err := ioutil.ReadFile(thepath)
+			if err != nil {
+				return nil
+			}
+			entry.Content = string(content)
 			entry.File = getLocalPath(thepath)
 			u := urlFromPath(thepath)
 			entry.Url = &u
@@ -121,54 +126,4 @@ func generateFeedFromUser(user string) *Gemfeed {
 		return feed.Entries[i].Date.After(feed.Entries[j].Date)
 	})
 	return &feed
-}
-
-var GemfeedRegex = regexp.MustCompile(`=>\s*(\S+)\s([0-9]{4}-[0-9]{2}-[0-9]{2})\s?-?\s?(.*)`)
-
-// Parsed Gemfeed text Returns error if not a gemfeed
-// Doesn't sort output
-// Doesn't get posts dated in the future
-// if limit > -1 -- limit how many we are getting
-func ParseGemfeed(text io.Reader, baseUrl url.URL, limit int) (*Gemfeed, error) {
-	scanner := bufio.NewScanner(text)
-	gf := Gemfeed{}
-	for scanner.Scan() {
-		if limit > -1 && len(gf.Entries) >= limit {
-			break
-		}
-		line := scanner.Text()
-		if gf.Title == "" && strings.HasPrefix(line, "#") && !strings.HasPrefix(line, "##") {
-			gf.Title = strings.Trim(line[1:], " \t")
-		} else if strings.HasPrefix(line, "=>") {
-			matches := GemfeedRegex.FindStringSubmatch(line)
-			if len(matches) == 4 {
-				parsedUrl, err := url.Parse(matches[1])
-				if err != nil {
-					continue
-				}
-				date, err := time.Parse("2006-01-02", matches[2])
-				if err != nil {
-					continue
-				}
-				title := matches[3]
-				if parsedUrl.Host == "" {
-					// Is relative link
-					parsedUrl.Host = baseUrl.Host
-					parsedUrl.Path = path.Join(path.Dir(baseUrl.Path), parsedUrl.Path)
-				}
-				parsedUrl.Scheme = ""
-				if time.Now().After(date) {
-					fe := FeedEntry{title, parsedUrl, date, matches[2], &gf, ""}
-					if fe.Title == "" {
-						fe.Title = "(Untitled)"
-					}
-					gf.Entries = append(gf.Entries, fe)
-				}
-			}
-		}
-	}
-	if len(gf.Entries) == 0 {
-		return nil, fmt.Errorf("No Gemfeed entries found")
-	}
-	return &gf, nil
 }
