@@ -12,9 +12,7 @@ For some help building your site, check out the <a href="https://admin.flounder.
 <br>
 <h3>Your files:</h3>
 {{ define "file" }}
-<tr>
-<div>
-  {{ if gt (len .Children) 0 }}
+<tr>{{ if gt (len .Children) 0 }}
   <td colspan="3">
   <details>
     <summary>
@@ -49,9 +47,7 @@ For some help building your site, check out the <a href="https://admin.flounder.
     />
     </form>
   {{ end }}
-  </td>
-</div>
-</tr>
+  </td></tr>
 {{ end }}
 <table>
 {{ range .Files }}
