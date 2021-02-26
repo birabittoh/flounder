@@ -49,6 +49,7 @@ func main() {
 
 	switch args[0] {
 	case "serve":
+		runSFTPServer()
 		// s1.StartAsync()
 		wg := new(sync.WaitGroup)
 		wg.Add(2)
