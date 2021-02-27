@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -25,7 +26,7 @@ type Connection struct {
 func (con *Connection) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 	// check user perms -- cant read others hidden files
 	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
-	f, err := os.Open(fullpath)
+	f, err := os.OpenFile(fullpath, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +35,18 @@ func (con *Connection) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 
 func (con *Connection) Filewrite(request *sftp.Request) (io.WriterAt, error) {
 	// check user perms -- cant write others files
+	// check if file is inside your directory -- strings prefix?
 	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
-	f, err := os.Open(fullpath)
-	if err != nil {
-		return nil, err
+	userDir := getUserDirectory(con.User) // NOTE -- not cross platform
+	if strings.HasPrefix(fullpath, userDir) {
+		f, err := os.OpenFile(fullpath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
+	} else {
+		return nil, fmt.Errorf("Invalid permissions")
 	}
-	return f, nil
 }
 
 func (conn *Connection) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
