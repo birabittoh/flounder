@@ -3,6 +3,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -135,7 +139,16 @@ func runSFTPServer() {
 	}
 
 	// TODO generate key automatically
-	privateBytes, err := ioutil.ReadFile("id_rsa")
+	if _, err := os.Stat(c.HostKeyPath); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		log.Println("Host key not found, generating host key")
+		err := GenerateRSAKeys()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	privateBytes, err := ioutil.ReadFile(c.HostKeyPath)
 	if err != nil {
 		log.Fatal("Failed to load private key", err)
 	}
@@ -246,6 +259,37 @@ func acceptInboundConnection(conn net.Conn, config *ssh.ServerConfig) {
 			return
 		}
 	}
+}
+
+// GenerateRSAKeys generate rsa private and public keys and write the
+// private key to specified file and the public key to the specified
+// file adding the .pub suffix
+func GenerateRSAKeys() error {
+	key, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return err
+	}
+
+	o, err := os.OpenFile(c.HostKeyPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer o.Close()
+
+	priv := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+
+	if err := pem.Encode(o, priv); err != nil {
+		return err
+	}
+
+	pub, err := ssh.NewPublicKey(&key.PublicKey)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(c.HostKeyPath+".pub", ssh.MarshalAuthorizedKey(pub), 0600)
 }
 
 type listerat []os.FileInfo
