@@ -21,6 +21,10 @@ GeminiCertStore="/tmp"
 # SMTPUsername = myemail@coolplace.com
 # SMTPPassword = hunter2
 
+# Whether to enable user SFTP access 
+# experimental feature, enable at your own risk
+EnableSFTP=false
+
 # Templates and static files
 # Everything in the static subfolder will be served at /
 TemplatesDirectory="./templates"

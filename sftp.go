@@ -1,6 +1,5 @@
-// An example SFTP server implementation using the golang SSH package.
-// Serves the whole filesystem visible to the user, and has a hard-coded username and password,
-// so not for real use!
+// SFTP server for users with Flounder accounts
+// 	A lot of this is copied from SFTPGo, but simplified for our use case.
 package main
 
 import (
@@ -12,7 +11,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -101,15 +102,16 @@ func runSFTPServer() {
 			}
 			_, _, err := checkLogin(c.User(), string(pass))
 			// TODO maybe give admin extra permissions?
-			fmt.Fprintf(os.Stderr, "Login: %s\n", c.User())
 			if err != nil {
 				return nil, fmt.Errorf("password rejected for %q", c.User())
 			} else {
+				log.Printf("Login: %s\n", c.User())
 				return nil, nil
 			}
 		},
 	}
 
+	// TODO generate key automatically
 	privateBytes, err := ioutil.ReadFile("id_rsa")
 	if err != nil {
 		log.Fatal("Failed to load private key", err)
@@ -122,31 +124,57 @@ func runSFTPServer() {
 
 	config.AddHostKey(private)
 
-	// Once a ServerConfig has been configured, connections can be
-	// accepted.
 	listener, err := net.Listen("tcp", "0.0.0.0:2024")
 	if err != nil {
 		log.Fatal("failed to listen for connection", err)
 	}
+
 	fmt.Printf("Listening on %v\n", listener.Addr())
 
-	nConn, err := listener.Accept()
-	if err != nil {
-		log.Fatal("failed to accept incoming connection", err)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go acceptInboundConnection(conn, config)
 	}
+}
+
+func acceptInboundConnection(conn net.Conn, config *ssh.ServerConfig) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("panic in AcceptInboundConnection: %#v stack strace: %v", r, string(debug.Stack()))
+		}
+	}()
+	ipAddr := GetIPFromRemoteAddress(conn.RemoteAddr().String())
+	fmt.Println("Request from IP " + ipAddr)
+	limiter := getVisitor(ipAddr)
+	if limiter.Allow() == false {
+		conn.Close()
+		return
+	}
+	// Before beginning a handshake must be performed on the incoming net.Conn
+	// we'll set a Deadline for handshake to complete, the default is 2 minutes as OpenSSH
+	conn.SetDeadline(time.Now().Add(2 * time.Minute))
 
 	// Before use, a handshake must be performed on the incoming net.Conn.
-	sconn, chans, reqs, err := ssh.NewServerConn(nConn, config)
+	sconn, chans, reqs, err := ssh.NewServerConn(conn, config)
 	if err != nil {
-		log.Fatal("failed to handshake", err)
+		log.Printf("failed to accept an incoming connection: %v", err)
+		return
 	}
 	log.Println("login detected:", sconn.User())
 	fmt.Fprintf(os.Stderr, "SSH server established\n")
+	// handshake completed so remove the deadline, we'll use IdleTimeout configuration from now on
+	conn.SetDeadline(time.Time{})
+
+	defer conn.Close()
 
 	// The incoming Request channel must be serviced.
 	go ssh.DiscardRequests(reqs)
 
 	// Service the incoming Channel channel.
+	channelCounter := int64(0)
 	for newChannel := range chans {
 		// Channels have a type, depending on the application level
 		// protocol intended. In the case of an SFTP session, this is "subsystem"
@@ -159,8 +187,11 @@ func runSFTPServer() {
 		}
 		channel, requests, err := newChannel.Accept()
 		if err != nil {
-			log.Fatal("could not accept channel.", err)
+			log.Println("could not accept channel.", err)
+			continue
 		}
+
+		channelCounter++
 		fmt.Fprintf(os.Stderr, "Channel accepted\n")
 
 		// Sessions have out-of-band requests such as "shell",
@@ -181,14 +212,15 @@ func runSFTPServer() {
 				req.Reply(ok, nil)
 			}
 		}(requests)
-		connection := Connection{"alex"}
+		connection := Connection{sconn.User()}
 		root := buildHandlers(&connection)
 		server := sftp.NewRequestServer(channel, root)
 		if err := server.Serve(); err == io.EOF {
 			server.Close()
-			log.Print("sftp client exited session.")
+			log.Println("sftp client exited session.")
 		} else if err != nil {
-			log.Fatal("sftp server completed with error:", err)
+			log.Println("sftp server completed with error:", err)
+			return
 		}
 	}
 }
