@@ -37,10 +37,14 @@ func (con *Connection) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 	return f, nil
 }
 
-func (con *Connection) Filewrite(request *sftp.Request) (io.WriterAt, error) {
+func (conn *Connection) Filewrite(request *sftp.Request) (io.WriterAt, error) {
 	// check user perms -- cant write others files
-	userDir := getUserDirectory(con.User) // NOTE -- not cross platform
+	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
 	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
+	err := checkIfValidFile(conn.User, fullpath, []byte{})
+	if err != nil {
+		return nil, err
+	}
 	f, err := os.OpenFile(fullpath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return nil, err
@@ -84,6 +88,10 @@ func (conn *Connection) Filecmd(request *sftp.Request) error {
 	case "Mkdir":
 		err = os.Mkdir(fullpath, 0755)
 	case "Rename":
+		err := checkIfValidFile(conn.User, targetPath, []byte{})
+		if err != nil {
+			return err
+		}
 		err = os.Rename(fullpath, targetPath)
 	}
 	if err != nil {
