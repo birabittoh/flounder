@@ -50,6 +50,9 @@ func (con *Connection) Filewrite(request *sftp.Request) (io.WriterAt, error) {
 
 func (conn *Connection) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
 	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
+	if strings.Contains(request.Filepath, ".hidden") {
+		return nil, fmt.Errorf("Invalid permissions") // TODO fix better
+	}
 	switch request.Method {
 	case "List":
 		f, err := os.Open(fullpath)
