@@ -23,7 +23,7 @@ GeminiCertStore="/tmp"
 
 # Whether to enable user SFTP access 
 # experimental feature, enable at your own risk
-EnableSFTP=false
+EnableSFTP=true
 
 # Templates and static files
 # Everything in the static subfolder will be served at /

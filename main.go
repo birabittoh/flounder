@@ -49,16 +49,19 @@ func main() {
 
 	switch args[0] {
 	case "serve":
-		runSFTPServer()
 		// s1.StartAsync()
 		wg := new(sync.WaitGroup)
-		wg.Add(2)
+		wg.Add(3)
 		go func() {
 			runHTTPServer()
 			wg.Done()
 		}()
 		go func() {
 			runGeminiServer()
+			wg.Done()
+		}()
+		go func() {
+			runSFTPServer()
 			wg.Done()
 		}()
 		wg.Wait()

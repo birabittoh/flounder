@@ -111,7 +111,9 @@ func buildHandlers(connection *Connection) sftp.Handlers {
 
 // Based on example server code from golang.org/x/crypto/ssh and server_standalone
 func runSFTPServer() {
-
+	if !c.EnableSFTP {
+		return
+	}
 	// An SSH server is represented by a ServerConfig, which holds
 	// certificate details and handles authentication of ServerConns.
 	config := &ssh.ServerConfig{
@@ -150,7 +152,7 @@ func runSFTPServer() {
 		log.Fatal("failed to listen for connection", err)
 	}
 
-	fmt.Printf("Listening on %v\n", listener.Addr())
+	log.Printf("SFTP server listening on %v\n", listener.Addr())
 
 	for {
 		conn, err := listener.Accept()
@@ -168,7 +170,7 @@ func acceptInboundConnection(conn net.Conn, config *ssh.ServerConfig) {
 		}
 	}()
 	ipAddr := GetIPFromRemoteAddress(conn.RemoteAddr().String())
-	fmt.Println("Request from IP " + ipAddr)
+	log.Println("Request from IP " + ipAddr)
 	limiter := getVisitor(ipAddr)
 	if limiter.Allow() == false {
 		conn.Close()

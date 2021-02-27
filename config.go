@@ -28,6 +28,7 @@ type Config struct {
 	SMTPServer         string
 	SMTPUsername       string
 	SMTPPassword       string
+	EnableSFTP         bool
 }
 
 func getConfig(filename string) (Config, error) {
