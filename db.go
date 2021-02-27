@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"database/sql"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -23,6 +25,32 @@ func initializeDB() {
 		log.Fatal(err)
 	}
 	createTablesIfDNE()
+}
+
+// returns nil if login OK, err otherwise
+// log in with email or username
+func checkLogin(name string, password string) (string, bool, error) {
+	row := DB.QueryRow("SELECT username, password_hash, active, admin FROM user where username = $1 OR email = $1", name)
+	var db_password []byte
+	var username string
+	var active bool
+	var isAdmin bool
+	err := row.Scan(&username, &db_password, &active, &isAdmin)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return username, isAdmin, fmt.Errorf("Username or email '" + name + "' does not exist")
+		} else {
+			return username, isAdmin, err
+		}
+	}
+	if db_password != nil && !active {
+		return username, isAdmin, fmt.Errorf("Your account is not active yet. Pending admin approval %v", c)
+	}
+	if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
+		return username, isAdmin, nil
+	} else {
+		return username, isAdmin, fmt.Errorf("Invalid password")
+	}
 }
 
 func getAnalyticsDB() (*sql.DB, error) {

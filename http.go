@@ -360,36 +360,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		name := strings.ToLower(r.Form.Get("username"))
 		password := r.Form.Get("password")
-		row := DB.QueryRow("SELECT username, password_hash, active, admin FROM user where username = $1 OR email = $1", name)
-		var db_password []byte
-		var username string
-		var active bool
-		var isAdmin bool
-		err := row.Scan(&username, &db_password, &active, &isAdmin)
+		username, isAdmin, err := checkLogin(name, password)
 		if err != nil {
-			if strings.Contains(err.Error(), "no rows") {
-				data := struct {
-					Error  string
-					Config Config
-				}{"Username or email '" + name + "' does not exist", c}
-				w.WriteHeader(401)
-				t.ExecuteTemplate(w, "login.html", data)
-				return
-			} else {
-				serverError(w, err)
-				return
-			}
-		}
-		if db_password != nil && !active {
-			data := struct {
-				Error  string
-				Config Config
-			}{"Your account is not active yet. Pending admin approval", c}
-			w.WriteHeader(401)
-			t.ExecuteTemplate(w, "login.html", data)
-			return
-		}
-		if bcrypt.CompareHashAndPassword(db_password, []byte(password)) == nil {
 			log.Println("logged in")
 			session, _ := SessionStore.Get(r, "cookie-session")
 			session.Values["auth_user"] = username
@@ -400,7 +372,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			data := struct {
 				Error  string
 				Config Config
-			}{"Invalid login or password", c}
+			}{err.Error(), c}
 			w.WriteHeader(401)
 			err := t.ExecuteTemplate(w, "login.html", data)
 			if err != nil {

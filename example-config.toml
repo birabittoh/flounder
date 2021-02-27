@@ -21,6 +21,11 @@ GeminiCertStore="/tmp"
 # SMTPUsername = myemail@coolplace.com
 # SMTPPassword = hunter2
 
+# Whether to enable user SFTP access 
+# experimental feature, enable at your own risk
+EnableSFTP=true
+HostKeyPath="id_rsa" # will be generated for you. Pub key at x.pub
+
 # Templates and static files
 # Everything in the static subfolder will be served at /
 TemplatesDirectory="./templates"

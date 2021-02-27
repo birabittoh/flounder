@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -125,6 +126,13 @@ func timeago(t *time.Time) string {
 		}
 		return fmt.Sprintf("%d days ago", days)
 	}
+}
+func GetIPFromRemoteAddress(remoteAddress string) string {
+	ip, _, err := net.SplitHostPort(remoteAddress)
+	if err == nil {
+		return ip
+	}
+	return remoteAddress
 }
 
 // safe
