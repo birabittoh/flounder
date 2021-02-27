@@ -28,7 +28,8 @@ type Connection struct {
 
 func (con *Connection) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 	// check user perms -- cant read others hidden files
-	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
+	userDir := getUserDirectory(con.User) // NOTE -- not cross platform
+	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
 	f, err := os.OpenFile(fullpath, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
