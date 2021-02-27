@@ -74,8 +74,19 @@ func (conn *Connection) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
 	return nil, fmt.Errorf("Invalid command")
 }
 
-func (c *Connection) Filecmd(request *sftp.Request) error {
+func (conn *Connection) Filecmd(request *sftp.Request) error {
 	// remove, rename, setstat? find out
+	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
+	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
+	writePerms := strings.HasPrefix(fullpath, userDir)
+	switch request.Method {
+	case "Remove":
+		if writePerms {
+			os.Remove(fullpath)
+		} else {
+			return fmt.Errorf("Unauthorized")
+		}
+	}
 	return nil
 }
 
