@@ -22,7 +22,7 @@ func getVisitor(ip string) *rate.Limiter {
 
 	limiter, exists := visitors[ip]
 	if !exists {
-		limiter = rate.NewLimiter(.5, 1)
+		limiter = rate.NewLimiter(.5, 2)
 		visitors[ip] = limiter
 	}
 

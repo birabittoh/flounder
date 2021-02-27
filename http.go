@@ -361,13 +361,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		name := strings.ToLower(r.Form.Get("username"))
 		password := r.Form.Get("password")
 		username, isAdmin, err := checkLogin(name, password)
-		if err != nil {
+		if err == nil {
 			log.Println("logged in")
 			session, _ := SessionStore.Get(r, "cookie-session")
 			session.Values["auth_user"] = username
 			session.Values["admin"] = isAdmin
 			session.Save(r, w)
 			http.Redirect(w, r, "/my_site", http.StatusSeeOther)
+			return
 		} else {
 			data := struct {
 				Error  string

@@ -16,7 +16,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/pkg/sftp"
@@ -39,24 +38,18 @@ func (con *Connection) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 
 func (con *Connection) Filewrite(request *sftp.Request) (io.WriterAt, error) {
 	// check user perms -- cant write others files
-	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
 	userDir := getUserDirectory(con.User) // NOTE -- not cross platform
-	if strings.HasPrefix(fullpath, userDir) {
-		f, err := os.OpenFile(fullpath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-		if err != nil {
-			return nil, err
-		}
-		return f, nil
-	} else {
-		return nil, fmt.Errorf("Invalid permissions")
+	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
+	f, err := os.OpenFile(fullpath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return nil, err
 	}
+	return f, nil
 }
 
 func (conn *Connection) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
-	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
-	if strings.Contains(request.Filepath, ".hidden") {
-		return nil, fmt.Errorf("Invalid permissions") // TODO fix better
-	}
+	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
+	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
 	switch request.Method {
 	case "List":
 		f, err := os.Open(fullpath)
@@ -80,22 +73,17 @@ func (conn *Connection) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
 
 func (conn *Connection) Filecmd(request *sftp.Request) error {
 	// remove, rename, setstat? find out
-	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
 	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
-	writePerms := strings.HasPrefix(fullpath, userDir)
+	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
 	var err error
-	if writePerms {
-		switch request.Method {
-		case "Remove":
-			err = os.Remove(fullpath)
-		case "Mkdir":
-			err = os.Mkdir(fullpath, 0755)
-		}
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("Unauthorized")
+	switch request.Method {
+	case "Remove":
+		err = os.Remove(fullpath)
+	case "Mkdir":
+		err = os.Mkdir(fullpath, 0755)
+	}
+	if err != nil {
+		return err
 	}
 	// Rename, Mkdir
 	return nil
