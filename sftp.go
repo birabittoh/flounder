@@ -76,12 +76,15 @@ func (conn *Connection) Filecmd(request *sftp.Request) error {
 	// remove, rename, setstat? find out
 	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
 	fullpath := path.Join(userDir, filepath.Clean(request.Filepath))
+	targetPath := path.Join(userDir, filepath.Clean(request.Target))
 	var err error
 	switch request.Method {
 	case "Remove":
 		err = os.Remove(fullpath)
 	case "Mkdir":
 		err = os.Mkdir(fullpath, 0755)
+	case "Rename":
+		err = os.Rename(fullpath, targetPath)
 	}
 	if err != nil {
 		return err
