@@ -79,14 +79,21 @@ func (conn *Connection) Filecmd(request *sftp.Request) error {
 	fullpath := path.Join(c.FilesDirectory, filepath.Clean(request.Filepath))
 	userDir := getUserDirectory(conn.User) // NOTE -- not cross platform
 	writePerms := strings.HasPrefix(fullpath, userDir)
-	switch request.Method {
-	case "Remove":
-		if writePerms {
-			os.Remove(fullpath)
-		} else {
-			return fmt.Errorf("Unauthorized")
+	var err error
+	if writePerms {
+		switch request.Method {
+		case "Remove":
+			err = os.Remove(fullpath)
+		case "Mkdir":
+			err = os.Mkdir(fullpath, 0755)
 		}
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("Unauthorized")
 	}
+	// Rename, Mkdir
 	return nil
 }
 
