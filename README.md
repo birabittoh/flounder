@@ -3,6 +3,8 @@
 A lightweight platform to help users build simple Gemini sites over http(s) and
 serve those sites over http(s) and Gemini
 
+For more information about Gemini: https://gemini.circumlunar.space/
+
 Flounder is in ALPHA -- development and features are changing frequently,
 especially as the Gemini spec and ecosystem remains relatively unstable.
 
