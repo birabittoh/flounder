@@ -110,7 +110,7 @@ func generateFeedFromUser(user string) *Gemfeed {
 			if err != nil {
 				return nil
 			}
-			entry.Content = string(content)
+			entry.Content = "<pre>" + string(content) + "</pre>"
 			entry.File = getLocalPath(thepath)
 			u := urlFromPath(thepath)
 			entry.Url = &u
